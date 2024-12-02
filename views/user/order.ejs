@@ -1,0 +1,31 @@
+<div class="dash">
+    <div class="head1">
+        <h2>Your Orders</h2>
+    </div>
+    <div class="body2">
+        <% if (orders.length > 0) { %>
+            <% orders.forEach(order => { %>
+                <div class="order-item">
+                    <!-- Photo Section -->
+                    <div class="photo1">
+                        <img src="<%= order.imageUrl %>" alt="Product Image" class="order-image">
+                    </div>
+
+                    <!-- Content Section -->
+                    <div class="content1">
+                        <p class="status <%= order.statusClass %>"><%= order.status %></p>
+                        <p class="product-title"><%= order.title %></p>
+                    </div>
+
+                    <!-- Buttons Section -->
+                    <div class="button1">
+                        <button class="track-order-btn">Track Order</button>
+                        <button class="cancel-order-btn">Cancel Order</button>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p>No orders found.</p>
+        <% } %>
+    </div>
+</div>

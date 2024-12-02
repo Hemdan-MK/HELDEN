@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Category Panel</title>
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <!-- endinject -->
+  <!-- Layout styles -->
+  <link rel="stylesheet" href="/admin/admin.css">
+  <!-- End layout styles -->
+  <!-- <link rel="shortcut icon" href="assets/images/favicon.png" /> -->
+</head>
+
+<body>
+  <div class="container-scroller">
+    <!-- partial:partials/_sidebar.html -->
+    <%- include('./layout/sidebar') %>
+
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_navbar.html -->
+      <nav class="navbar p-0 fixed-top d-flex flex-row">
+      </nav>
+
+      <!-- partial -->
+      <div class="row p-3">
+        <div class="col-12 grid-margin">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Category Management</h4>
+              <div class="table-responsive">
+                <!-- Table with categories data -->
+                <form class="nav-link mt-2 mt-md-0 d-lg-flex search">
+                  <input type="text" class="form-control" placeholder="Search categories">
+                  <button class="btn btn-primary">Search</button>
+                </form>
+
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>index</th>
+                      <th>Name</th>
+                      <th>Picture</th>
+                      <th>Product Count</th>
+                      <th>Created Date</th>
+                      <th>Updated Date</th>
+                      <th>Update</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% categoriesWithCounts.forEach((category,index)=> { %>
+                      <tr id="category-<%= category._id %>" data-name="<%= category.name %>"
+                        data-description="<%= category.description %>" data-productcount="<%= category.productCount %>"
+                        data-image="<%= category.image %>">
+                        <td>
+                          <%= index + 1 %>
+                        </td>
+                        <td>
+                          <%= category.name %>
+                        </td>
+                        <td>
+                          <img src="<%= category.image %>" style="width: 60px; height: 60px;">
+                        </td>
+                        <td>
+                          <%= category.productCount %>
+                        </td>
+                        <td>
+                          <% const createdAt=new Date(category.createdAt); const
+                            formattedDate=`${createdAt.getDate()}:${createdAt.getMonth() +
+                            1}:${createdAt.getFullYear()}`; %>
+                            <%= formattedDate %>
+                        </td>
+                        <td>
+                          <% const updatedAt=new Date(category.updatedAt); const
+                            formattedUpdatedDate=`${updatedAt.getDate()}:${updatedAt.getMonth() +
+                            1}:${updatedAt.getFullYear()}`; %>
+                            <%= formattedUpdatedDate %>
+                        </td>
+                        <td>
+                          <a href="/admin/categoryManagement/update/<%= category._id %>" class="btn btn-primary">Update</a>
+                        </td>
+                        <td>
+                          <button data-id="<%= category._id %>" class="btn btn-success btn-delete">
+                            Unlink
+                          </button>
+                        </td>
+                      </tr>
+                      <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:100px ;" class="col-md-4 grid-margin stretch-card userInfoView ">
+        <button class="btn-category bg-primary" id="btn-add-cat"> Create New Category</button>
+        <button class="btn-category bg-danger" id="btn-del-cat"> Unlisted Categories</button>
+      </div>
+
+    </div>
+    <!-- main-panel ends -->
+  </div>
+  <!-- page-body-wrapper ends -->
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // SOFT DELETE PRODUCT
+    // --------------------------------
+    document.querySelectorAll('.btn-delete').forEach(button => {
+      button.addEventListener('click', function (e) {
+        const categoryId = e.target.getAttribute('data-id');
+
+        // Perform soft delete using fetch
+        fetch(`/admin/categoryManagement/unlink`, {
+          method: 'PUT', // HTTP method
+          headers: {
+            'Content-Type': 'application/json' // Ensure the body is in JSON format
+          },
+          body: JSON.stringify({ categoryId: categoryId }) // Data sent to the server
+        })
+          .then(response => response.json()) // Parse JSON response from server
+          .then(data => {
+            if (data.success) {
+              window.location.reload(); // Remove row from table
+            } else {
+              alert('Error: Could not delete the category.');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the category.');
+          });
+      });
+    });
+
+
+  </script>
+  <script>
+
+    // ADDING CATEGORY
+    // --------------------------------
+
+    document.getElementById('btn-add-cat').addEventListener('click', () => {
+      window.location.href = '/admin/categoryManagement/add';
+    })
+
+
+    // DELETE CATEGORY
+    // --------------------------------
+
+    document.getElementById('btn-del-cat').addEventListener('click', () => {
+      window.location.href = '/admin/categoryManagement/del';
+    })
+
+  </script>
+
+</body>
+
+</html>

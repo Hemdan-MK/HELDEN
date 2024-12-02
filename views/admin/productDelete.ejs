@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Category Panel</title>
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="/admin/admin.css">
+</head>
+
+<body>
+    <div class="container-scroller">
+        <!-- Sidebar Section -->
+        <%- include('./layout/sidebar') %>
+
+            <!-- partial -->
+            <div class="container-fluid page-body-wrapper">
+                <!-- partial:partials/_navbar.html -->
+                <nav class="navbar p-0 fixed-top d-flex flex-row">
+                </nav>
+
+                <!-- Category Form Section -->
+                <div class="container mt-5">
+                    <h2>Soft Deleted Prooducts</h2>
+                    <table class="table table-bordered mt-3">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Recover</th>
+                                <th>Permanent Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% deletedProducts.forEach(product=> { %>
+                                <tr>
+                                    <td>
+                                        <%= product.name %>
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-success btn-recover"
+                                            data-id="<%= product._id %>">Recover / List</button>
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-danger btn-delete"
+                                            data-id="<%= product._id %>">Permanent
+                                            Delete</button>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                    <% if (deletedProducts.length===0) { %>
+                        <div class="w-100 h-50 d-flex justify-content-center">
+                            <h2 class="align-content-center">No Products in DATABASE</h2>
+                        </div>
+                        <% } %>
+                </div>
+            </div>
+    </div>
+
+    <!-- Script links -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.querySelectorAll(".btn-recover").forEach(button => {
+            button.addEventListener("click", async function (e) {
+                console.log("Recover button clicked");
+                const categoryId = this.getAttribute("data-id");
+                const res = await fetch(`/admin/productManagement/recoverProducts/${categoryId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                let data = await res.json()
+
+                if (data.success) {
+                    console.log("Category recovered, reloading page");
+                    window.location.reload();
+                } else {
+                    console.error("Failed to recover category");
+                }
+            });
+        });
+
+        document.querySelectorAll(".btn-delete").forEach(button => {
+            button.addEventListener("click", async function () {
+                console.log("Delete button clicked");
+                const categoryId = this.getAttribute("data-id");
+                const res = await fetch(`/admin/productManagement/permanentDeleteProducts/${categoryId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                let data = await res.json()
+
+                if (data.success) {
+                    console.log("Category deleted, reloading page");
+                    location.reload();
+                } else {
+                    console.error("Failed to delete category");
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>

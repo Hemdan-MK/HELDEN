@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Dashboard</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--===============================================================================================-->
+    <link rel="icon" type="image/png" href="/users/images/icons/favicon.png" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/vendor/bootstrap/css/bootstrap.min.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/fonts/font-awesome-4.7.0/css/font-awesome.min.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/fonts/iconic/css/material-design-iconic-font.min.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/fonts/linearicons-v1.0.0/icon-font.min.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/vendor/animate/animate.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/vendor/css-hamburgers/hamburgers.min.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/vendor/animsition/css/animsition.min.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/vendor/select2/select2.min.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/vendor/perfect-scrollbar/perfect-scrollbar.css" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/users/css/util.css" />
+    <link rel="stylesheet" type="text/css" href="/users/css/main.css" />
+    <!--===============================================================================================-->
+</head>
+
+<body class="animsition">
+    <!-- Header -->
+    <%- include('./layout/header') %>
+
+
+
+        <!-- Dashboard -->
+        <div class="h-75 d-flex justify-content-around w-100">
+            <div class="inside p-all-50  h-full w-75 d-flex">
+                <div class="items w-25 bg-white h-100 d-flex flex-column">
+                    <ul class="list-group w-100 h-100" id="sidebar-menu">
+                        <li class="list-item" data-session="dash">Dashboard</li>
+                        <li class="list-item" data-session="orders">Order</li>
+                        <li class="list-item" data-session="update-profile">Update Profile</li>
+                        <li class="list-item" data-session="my-address">My Address</li>
+                        <li class="list-item" data-session="change-password">Change Password</li>
+                        <li class="list-item" data-session="wallet">Wallet</li>
+                        <li class="list-item" data-session="logout">Logout</li>
+                    </ul>
+                </div>
+                <!-- // contents to be shown on right -->
+                <div class="conte w-75 h-100">
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <!-- Footer -->
+        <%- include('./layout/footer') %>
+
+            <!-- Back to top -->
+            <div class="btn-back-to-top" id="myBtn">
+                <span class="symbol-btn-back-to-top">
+                    <i class="zmdi zmdi-chevron-up"></i>
+                </span>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const sidebarMenu = document.getElementById('sidebar-menu');
+                    const contentArea = document.querySelector('.conte');
+            
+                    // Set the first item ("dash") as active by default and load its content
+                    const defaultSession = 'dash';
+                    const defaultElement = document.querySelector(`.list-item[data-session="${defaultSession}"]`);
+                    defaultElement.classList.add('active');  // Apply the active class to "Dashboard" initially
+                    loadSession(defaultSession);             // Load "Dashboard" content initially
+            
+                    // Add event listener for click events on the sidebar menu
+                    sidebarMenu.addEventListener('click', function (event) {
+                        if (event.target && event.target.classList.contains('list-item')) {
+                            // Remove active class from any other list-item and apply to the clicked item
+                            document.querySelectorAll('.list-item').forEach(item => item.classList.remove('active'));
+                            event.target.classList.add('active');  // Set clicked item as active
+            
+                            // Get the session to load from the clicked item's data attribute
+                            const sessionToLoad = event.target.getAttribute('data-session');
+                            loadSession(sessionToLoad);
+                        }
+                    });
+            
+                    function loadSession(session) {
+                        if (session === 'logout') {
+                            // Redirect to the logout route
+                            window.location.href = '/logout';
+                            return; // Exit the function as no need to load content
+                        }
+                        contentArea.innerHTML = ''; // Clear previous content
+            
+                        // Fetch content from server for the selected session
+                        fetch(`/myAccount/${session}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.text();
+                            })
+                            .then(html => {
+                                contentArea.innerHTML = html; // Load the HTML returned from the server
+                            })
+                            .catch(err => {
+                                console.error('Error loading session:', err);
+                                contentArea.innerHTML = '<p>Error loading content. Please try again.</p>';
+                            });
+                    }
+                });
+            </script> 
+
+            <!-- <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const sidebarMenu = document.getElementById('sidebar-menu');
+
+                    sidebarMenu.addEventListener('click', function (event) {
+                        if (event.target && event.target.classList.contains('list-item')) {
+                            const session = event.target.getAttribute('data-session');
+                            let targetUrl;
+
+                            switch (session) {
+                                case 'dash':
+                                    targetUrl = '/myAccount';
+                                    break;
+                                case 'order':
+                                    targetUrl = '/myAccount/orders';
+                                    break;
+                                case 'updateProfile':
+                                    targetUrl = '/myAccount/update-profile';
+                                    break;
+                                case 'myAddress':
+                                    targetUrl = '/myAccount/address';
+                                    break;
+                                case 'changePassword':
+                                    targetUrl = '/myAccount/change-password';
+                                    break;
+                                case 'wallet':
+                                    targetUrl = '/myAccount/wallet';
+                                    break;
+                                case 'logout':
+                                    targetUrl = '/logout';
+                                    break;
+                            }
+
+                            if (targetUrl) {
+                                window.location.href = targetUrl;
+                            }
+                        }
+                    });
+                });
+
+            </script> -->
+
+
+
+
+            <!--===============================================================================================-->
+            <script src="/users/vendor/jquery/jquery-3.2.1.min.js"></script>
+            <!--===============================================================================================-->
+            <script src="/users/vendor/animsition/js/animsition.min.js"></script>
+            <!--===============================================================================================-->
+            <script src="/users/vendor/bootstrap/js/popper.js"></script>
+            <script src="/users/vendor/bootstrap/js/bootstrap.min.js"></script>
+            <!--===============================================================================================-->
+            <script src="/users/vendor/select2/select2.min.js"></script>
+            <script>
+                $(".js-select2").each(function () {
+                    $(this).select2({
+                        minimumResultsForSearch: 20,
+                        dropdownParent: $(this).next(".dropDownSelect2"),
+                    });
+                });
+            </script>
+            <!--===============================================================================================-->
+            <script src="/users/vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+            <!--===============================================================================================-->
+            <script src="/users/vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+            <script>
+                $(".js-pscroll").each(function () {
+                    $(this).css("position", "relative");
+                    $(this).css("overflow", "hidden");
+                    var ps = new PerfectScrollbar(this, {
+                        wheelSpeed: 1,
+                        scrollingThreshold: 1000,
+                        wheelPropagation: false,
+                    });
+
+                    $(window).on("resize", function () {
+                        ps.update();
+                    });
+                });
+            </script>
+            <!--===============================================================================================-->
+            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKFWBqlKAGCeS1rMVoaNlwyayu0e0YRes"></script>
+            <script src="/users/js/map-custom.js"></script>
+            <!--===============================================================================================-->
+            <script src="/users/js/main.js"></script>
+</body>
+
+</html>
