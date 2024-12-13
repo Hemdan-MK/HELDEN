@@ -1,1 +1,551 @@
-<h1>hi this is my address</h1>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--===============================================================================================-->
+<link rel="icon" type="image/png" href="/users/images/icons/favicon.png" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/bootstrap/css/bootstrap.min.css" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/fonts/font-awesome-4.7.0/css/font-awesome.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/iconic/css/material-design-iconic-font.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/linearicons-v1.0.0/icon-font.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animate/animate.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/css-hamburgers/hamburgers.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animsition/css/animsition.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/select2/select2.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/perfect-scrollbar/perfect-scrollbar.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/css/util.css" />
+<link rel="stylesheet" type="text/css" href="/users/css/main.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!--===============================================================================================-->
+<style>
+	.modal01 {
+
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1050;
+	}
+
+	.modal-content {
+		background-color: white;
+		border: 3px solid rgb(91, 88, 88);
+		padding: 20px;
+		max-width: 700px;
+		width: 100%;
+		border-radius: 10px;
+		overflow: hidden;
+		margin: auto;
+
+	}
+
+	.btn-close {
+		background: transparent;
+		border: none;
+		font-size: 1.5rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+
+	a {
+		text-decoration: none;
+	}
+
+	.conte {
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.overflow-auto {
+		max-height: calc(100% - 150px);
+		/* Adjust the height dynamically */
+		scrollbar-width: thin;
+		/* Firefox */
+	}
+
+	.overflow-auto::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.overflow-auto::-webkit-scrollbar-thumb {
+		background-color: #888;
+		border-radius: 10px;
+	}
+
+	.modal01 .card {
+		z-index: 1051;
+	}
+
+	.d-none {
+		display: none !important;
+	}
+
+	.error-message {
+		color: red;
+		font-size: 0.9em;
+		margin-top: 5px;
+		display: none;
+	}
+
+	.custom-swal-popup {
+		background-color: #f8f9fa;
+		/* Example background color */
+		border-radius: 8px;
+		padding: 20px;
+	}
+
+	.custom-swal-title {
+		font-size: 18px;
+		color: #333;
+	}
+
+	.custom-swal-content {
+		font-size: 16px;
+	}
+</style>
+</head>
+
+<body class="animsition">
+	<!-- Header -->
+	<%- include('./layout/header') %>
+	<!-- Dashboard -->
+	<div class="h-75 d-flex justify-content-around w-100">
+		<div class="inside p-all-50  h-full w-75 d-flex">
+			<div class="items w-25 bg-white h-100 d-flex flex-column">
+				<ul class="list-group w-100 h-100" id="sidebar-menu">
+					<a href="/myAccount" class="list-item">
+						<li data-session="/">Dashboard</li>
+					</a>
+					<a href="/myAccount/orders" class="list-item">
+						<li data-session="orders">Order</li>
+					</a>
+					<a href="/myAccount/update-profile" class="list-item">
+						<li data-session="update-profile">Update Profile</li>
+					</a>
+					<a href="/myAccount/saved-address" class="list-item" style="background-color: #397f79; color: white;">
+						<li data-session="saved-address">Saved Address</li>
+					</a>
+					<a href="/myAccount/wallet" class="list-item">
+						<li data-session="wallet">Wallet</li>
+					</a>
+					<a href="/logout" class="list-item">
+						<li data-session="logout">Logout</li>
+					</a>
+				</ul>
+			</div>
+			<!-- // contents to be shown on right -->
+
+			<div class="conte w-75 h-100 position-relative d-flex flex-column">
+				<!-- Header Section -->
+				<h2 class="text-center mt-3">Your Saved Addresses</h2>
+
+				<!-- Scrollable Address List -->
+				<div class="flex-grow-1 overflow-auto my-3 px-3">
+					<% if (addresses.length === 0) { %>
+					<div class="alert alert-warning">No saved addresses. Please add a new address.</div>
+					<% } else { %>
+					<div class="list-group">
+						<% addresses.forEach(address => { %>
+						<div class="list-group-item d-flex justify-content-between align-items-start mb-3">
+							<div>
+								<p><strong>House Name:</strong> <%= address.houseName %></p>
+								<p><strong>House No:</strong> <%= address.houseNumber %></p>
+								<p><strong>Street:</strong> <%= address.street %></p>
+								<p><strong>Country:</strong> <%= address.country %></p>
+								<p><strong>State:</strong> <%= address.state %></p>
+								<p><strong>District:</strong> <%= address.district %></p>
+								<p><strong>City:</strong> <%= address.city %></p>
+								<p><strong>Landmark:</strong> <%= address.landmark %></p>
+								<p><strong>Pincode:</strong> <%= address.pincode %></p>
+							</div>
+							<div>
+								<!-- Edit Button -->
+								<button class="btn btn-warning btn-sm edit-address-btn" data-id="<%= address._id %>">
+									Edit
+								</button>
+								<!-- Delete Form -->
+								<form action="/deleteAddress/<%= address._id %>" method="POST" class="d-inline delete-address-form">
+									<button type="submit" class="btn btn-danger btn-sm">
+										Delete
+									</button>
+								</form>
+							</div>
+						</div>
+						<% }); %>
+					</div>
+					<% } %>
+				</div>
+
+				<!-- Add Address Button -->
+				<div class="d-flex justify-content-center p-3 bg-light">
+					<button class="btn btn-primary w-75" id="addAddressBtn">Add New Address</button>
+				</div>
+
+			</div>
+		</div>
+		<!-- Modal -->
+		<div id="addressModal" class="modal01 d-none position-fixed w-100 h-100">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Add New Address</h5>
+						<button type="button" class="btn-close" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form id="addressForm">
+							<input type="hidden" id="addressId" name="addressId" />
+							<div class="mb-3">
+								<label for="houseName" class="form-label">House Name</label>
+								<input type="text" class="form-control" id="houseName" name="houseName" required />
+								<div class="error-message" id="houseNameError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="houseNumber" class="form-label">House Number</label>
+								<input type="text" class="form-control" id="houseNumber" name="houseNumber" required />
+								<div class="error-message" id="houseNumberError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="street" class="form-label">Street</label>
+								<input type="text" class="form-control" id="street" name="street" required />
+								<div class="error-message" id="streetError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="country" class="form-label">Country</label>
+								<input type="text" class="form-control" id="country" name="country" required />
+								<div class="error-message" id="countryError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="state" class="form-label">State</label>
+								<input type="text" class="form-control" id="state" name="state" required />
+								<div class="error-message" id="stateError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="district" class="form-label">District</label>
+								<input type="text" class="form-control" id="district" name="district" required />
+								<div class="error-message" id="districtError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="city" class="form-label">City</label>
+								<input type="text" class="form-control" id="city" name="city" required />
+								<div class="error-message" id="cityError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="landmark" class="form-label">Landmark</label>
+								<input type="text" class="form-control" id="landmark" name="landmark" />
+								<div class="error-message" id="landmarkError"></div>
+							</div>
+							<div class="mb-3">
+								<label for="pincode" class="form-label">Pincode</label>
+								<input type="text" class="form-control" id="pincode" name="pincode" required />
+								<div class="error-message" id="pincodeError"></div>
+							</div>
+							<button type="submit" class="btn btn-success w-100">Save Address</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<%- include('./layout/footer') %>
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+			const addAddressBtn = document.getElementById("addAddressBtn");
+			const addressForm = document.getElementById("addressForm");
+			const modal = document.querySelector(".modal01");
+			const closeModalBtn = modal.querySelector(".btn-close");
+			let editingAddressId = null;
+
+			const openModal = () => {
+				modal.style.display = "block";
+				modal.setAttribute("aria-hidden", "false");
+				addressForm.querySelector("input").focus();
+				modal.classList.remove('d-none');
+
+			};
+
+			const closeModal = () => {
+				modal.style.display = "none";
+				modal.setAttribute("aria-hidden", "true");
+				modal.classList.add('d-none');
+				addressForm.reset();
+				editingAddressId = null;
+			};
+
+			window.onclick = (event) => {
+				if(event.target === modal) {
+					closeModal();
+				}
+			};
+
+			const validateForm = () => {
+				let isValid = true;
+
+				const houseName = document.getElementById("houseName").value.trim();
+				const houseNumber = document.getElementById("houseNumber").value.trim();
+				const street = document.getElementById("street").value.trim();
+				const country = document.getElementById("country").value.trim();
+				const state = document.getElementById("state").value.trim();
+				const city = document.getElementById("city").value.trim();
+				const district = document.getElementById("district").value.trim();
+				const landmark = document.getElementById("landmark").value.trim();
+				const pincode = document.getElementById("pincode").value.trim();
+
+				// Reset all error messages
+				document.querySelectorAll(".error-message").forEach((element) => {
+					element.style.display = "none";
+				});
+
+				// Check if houseName is not empty
+				if(!houseName) {
+					document.getElementById("houseNameError").textContent = "House Name is required.";
+					document.getElementById("houseNameError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if houseNumber is a valid number
+				if(!/^\d+$/.test(houseNumber)) {
+					document.getElementById("houseNumberError").textContent = "House Number must be a valid number.";
+					document.getElementById("houseNumberError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if street is not empty
+				if(!street) {
+					document.getElementById("streetError").textContent = "Street is required.";
+					document.getElementById("streetError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if country is not empty
+				if(!country) {
+					document.getElementById("countryError").textContent = "Country is required.";
+					document.getElementById("countryError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if state is not empty
+				if(!state) {
+					document.getElementById("stateError").textContent = "State is required.";
+					document.getElementById("stateError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if city is not empty
+				if(!city) {
+					document.getElementById("cityError").textContent = "City is required.";
+					document.getElementById("cityError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if district is not empty
+				if(!district) {
+					document.getElementById("districtError").textContent = "District is required.";
+					document.getElementById("districtError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if landmark is not empty
+				if(!landmark) {
+					document.getElementById("landmarkError").textContent = "Landmark is required.";
+					document.getElementById("landmarkError").style.display = "block";
+					isValid = false;
+				}
+
+				// Check if pincode is a valid number and has exactly 6 digits
+				if(!/^\d{6}$/.test(pincode)) {
+					document.getElementById("pincodeError").textContent = "Pincode must be a valid 6-digit number.";
+					document.getElementById("pincodeError").style.display = "block";
+					isValid = false;
+				}
+
+				return isValid;
+			};
+
+			addressForm.addEventListener("submit", async (event) => {
+				event.preventDefault();
+
+				if(!validateForm()) return;
+
+				const houseName = document.getElementById("houseName").value;
+				const houseNumber = document.getElementById("houseNumber").value;
+				const street = document.getElementById("street").value;
+				const country = document.getElementById("country").value;
+				const state = document.getElementById("state").value;
+				const city = document.getElementById("city").value;
+				const district = document.getElementById("district").value;
+				const landmark = document.getElementById("landmark").value;
+				const pincode = document.getElementById("pincode").value;
+
+				try {
+					let url = "/addAddress";
+					let method = "POST";
+					const body = {
+						houseName,
+						houseNumber,
+						street,
+						country,
+						state,
+						city,
+						district,
+						landmark,
+						pincode
+					};
+
+					if(editingAddressId) {
+						url = `/editAddress/${editingAddressId}`;
+						method = "PUT";
+						body.addressId = editingAddressId; // Add addressId when editing
+					}
+
+					const response = await fetch(url, {
+						method,
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(body),
+					});
+
+					if(!response.ok) {
+						const result = await response.json();
+						throw new Error(result.message || "Failed to save address.");
+					}
+
+					const result = await response.json();
+					Swal.fire({
+						icon: result.success ? 'success' : 'info', // Success icon if the update was successful, info icon otherwise
+						title: result.success ? 'Success!' : 'Info',
+						text: result.message || (editingAddressId ? "Address updated successfully!" : "Address added successfully!"),
+						confirmButtonColor: result.success ? '#28a745' : '#017c8c', // Green for success, blue for info
+						confirmButtonText: 'OK'
+					});
+					closeModal();
+					location.reload();
+				} catch (error) {
+					console.error("Error saving address:", error);
+					alert("An error occurred. Please try again later.");
+				}
+			});
+
+			document.querySelectorAll(".btn-danger").forEach((button) => {
+				button.addEventListener("click", async (event) => {
+					event.preventDefault();
+
+					const form = event.target.closest("form");
+					const actionUrl = form.getAttribute("action");
+
+					Swal.fire({
+						title: "Are you sure?",
+						text: "Do you want to delete this address?",
+						icon: "warning",
+						showCancelButton: true,
+						confirmButtonColor: "#3085d6",
+						cancelButtonColor: "#d33",
+						confirmButtonText: "Yes, delete it!",
+						customClass: {
+							popup: 'custom-swal-popup', // Apply a custom class to the popup
+							title: 'custom-swal-title', // Apply a custom class to the title
+							content: 'custom-swal-content' // Apply a custom class to the content
+						}
+					}).then(async (result) => {
+						if(result.isConfirmed) {
+							try {
+								const response = await fetch(actionUrl, {
+									method: "DELETE"
+								});
+
+								if(!response.ok) throw new Error("Failed to delete address.");
+
+								Swal.fire("Deleted!", "Your address has been deleted.", "success").then(() => location.reload());
+							} catch (error) {
+								console.error("Error deleting address:", error);
+								Swal.fire("Error!", error.message || "Something went wrong. Please try again later.", "error");
+							}
+						}
+					});
+
+				});
+			});
+			const populateModal = (data) => {
+				document.getElementById("houseName").value = data.houseName || "";
+				document.getElementById("houseNumber").value = data.houseNumber || "";
+				document.getElementById("street").value = data.street || "";
+				document.getElementById("country").value = data.country || "";
+				document.getElementById("state").value = data.state || "";
+				document.getElementById("city").value = data.city || "";
+				document.getElementById("district").value = data.district || "";
+				document.getElementById("landmark").value = data.landmark || "";
+				document.getElementById("pincode").value = data.pincode || "";
+			};
+
+			document.querySelectorAll(".btn-warning").forEach((button) => {
+				button.addEventListener("click", (event) => {
+					event.preventDefault();
+
+					const addressItem = event.target.closest(".list-group-item");
+					const addressId = addressItem.querySelector("form").getAttribute("action").split("/").pop();
+
+					const data = {
+						houseName: addressItem.querySelector("p:nth-child(1)").innerText.split(": ")[1],
+						houseNumber: addressItem.querySelector("p:nth-child(2)").innerText.split(": ")[1],
+						street: addressItem.querySelector("p:nth-child(3)").innerText.split(": ")[1],
+						country: addressItem.querySelector("p:nth-child(4)").innerText.split(": ")[1],
+						state: addressItem.querySelector("p:nth-child(5)").innerText.split(": ")[1],
+						district: addressItem.querySelector("p:nth-child(6)").innerText.split(": ")[1],
+						city: addressItem.querySelector("p:nth-child(7)").innerText.split(": ")[1],
+						landmark: addressItem.querySelector("p:nth-child(8)").innerText.split(": ")[1],
+						pincode: addressItem.querySelector("p:nth-child(9)").innerText.split(": ")[1],
+					};
+
+					populateModal(data);
+					editingAddressId = addressId;
+					openModal();
+				});
+			});
+
+			addAddressBtn.addEventListener("click", () => {
+				editingAddressId = null;
+				openModal();
+			});
+
+			closeModalBtn.addEventListener("click", closeModal);
+		});
+	</script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/animsition/js/animsition.min.js"></script>
+	<!--===============================================================================================-->
+	<!-- <script src="/users/vendor/bootstrap/js/popper.js"></script>
+	<script src="/users/vendor/bootstrap/js/bootstrap.min.js"></script> -->
+	<!--===============================================================================================-->
+	<!-- <script src="/users/vendor/select2/select2.min.js"></script> -->
+	<!--===============================================================================================-->
+	<!-- <script src="/users/vendor/MagnificPopup/jquery.magnific-popup.min.js"></script> -->
+	<!--===============================================================================================-->
+	<!-- <script src="/users/vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script> -->
+	<!--===============================================================================================-->
+	<script src="/users/js/main.js"></script>
+	<!--===============================================================================================-->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>

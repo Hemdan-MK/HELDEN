@@ -1,1 +1,389 @@
-<h1>hi this is update profile</h1>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--===============================================================================================-->
+<link rel="icon" type="image/png" href="/users/images/icons/favicon.png" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/bootstrap/css/bootstrap.min.css" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/fonts/font-awesome-4.7.0/css/font-awesome.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/iconic/css/material-design-iconic-font.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/linearicons-v1.0.0/icon-font.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animate/animate.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/css-hamburgers/hamburgers.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animsition/css/animsition.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/select2/select2.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/perfect-scrollbar/perfect-scrollbar.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/css/util.css" />
+<link rel="stylesheet" type="text/css" href="/users/css/main.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!--===============================================================================================-->
+<style>
+	/* Modal styles */
+	.modal {
+		display: none;
+		/* Hidden by default */
+		position: fixed;
+		z-index: 1;
+		/* Stay on top */
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		background-color: rgba(0, 0, 0, 0.4);
+		/* Black with opacity */
+		padding-top: 60px;
+	}
+
+	.modal-content {
+		background-color: white;
+		margin: 5% auto;
+		padding: 20px;
+		border: 1px solid #888;
+		width: 80%;
+		max-width: 600px;
+		border-radius: 8px;
+	}
+
+	.order-item {
+		background-color: #f9f9f9;
+		border-radius: 8px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Button styling */
+	.btn-info {
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 10px 20px;
+		cursor: pointer;
+		border-radius: 5px;
+	}
+
+	.btn-info:hover {
+		background-color: #45a049;
+	}
+
+	.btn-danger {
+		background-color: #e74c3c;
+		border: none;
+		color: white;
+		padding: 10px 20px;
+		cursor: pointer;
+		border-radius: 5px;
+	}
+
+	.btn-danger:hover {
+		background-color: #c0392b;
+	}
+
+	/* Modal Close Button */
+	.close-btn {
+		color: #aaa;
+		font-size: 28px;
+		font-weight: bold;
+		position: absolute;
+		top: 10px;
+		right: 25px;
+	}
+
+	.close-btn:hover,
+	.close-btn:focus {
+		color: black;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	/* Responsive styling for smaller screens */
+	@media (max-width: 768px) {
+		.conte {
+			width: 100%;
+		}
+
+		.order-item {
+			margin-bottom: 1.5rem;
+		}
+
+		.modal-content {
+			width: 90%;
+		}
+	}
+
+	a {
+		text-decoration: none;
+	}
+
+	.conte {
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.overflow-auto {
+		max-height: calc(100% - 150px);
+		/* Adjust the height dynamically */
+		scrollbar-width: thin;
+		/* Firefox */
+	}
+
+	.overflow-auto::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.overflow-auto::-webkit-scrollbar-thumb {
+		background-color: #888;
+		border-radius: 10px;
+	}
+
+
+
+
+	.error-message {
+		color: red;
+		font-size: 0.9em;
+		margin-top: 5px;
+		display: none;
+	}
+
+	.custom-swal-popup {
+		background-color: #f8f9fa;
+		/* Example background color */
+		border-radius: 8px;
+		padding: 20px;
+	}
+
+	.custom-swal-title {
+		font-size: 18px;
+		color: #333;
+	}
+
+	.custom-swal-content {
+		font-size: 16px;
+	}
+
+	.orders::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	.orders::-webkit-scrollbar-thumb {
+		background-color: #888;
+		border-radius: 10px;
+	}
+
+	.orders::-webkit-scrollbar-thumb:hover {
+		background-color: #555;
+	}
+</style>
+</head>
+
+<body class="animsition">
+	<!-- Header -->
+	<%- include('./layout/header') %>
+	<!-- Dashboard -->
+	<div class="h-75 d-flex justify-content-around w-100">
+		<div class="inside p-all-50  h-full w-75 d-flex">
+			<div class="items w-25 bg-white h-100 d-flex flex-column">
+				<ul class="list-group w-100 h-100" id="sidebar-menu">
+					<a href="/myAccount" class="list-item">
+						<li data-session="/">Dashboard</li>
+					</a>
+					<a href="/myAccount/orders" class="list-item">
+						<li data-session="orders">Order</li>
+					</a>
+					<a href="/myAccount/update-profile" class="list-item" style="background-color: #397f79; color: white;">
+						<li data-session="update-profile">Update Profile</li>
+					</a>
+					<a href="/myAccount/saved-address" class="list-item">
+						<li data-session="saved-address">Saved Address</li>
+					</a>
+					<a href="/myAccount/wallet" class="list-item">
+						<li data-session="wallet">Wallet</li>
+					</a>
+					<a href="/logout" class="list-item">
+						<li data-session="logout">Logout</li>
+					</a>
+				</ul>
+			</div>
+			<!-- // contents to be shown on right -->
+
+			<!-- Update Profile Section -->
+			<div class="conte w-75 h-100 position-relative d-flex flex-column p-4">
+				<!-- Header Section -->
+				<div class="container">
+					<h2 class="text-center mt-4">Update Your Profile</h2>
+					<form id="updateProfileForm">
+						<div class="form-group">
+							<label for="name">Name</label>
+							<input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required />
+							<small id="nameError" class="form-text text-danger" style="display: none;">Name is required and should contain only letters and spaces.</small>
+						</div>
+			
+						<div class="form-group">
+							<label for="email">Email</label>
+							<input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required readonly />
+						</div>
+			
+						<div class="form-group">
+							<label for="phone">Phone</label>
+							<input type="tel" class="form-control" id="phone" name="phone" value="<%= user.phone || '' %>" />
+							<small id="phoneError" class="form-text text-danger" style="display: none;">Please enter a valid phone number.</small>
+						</div>
+			
+						<!-- Show Change Password fields only if user model has password field -->
+						<% if (user.password) { %>
+							<div class="form-group mt-4">
+								<label for="currentPassword">Current Password</label>
+								<input type="password" class="form-control" id="currentPassword" name="currentPassword" placeholder="Enter current password" required />
+								<small id="currentPasswordError" class="form-text text-danger" style="display: none;">Current password is required.</small>
+							</div>
+			
+							<div class="form-group">
+								<label for="newPassword">New Password</label>
+								<input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Enter new password" required />
+								<small id="newPasswordError" class="form-text text-danger" style="display: none;">Password must be at least 6 characters long.</small>
+							</div>
+			
+							<div class="form-group">
+								<label for="confirmPassword">Confirm New Password</label>
+								<input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" required />
+								<small id="confirmPasswordError" class="form-text text-danger" style="display: none;">Passwords must match.</small>
+							</div>
+						<% } %>
+			
+						<button type="submit" class="btn btn-primary mt-3">Update Profile</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<%- include('./layout/footer') %>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+	<script>
+		document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+			e.preventDefault(); // Prevent the form from submitting normally
+	
+			// Reset previous errors
+			if (document.getElementById('nameError')) document.getElementById('nameError').style.display = 'none';
+			if (document.getElementById('phoneError')) document.getElementById('phoneError').style.display = 'none';
+			if (document.getElementById('currentPasswordError')) document.getElementById('currentPasswordError').style.display = 'none';
+			if (document.getElementById('newPasswordError')) document.getElementById('newPasswordError').style.display = 'none';
+			if (document.getElementById('confirmPasswordError')) document.getElementById('confirmPasswordError').style.display = 'none';
+	
+			const name = document.getElementById('name').value.trim();
+			const phone = document.getElementById('phone').value.trim();
+			const currentPassword = document.getElementById('currentPassword') ? document.getElementById('currentPassword').value.trim() : null;
+			const newPassword = document.getElementById('newPassword') ? document.getElementById('newPassword').value.trim() : null;
+			const confirmPassword = document.getElementById('confirmPassword') ? document.getElementById('confirmPassword').value.trim() : null;
+	
+			// Validation flags
+			let isValid = true;
+	
+			// Name validation: Check for empty name and non-alphabetical characters
+			const nameRegex = /^[A-Za-z\s]+$/;
+			if (!name || !nameRegex.test(name)) {
+				if (document.getElementById('nameError')) document.getElementById('nameError').style.display = 'block';
+				isValid = false;
+			}
+	
+			// Phone validation: Check for a valid phone number format
+			const phoneRegex = /^[0-9\s\-\+\(\)]{10,12}$/; // Adjust the regex for your phone number format
+			if (phone && !phoneRegex.test(phone)) {
+				if (document.getElementById('phoneError')) document.getElementById('phoneError').style.display = 'block';
+				isValid = false;
+			}
+	
+			// Password validation (if applicable)
+			if (currentPassword && !newPassword) {
+				if (document.getElementById('newPasswordError')) document.getElementById('newPasswordError').style.display = 'block';
+				isValid = false;
+			}
+	
+			if (newPassword && newPassword.length < 6) {
+				if (document.getElementById('newPasswordError')) document.getElementById('newPasswordError').style.display = 'block';
+				isValid = false;
+			}
+	
+			if (newPassword !== confirmPassword) {
+				if (document.getElementById('confirmPasswordError')) document.getElementById('confirmPasswordError').style.display = 'block';
+				isValid = false;
+			}
+	
+			// If validation fails, stop form submission
+			if (!isValid) return;
+	
+			// Collect form data
+			const formData = new FormData(e.target);
+			const data = {
+				name: formData.get('name'),
+				email: formData.get('email'),
+				phone: formData.get('phone'),
+				currentPassword,
+				newPassword,
+				confirmPassword
+			};
+	
+			try {
+				const response = await fetch('/myAccount/update-profile', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(data),
+				});
+	
+				const result = await response.json(); // Parse JSON response
+	
+				if(response.ok) {
+					Swal.fire({
+						icon: 'success',
+						title: 'Profile Updated Successfully!',
+						text: result.message || 'Your profile has been updated.',
+						confirmButtonText: 'OK',
+					});
+				} else {
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: result.message || 'Something went wrong. Please try again.',
+						confirmButtonText: 'Try Again',
+					});
+				}
+			} catch (error) {
+				Swal.fire({
+					icon: 'error',
+					title: 'Network Error',
+					text: 'Unable to update profile. Please check your connection and try again.',
+					confirmButtonText: 'Close',
+				});
+			}
+		});
+	</script>
+
+	<!--===============================================================================================-->
+	<script src="/users/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/animsition/js/animsition.min.js"></script>
+	<script src="/users/js/main.js"></script>
+	<!--===============================================================================================-->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

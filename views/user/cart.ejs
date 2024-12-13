@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>About</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+<link rel="icon" type="image/png" href="/users/images/icons/favicon.png" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/fonts/iconic/css/material-design-iconic-font.min.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/fonts/linearicons-v1.0.0/icon-font.min.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animate/animate.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/perfect-scrollbar/perfect-scrollbar.css">
+<!--===============================================================================================-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/css/util.css">
+<link rel="stylesheet" type="text/css" href="/users/css/main.css">
+<!--===============================================================================================-->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!--===============================================================================================-->
+<style>
+	/* General Styling */
+	body {
+		font-family: 'Poppins', sans-serif;
+		background-color: #f9f9f9;
+		margin: 0;
+		padding: 0;
+	}
+
+	.container {
+		max-width: 1440px;
+		margin: 0 auto;
+		padding: 20px;
+	}
+
+	.cart-section {
+		background-color: #ffffff;
+		padding: 20px;
+		border-radius: 8px;
+	}
+
+	.cart-container {
+		display: flex;
+		justify-content: space-between;
+		gap: 20px;
+	}
+
+	/* Offer Section */
+	.offer {
+		background: rgba(58, 162, 159, 0.1);
+		border: 1px solid #3aa39f;
+		border-radius: 4px;
+		padding: 15px;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.offer-icon {
+		width: 24px;
+		height: 24px;
+		border: 2px solid #3aa39f;
+		border-radius: 50%;
+	}
+
+	.offer-text {
+		color: #17183b;
+		font-size: 16px;
+		font-weight: 400;
+	}
+
+	/* Order Summary */
+	.order-summary {
+		background-color: transparent;
+	}
+
+	.zzz {
+		flex: 0 0 30%;
+		background-color: #ffffff;
+		padding: 20px;
+		border: 1px solid #d1d1d8;
+		border-radius: 8px;
+	}
+
+	.section-title {
+		font-size: 24px;
+		font-weight: 700;
+		color: #17183b;
+	}
+
+	.details .detail-item {
+		display: flex;
+		justify-content: space-between;
+		padding: 8px 0;
+	}
+
+	.total-section .total-item {
+		display: flex;
+		justify-content: space-between;
+		font-size: 16px;
+		font-weight: 600;
+		margin-bottom: 2%;
+	}
+
+	.coupon-section {
+		display: flex;
+
+	}
+
+	.coupon-input {
+		flex: 1;
+		padding: 8px;
+		border: 1px solid #d1d1d8;
+		border-radius: 4px;
+	}
+
+	.checkout-btn {
+		background-color: #3aa39f;
+		color: white;
+		font-weight: 600;
+		padding: 12px;
+		border: none;
+		border-radius: 4px;
+		width: 100%;
+		cursor: pointer;
+	}
+
+	/* Product List */
+	.product-list .product-item {
+		display: flex;
+		align-items: center;
+		padding: 16px;
+		background: #fff;
+		border: 1px solid #d1d1d8;
+		border-radius: 4px;
+		margin-bottom: 16px;
+	}
+
+	.product-img {
+		width: 125px;
+		height: 168px;
+	}
+
+	.product-details {
+		flex: 1;
+		padding-left: 16px;
+	}
+
+	.product-name {
+		font-size: 20px;
+		font-weight: 600;
+		color: #17183b;
+	}
+
+	.product-color span {
+		color: #a2a3b1;
+	}
+
+	.quantity-control {
+		display: flex;
+		align-items: center;
+	}
+
+	.quantity {
+		font-size: 1.25rem;
+		font-weight: bold;
+	}
+
+	.btn-decrease,
+	.btn-increase {
+		width: 40px;
+		height: 40px;
+		font-size: 1.5rem;
+	}
+
+	.remove-btn {
+		font-size: 1.1rem;
+	}
+
+	.product-price {
+		font-size: 20px;
+		font-weight: 600;
+		color: #17183b;
+	}
+
+	.apply-coupon {
+		border-radius: 4px;
+		color: white;
+	}
+
+	.prevnext {
+		padding: 10px 30px;
+	}
+</style>
+</head>
+
+<body class="animsition">
+	<!-- Header --> <%- include('./layout/header') %>
+	<!-- Cart -->
+	<!-- Content page -->
+	<section class="cart-section bg-light p-t-75 p-b-120">
+		<div class="container">
+			<!-- Cart Container -->
+			<div class="cart-container">
+				<div class="d-block w-100">
+					<!-- Product List -->
+					<div class="product-list">
+						<% if (cart && cart.items.length> 0) { %> <% cart.items.forEach((item)=> { %> <div class="product-item">
+							<img src="<%= item.productId.images[0] %>" alt="Product Image" class="product-img" />
+							<div class="product-details">
+								<h3 class="product-name">
+									<%= item.productId.name %>
+								</h3>
+								<p class="product-color"><span>Color :</span>
+									<%= item.color %>
+								</p>
+								<p class="product-size"><span>Size :</span>
+									<%= item.size %>
+								</p>
+								<div class="product-actions d-flex  pt-3">
+									<div class="quantity-control d-flex align-items-center" data-item-id="<%= item._id %>">
+										<button class="btn btn-primary btn-decrease">-</button>
+										<span class="quantity mx-3">
+											<%= item.quantity %>
+										</span>
+										<button class="btn btn-primary btn-increase">+</button>
+									</div>
+									<button class="btn remove-btn ml-4" data-item-id="<%= item._id %>">
+										<i class="fas fa-trash text-danger"></i>
+									</button>
+								</div>
+							</div>
+							<div class="product-price">Rs. <%= item.productId.offerPrice %>
+							</div>
+						</div>
+						<% }) %>
+						<% } else { %>
+						<p>No items in the cart.</p>
+						<% } %>
+					</div>
+					<!-- Pagination -->
+					<div class="pagination-controls justify-content-center d-flex">
+						<% if (currentPage> 1) { %> <a href="?page=<%= currentPage - 1 %>" class="btn btn-secondary prevnext">Prev</a>
+						<% } %> <span class="align-content-center pr-5 pl-5">Page <%= currentPage %> of <%= totalPages %></span>
+						<% if (currentPage < totalPages) { %> <a href="?page=<%= currentPage + 1 %>" class="btn btn-secondary prevnext">Next</a>
+						<% } %>
+					</div>
+				</div>
+				<!-- Order Summary -->
+				<div class="order-summary">
+					<div class="zzz mb-3">
+						<h2 class="section-title">Order Summary</h2>
+						<hr>
+						<div class="details">
+							<div class="detail-item">
+								<span>Price</span>
+								<span>Rs. <%= mrp %></span>
+							</div>
+							<div class="detail-item">
+								<span>Discount</span>
+								<span class="text-success">- Rs. <%= offerTotal %></span>
+							</div>
+							<div class="detail-item">
+								<span>Shipping</span>
+								<% if(shipping===0) { %> <span class="free text-success">Free</span>
+								<% } else {%> <span>Rs. <%= shipping %></span>
+								<% } %>
+							</div>
+							<div class="detail-item">
+								<span>Coupon Applied</span>
+								<span>Rs. 0.00</span>
+							</div>
+						</div>
+						<hr />
+						<div class="total-section">
+							<div class="total-item">
+								<span class="total-title">TOTAL</span>
+								<span class="total-amount">Rs. <%= Total %></span>
+							</div>
+							<div class="delivery-info">
+								<span>Estimated Delivery by</span>
+								<span class="delivery-date">01 Feb, 2023</span>
+							</div>
+						</div>
+						<button class="checkout-btn mb-3 mt-3">Proceed to Checkout</button>
+					</div>
+
+					<div class="zzz mb-3">
+						<div class="coupon-section">
+							<input type="text" class="coupon-input" placeholder="Coupon Code" />
+							<button class="apply-coupon bg-success p-3 pl-4 pr-4 ">Apply</button>
+						</div>
+					</div>
+					<!-- Offer Section -->
+					<div class="offer">
+						<div class="offer-icon"></div>
+						<p class="offer-text pt-3"> 10% Instant Discount with Federal Bank Debit Cards on a min
+							spend of Rs. 999. TCA </p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- Footer --> <%- include('./layout/footer') %>
+	<!-- Back to top -->
+	<div class="btn-back-to-top" id="myBtn">
+		<span class="symbol-btn-back-to-top">
+			<i class="zmdi zmdi-chevron-up"></i>
+		</span>
+	</div>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/animsition/js/animsition.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/bootstrap/js/popper.js"></script>
+	<script src="/users/vendor/bootstrap/js/bootstrap.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/select2/select2.min.js"></script>
+	<script>
+		$(".js-select2").each(function() {
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+		})
+	</script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+	<script>
+		$('.js-pscroll').each(function() {
+			$(this).css('position', 'relative');
+			$(this).css('overflow', 'hidden');
+			var ps = new PerfectScrollbar(this, {
+				wheelSpeed: 1,
+				scrollingThreshold: 1000,
+				wheelPropagation: false,
+			});
+			$(window).on('resize', function() {
+				ps.update();
+			})
+		});
+	</script>
+	<!--===============================================================================================-->
+	<script src="users/js/main.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<!--===============================================================================================-->
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			const quantityElements = document.querySelectorAll('.quantity-control');
+			quantityElements.forEach((quantityElement) => {
+				const decreaseButton = quantityElement.querySelector('.btn-decrease');
+				const increaseButton = quantityElement.querySelector('.btn-increase');
+				const quantityDisplay = quantityElement.querySelector('.quantity');
+				const itemId = quantityElement.getAttribute('data-item-id'); // Assuming you pass the item ID from the backend
+
+				decreaseButton.addEventListener('click', async function() {
+					let currentQuantity = parseInt(quantityDisplay.textContent, 10);
+					if(currentQuantity > 1) {
+						currentQuantity--;
+						quantityDisplay.textContent = currentQuantity;
+						await updateQuantityOnBackend(itemId, currentQuantity);
+						reloadOrderSummary();
+					}
+				});
+
+				increaseButton.addEventListener('click', async function() {
+					let currentQuantity = parseInt(quantityDisplay.textContent, 10);
+					console.log('itemId FRONT' + itemId);
+
+					// Fetch the stock for the item
+					const response = await fetch(`/cart/stock`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							itemId: itemId
+						})
+					});
+					const data = await response.json();
+					const maxAllowedQuantity = Math.min(data.stock, 5);
+
+					// Check if current quantity exceeds 5 or the stock
+					if(currentQuantity < maxAllowedQuantity) {
+						currentQuantity++;
+						console.log('currentQuantity : ' + currentQuantity);
+						quantityDisplay.textContent = currentQuantity;
+						await updateQuantityOnBackend(itemId, currentQuantity);
+						reloadOrderSummary();
+					} else if(currentQuantity >= 5) {
+						console.log('Triggering SweetAlert for max quantity');
+						// SweetAlert2 for maximum quantity reached
+						Swal.fire({
+							icon: 'warning',
+							title: 'Purchase maximum quantity is 5',
+							text: 'You cannot purchase more than 5 items of this product.',
+						});
+					} else if(currentQuantity >= data.stock) {
+						console.log('Triggering SweetAlert for out of stock');
+						// SweetAlert2 for no more stock available
+						Swal.fire({
+							icon: 'error',
+							title: 'Out of stock',
+							text: `There is no more quantity available. Only ${data.stock} items are in stock.`,
+						});
+					}
+				});
+			});
+
+			async function updateQuantityOnBackend(itemId, quantity) {
+				await fetch(`/cart/quantity`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						itemId: itemId,
+						quantity: quantity
+					}),
+				}).then(response => response.json()).then(data => {
+					console.log("Quantity updated on backend:", data);
+				}).catch(error => {
+					console.error("Error updating quantity:", error);
+				});
+			}
+
+			const removeButtons = document.querySelectorAll('.remove-btn');
+			removeButtons.forEach((removeButton) => {
+				removeButton.addEventListener('click', async function() {
+					const productItem = removeButton.closest('.product-actions');
+					const itemId = removeButton.getAttribute('data-item-id'); // Assuming you pass the item ID from backend
+					// Send a request to remove the item from the backend
+					await fetch(`/cart/remove`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							itemId: itemId
+						}),
+					}).then(response => response.json()).then(data => {
+						productItem.remove();
+						reloadOrderSummary();
+						window.location.reload();
+						console.log("Item removed from backend:", data);
+					}).catch(error => {
+						console.error("Error removing item:", error);
+					});
+				});
+			});
+
+			async function reloadOrderSummary() {
+				try {
+					const response = await fetch('/cart/summary'); // Adjust the route as per your backend
+					if(!response.ok) {
+						throw new Error(`HTTP error! Status: ${response.status}`);
+					}
+					const data = await response.json(); // Await the JSON parsing
+					console.log(data); // Log the actual data to confirm the structure
+					// Destructure the data object
+					const {
+						Total,
+						offerTotal,
+						grandTotal,
+						shipping,
+						mrp,
+						subtotal
+					} = data.orderSummary;
+					// const html = await response.text();
+					// document.querySelector('.order-summary').innerHTML = html;
+					// Update the text content dynamically
+					document.querySelector('.detail-item span:nth-child(2)').textContent = `Rs. ${mrp}`;
+					document.querySelector('.detail-item:nth-child(2) span:nth-child(2)').textContent = `- Rs. ${offerTotal}`;
+					if(shipping === 0) {
+						const freeTextElement = document.querySelector('.detail-item:nth-child(3) span:nth-child(2)');
+						freeTextElement.textContent = 'Free';
+						freeTextElement.classList.add('text-success'); // Add the Bootstrap 'text-success' class
+					} else {
+						document.querySelector('.detail-item:nth-child(3) span:nth-child(2)').textContent = ` Rs. ${shipping}`;
+					}
+					document.querySelector('.total-amount').textContent = `Rs. ${Total}`;
+				} catch (error) {
+					console.error("Error reloading order summary:", error);
+				}
+			}
+
+
+
+			const checkoutButton = document.querySelector('.checkout-btn');
+			checkoutButton.addEventListener('click', async (event) => {
+				event.preventDefault(); // Prevent the default button behavior
+
+				try {
+					const response = await fetch('/cart/checkout');
+
+					if(!response.ok) {
+						throw new Error(`HTTP error! Status: ${response.status}`);
+					}
+
+					const data = await response.json();
+					console.log(data);
+
+					if(data.success) {
+						Swal.fire({
+							title: 'Items Moved to Checkout',
+							text: 'Your items have been moved to the checkout session. Please proceed with the next steps.',
+							icon: 'success',
+							confirmButtonText: 'Go to Checkout'
+						}).then(() => {
+							// Redirect to the checkout page
+							window.location.href = '/checkout'; // Assuming the URL to the checkout page
+						});
+					} else {
+						Swal.fire({
+							title: 'Error',
+							text: 'There was an issue with your checkout. Please try again.',
+							icon: 'error',
+							confirmButtonText: 'Retry'
+						});
+					}
+				} catch (error) {
+					console.error('Error during checkout:', error);
+					Swal.fire({
+						title: 'Error',
+						text: 'An unexpected error occurred. Please try again later.',
+						icon: 'error',
+						confirmButtonText: 'Close'
+					});
+				}
+			});
+		});
+	</script>
+</body>
+
+</html>

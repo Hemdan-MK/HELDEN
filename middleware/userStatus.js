@@ -15,7 +15,7 @@ const checkUserStatus = async (req, res, next) => {
                     }
                     return res.redirect('/home?status=deleted');
                 });
-            } else if (user.isDeleted === true || user.isDeleted === 'true') {
+            } else if (user.isDeleted === true ) {
                 // User account is banned
                 console.log('User account is banned. Destroying session.');
                 req.session.destroy((err) => {
@@ -34,8 +34,9 @@ const checkUserStatus = async (req, res, next) => {
         }
     } else {
         // No session present, user is not logged in
-        return next(); 
+        return res.redirect('/home?status=noUsers');
     }
 };
 
 module.exports = checkUserStatus;
+

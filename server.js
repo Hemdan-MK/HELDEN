@@ -13,12 +13,7 @@ const checkUserStatus = require('./middleware/userStatus');
 const app = express()
 
 
-app.use((req, res, next) => {
-    if (req.url.endsWith('.map')) {
-        return res.status(404).send('Not Found');
-    }
-    next();
-});
+
 
 
 // app.use(nocache())
@@ -30,6 +25,7 @@ app.use(session({
         maxAge: 1000 * 60 * 60 * 24
     }
 }))
+
 
 app.use(cors());
 

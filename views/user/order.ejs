@@ -1,31 +1,368 @@
-<div class="dash">
-    <div class="head1">
-        <h2>Your Orders</h2>
-    </div>
-    <div class="body2">
-        <% if (orders.length > 0) { %>
-            <% orders.forEach(order => { %>
-                <div class="order-item">
-                    <!-- Photo Section -->
-                    <div class="photo1">
-                        <img src="<%= order.imageUrl %>" alt="Product Image" class="order-image">
-                    </div>
+<!DOCTYPE html>
+<html lang="en">
 
-                    <!-- Content Section -->
-                    <div class="content1">
-                        <p class="status <%= order.statusClass %>"><%= order.status %></p>
-                        <p class="product-title"><%= order.title %></p>
-                    </div>
+<head>
+<title>Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--===============================================================================================-->
+<link rel="icon" type="image/png" href="/users/images/icons/favicon.png" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/bootstrap/css/bootstrap.min.css" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/fonts/font-awesome-4.7.0/css/font-awesome.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/iconic/css/material-design-iconic-font.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/linearicons-v1.0.0/icon-font.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animate/animate.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/css-hamburgers/hamburgers.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animsition/css/animsition.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/select2/select2.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/perfect-scrollbar/perfect-scrollbar.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/css/util.css" />
+<link rel="stylesheet" type="text/css" href="/users/css/main.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!--===============================================================================================-->
+<style>
+	/* Modal styles */
+	.modal {
+		display: none;
+		/* Hidden by default */
+		position: fixed;
+		z-index: 1;
+		/* Stay on top */
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		background-color: rgba(0, 0, 0, 0.4);
+		/* Black with opacity */
+		padding-top: 60px;
+	}
 
-                    <!-- Buttons Section -->
-                    <div class="button1">
-                        <button class="track-order-btn">Track Order</button>
-                        <button class="cancel-order-btn">Cancel Order</button>
-                    </div>
+	.modal-content {
+		background-color: white;
+		margin: 5% auto;
+		padding: 20px;
+		border: 1px solid #888;
+		width: 80%;
+		max-width: 600px;
+		border-radius: 8px;
+	}
+
+	.order-item {
+		background-color: #f9f9f9;
+		border-radius: 8px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Button styling */
+	.btn-info {
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 10px 20px;
+		cursor: pointer;
+		border-radius: 5px;
+	}
+
+	.btn-info:hover {
+		background-color: #45a049;
+	}
+
+	.btn-danger {
+		background-color: #e74c3c;
+		border: none;
+		color: white;
+		padding: 10px 20px;
+		cursor: pointer;
+		border-radius: 5px;
+	}
+
+	.btn-danger:hover {
+		background-color: #c0392b;
+	}
+
+	/* Modal Close Button */
+	.close-btn {
+		color: #aaa;
+		font-size: 28px;
+		font-weight: bold;
+		position: absolute;
+		top: 10px;
+		right: 25px;
+	}
+
+	.close-btn:hover,
+	.close-btn:focus {
+		color: black;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	/* Responsive styling for smaller screens */
+	@media (max-width: 768px) {
+		.conte {
+			width: 100%;
+		}
+
+		.order-item {
+			margin-bottom: 1.5rem;
+		}
+
+		.modal-content {
+			width: 90%;
+		}
+	}
+
+	a {
+		text-decoration: none;
+	}
+
+	.conte {
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.overflow-auto {
+		max-height: calc(100% - 150px);
+		/* Adjust the height dynamically */
+		scrollbar-width: thin;
+		/* Firefox */
+	}
+
+	.overflow-auto::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.overflow-auto::-webkit-scrollbar-thumb {
+		background-color: #888;
+		border-radius: 10px;
+	}
+
+
+
+
+	.error-message {
+		color: red;
+		font-size: 0.9em;
+		margin-top: 5px;
+		display: none;
+	}
+
+	.custom-swal-popup {
+		background-color: #f8f9fa;
+		/* Example background color */
+		border-radius: 8px;
+		padding: 20px;
+	}
+
+	.custom-swal-title {
+		font-size: 18px;
+		color: #333;
+	}
+
+	.custom-swal-content {
+		font-size: 16px;
+	}
+
+	.orders::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	.orders::-webkit-scrollbar-thumb {
+		background-color: #888;
+		border-radius: 10px;
+	}
+
+	.orders::-webkit-scrollbar-thumb:hover {
+		background-color: #555;
+	}
+</style>
+</head>
+
+<body class="animsition">
+	<!-- Header -->
+	<%- include('./layout/header') %>
+	<!-- Dashboard -->
+	<div class="h-75 d-flex justify-content-around w-100">
+		<div class="inside p-all-50  h-full w-75 d-flex">
+			<div class="items w-25 bg-white h-100 d-flex flex-column">
+				<ul class="list-group w-100 h-100" id="sidebar-menu">
+					<a href="/myAccount" class="list-item">
+						<li data-session="/">Dashboard</li>
+					</a>
+					<a href="/myAccount/orders" class="list-item" style="background-color: #397f79; color: white;">
+						<li data-session="orders">Order</li>
+					</a>
+					<a href="/myAccount/update-profile" class="list-item">
+						<li data-session="update-profile">Update Profile</li>
+					</a>
+					<a href="/myAccount/saved-address" class="list-item">
+						<li data-session="saved-address">Saved Address</li>
+					</a>
+					<a href="/myAccount/wallet" class="list-item">
+						<li data-session="wallet">Wallet</li>
+					</a>
+					<a href="/logout" class="list-item">
+						<li data-session="logout">Logout</li>
+					</a>
+				</ul>
+			</div>
+			<!-- // contents to be shown on right -->
+
+			<!-- Order Section -->
+			<div class="conte w-75 h-100 position-relative d-flex flex-column p-4">
+				<!-- Header Section -->
+				<h2 class="text-center mt-3 mb-4">Your Orders</h2>
+
+				<div class="orders" style=" overflow-y: auto;">
+					<% orders.forEach(order => { %>
+					<div class="order-item card mb-4 p-3 shadow-sm">
+						<h4 class="text-primary">Order ID: <%= order._id %></h4>
+						<p>Status: <%= order.status %></p>
+						<p>Total Amount: Rs. <%= order.totalAmount %></p>
+						<button class="btn btn-info view-order-btn" data-id="<%= order._id %>">View Order</button>
+						<% if (order.status === 'Pending') { %>
+						<button class="btn btn-danger cancel-order-btn " data-id="<%= order._id %>">Cancel Order</button>
+						<% } %>
+					</div>
+					<% }); %>
+				</div>
+
+
+				<!-- Modal for Viewing Order Details -->
+				<div id="orderModal" class="modal">
+					<div class="modal-content p-4">
+						<span class="close-btn" style="cursor: pointer; font-size: 1.5rem;">&times;</span>
+						<h2>Order Details</h2>
+						<hr>
+						<div id="orderDetails">
+							<!-- Order details will be injected here -->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<%- include('./layout/footer') %>
+	<script>
+		// View Order Modal
+		document.querySelectorAll('.view-order-btn').forEach(button => {
+			button.addEventListener('click', async (e) => {
+				const orderId = e.target.dataset.id;
+				const response = await fetch(`/order/${orderId}`);
+				const order = await response.json();
+
+				// Populate modal with order details
+				let orderDetailsHTML = `<p><strong>Order ID:</strong> ${order._id}</p>
+    <p><strong>Status:</strong> ${order.status}</p>
+    <p><strong>Total Amount:</strong> $${order.totalAmount}</p>
+    <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+    <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+    <h3>Items:</h3>
+    <ul style="padding: 0;">`;
+
+				order.orderItems.forEach(item => {
+					orderDetailsHTML += `
+					<li style="list-style: none; margin-bottom: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="${item.productId.images[0]}" alt="${item.productId.name}" style="width: 60px; height: 80px; object-fit: cover; border-radius: 5px;">
+                <div>
+                    <p style="margin: 5px 0;"><strong>Product Name:</strong> ${item.productId.name}</p>
+                    <p style="margin: 5px 0;"><strong>Quantity:</strong> ${item.quantity}</p>
+                    <p style="margin: 5px 0;"><strong>Price:</strong> $${item.price}</p>
                 </div>
-            <% }); %>
-        <% } else { %>
-            <p>No orders found.</p>
-        <% } %>
-    </div>
-</div>
+            </div>
+        </li>`;
+				});
+
+				orderDetailsHTML += '</ul>';
+				document.getElementById('orderDetails').innerHTML = orderDetailsHTML;
+				document.getElementById('orderModal').style.display = 'block';
+			});
+		});
+
+		// Close Modal
+		document.querySelector('.close-btn').addEventListener('click', () => {
+			document.getElementById('orderModal').style.display = 'none';
+		});
+
+		// Cancel Order
+		document.querySelectorAll('.cancel-order-btn').forEach(button => {
+			button.addEventListener('click', async (e) => {
+				const orderId = e.target.dataset.id;
+
+				// Display a confirmation dialog before proceeding
+				const result = await Swal.fire({
+					title: 'Are you sure?',
+					text: 'Do you really want to cancel this order?',
+					icon: 'warning',
+					showCancelButton: true, // Show the cancel button
+					confirmButtonColor: '#3085d6', // Blue color for confirm
+					cancelButtonColor: '#d33', // Red color for cancel
+					confirmButtonText: 'Yes, cancel it!',
+					cancelButtonText: 'No, keep it'
+				});
+
+				// If user confirms, proceed with canceling the order
+				if(result.isConfirmed) {
+					const response = await fetch(`/order/cancel/${orderId}`, {
+						method: 'POST'
+					});
+					const data = await response.json();
+
+					if(data.message === 'Order cancelled successfully') {
+						Swal.fire({
+							icon: 'success', // Green checkmark icon for success
+							title: 'Cancelled!',
+							text: 'Order cancelled',
+							confirmButtonColor: '#28a745', // Green button for success
+							confirmButtonText: 'OK'
+						});
+						location.reload(); // Reload the page to update order status
+					} else {
+						Swal.fire({
+							icon: 'error', // Red error icon
+							title: 'Error!',
+							text: 'Cannot cancel order',
+							confirmButtonColor: '#d33', // Red button for error
+							confirmButtonText: 'OK'
+						});
+					}
+				} else {
+					// If the user cancels the action, show this message
+					Swal.fire({
+						icon: 'info',
+						title: 'Cancelled',
+						text: 'The order was not cancelled.',
+						confirmButtonColor: '#17a2b8', // Info blue button
+						confirmButtonText: 'OK'
+					});
+				}
+			});
+		});
+	</script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/animsition/js/animsition.min.js"></script>
+	<script src="/users/js/main.js"></script>
+	<!--===============================================================================================-->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>

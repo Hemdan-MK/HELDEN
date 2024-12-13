@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Home 02</title>
+  <title>Home</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!--===============================================================================================-->
@@ -1558,6 +1558,19 @@
             const url = new URL(window.location.href);
             url.searchParams.delete('status');
             window.history.replaceState({}, document.title, url.toString());
+          });
+        } else if (status === 'noUsers') {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Please Login',
+            text: 'You Did Not Login....',
+            confirmButtonText: 'OK'
+          }).then(() => {
+            // Remove the status query parameter from the URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('status');
+            window.history.replaceState({}, document.title, url.toString());
+            window.location.href = '/login';
           });
         }
       </script>

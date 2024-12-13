@@ -2,257 +2,259 @@
 <html lang="en">
 
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Product Panel</title>
-    <!-- Layout styles -->
-    <link rel="stylesheet" href="/admin/admin.css">
-    <link href="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet" />
-    <style>
-        .round-preview {
-            width: 150px; /* Set a fixed width */
-            height: 150px; /* Set a fixed height */
-            border-radius: 50%; /* Make the image circular */
-            border: 4px solid red; /* Add a red border */
-            object-fit: cover; /* Ensure the image scales nicely within the circle */
-            display: block; /* Ensures visibility when toggled */
-            margin: 10px auto; /* Centers the circle horizontally if needed */
-        }
-    </style>
-    
+<!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Product Panel</title>
+<!-- Layout styles -->
+<link rel="stylesheet" href="/admin/admin.css">
+<link href="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet" />
+<style>
+	.round-preview {
+		width: 150px;
+		/* Set a fixed width */
+		height: 150px;
+		/* Set a fixed height */
+		border-radius: 50%;
+		/* Make the image circular */
+		border: 4px solid red;
+		/* Add a red border */
+		object-fit: cover;
+		/* Ensure the image scales nicely within the circle */
+		display: block;
+		/* Ensures visibility when toggled */
+		margin: 10px auto;
+		/* Centers the circle horizontally if needed */
+	}
+</style>
+
 </head>
 
 <body>
-    <div class="container-scroller">
-        <!-- Sidebar Section -->
-        <%- include('./layout/sidebar') %>
+	<div class="container-scroller">
+		<!-- Sidebar Section -->
+		<%- include('./layout/sidebar') %>
 
-            <!-- partial -->
-            <div class="container-fluid page-body-wrapper">
-                <!-- partial:partials/_navbar.html -->
-                <nav class="navbar p-0 fixed-top d-flex flex-row">
-                </nav>
+		<!-- partial -->
+		<div class="container-fluid page-body-wrapper">
+			<!-- partial:partials/_navbar.html -->
+			<nav class="navbar p-0 fixed-top d-flex flex-row">
+			</nav>
 
-                <!-- Product Form Section -->
-                <div class="row p-3 w-100 h-100">
-                    <div class="col-12 grid-margin">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Add New Product</h4>
-                                <form id="productForm" action="/admin/productManagement/add" method="post"
-                                    enctype="multipart/form-data">
-                                    <!-- action="/admin/productManagement/add" method="post" -->
-                                    <div class="form-group">
-                                        <label for="productName">Product Name</label>
-                                        <input type="text" class="form-control" id="productName" name="productName"
-                                            required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productPrice">Price</label>
-                                        <input type="number" class="form-control" id="productPrice" name="productPrice"
-                                            required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="offerPrice">Offer Price</label>
-                                        <input type="number" class="form-control" id="offerPrice"
-                                            name="productOfferPrice">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productStock">Stock</label>
-                                        <input type="number" class="form-control" id="productStock" name="productStock">
-                                    </div>
+			<!-- Product Form Section -->
+			<div class="row p-3 w-100 h-100">
+				<div class="col-12 grid-margin">
+					<div class="card">
+						<div class="card-body">
+							<h4 class="card-title">Add New Product</h4>
+							<form id="productForm" action="/admin/productManagement/add" method="post" enctype="multipart/form-data">
+								<!-- action="/admin/productManagement/add" method="post" -->
+								<div class="form-group">
+									<label for="productName">Product Name</label>
+									<input type="text" class="form-control" id="productName" name="productName" required>
+								</div>
+								<div class="form-group">
+									<label for="productPrice">Price</label>
+									<input type="number" class="form-control" id="productPrice" name="productPrice" required>
+								</div>
+								<div class="form-group">
+									<label for="offerPrice">Offer Price</label>
+									<input type="number" class="form-control" id="offerPrice" name="productOfferPrice">
+								</div>
+								<div class="form-group">
+									<label for="productStock">Stock</label>
+									<input type="number" class="form-control" id="productStock" name="productStock">
+								</div>
 
-                                    <!-- /////////////////////////////////////////////////////////////////////////////////////////////////////// -->
-                                    <div class="form-group">
-                                        <label for="productImages">Images</label>
-                                        <img id="roundPreview0" alt="Preview" style="display: none;" class="round-preview" />
-                                        <input type="file" class="form-control product-image" id="productImage1"
-                                            accept="image/*" onchange="previewAndCrop(event, 0)" name="productImage1" />
-                                        <div class="cropPreviewSection" id="cropPreviewSection0" style="display: none">
-                                            <img id="cropPreview0" style="max-width: 100%" />
-                                            <button type="button" onclick="startCropping(0)">
-                                                Crop Image 1
-                                            </button>
-                                        </div>
-                                        <img id="roundPreview1" alt="Preview" style="display: none;" class="round-preview"/>
-                                        <input type="file" class="form-control product-image" id="productImage2"
-                                            accept="image/*" onchange="previewAndCrop(event, 1)" name="productImage2" />
-                                        <div class="cropPreviewSection" id="cropPreviewSection1" style="display: none">
-                                            <img id="cropPreview1" style="max-width: 100%" />
-                                            <button type="button" onclick="startCropping(1)">
-                                                Crop Image 2
-                                            </button>
-                                        </div>
-                                        <img id="roundPreview2" alt="Preview" style="display: none;" class="round-preview"/>
-                                        <input type="file" class="form-control product-image" id="productImage3"
-                                            accept="image/*" onchange="previewAndCrop(event, 2)" name="productImage3" />
-                                        <div class="cropPreviewSection" id="cropPreviewSection2" style="display: none">
-                                            <img id="cropPreview2" style="max-width: 100%" />
-                                            <button type="button" onclick="startCropping(2)">
-                                                Crop Image 3
-                                            </button>
-                                        </div>
-                                        <img id="roundPreview3" alt="Preview" style="display: none;" class="round-preview"/>
-                                        <input type="file" class="form-control product-image" id="productImage4"
-                                            accept="image/*" onchange="previewAndCrop(event, 3)" name="productImage4" />
-                                        <div class="cropPreviewSection" id="cropPreviewSection3" style="display: none">
-                                            <img id="cropPreview3" style="max-width: 100%" />
-                                            <button type="button" onclick="startCropping(3)">
-                                                Crop Image 4
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <!-- /////////////////////////////////////////////////////////////////////////////////////////////////////// -->
-                                    <div class="form-group">
-                                        <label for="productDescription">Description</label>
-                                        <textarea class="form-control" id="productDescription" name="productDescription"
-                                            required></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productTags">Tags (Comma separated)</label>
-                                        <input type="text" class="form-control" id="productTags" name="productTags">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productSizes">Sizes (Comma separated)</label>
-                                        <input type="text" class="form-control" id="productSizes" name="productSizes">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productColors">Colors (Comma separated)</label>
-                                        <input type="text" class="form-control" id="productColors" name="productColors">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productCategory">Category</label>
-                                        <select id="category" class="form-control" name="productCategory" required>
-                                            <% categories.forEach(category=> { %>
-                                                <option value="<%= category._id %>">
-                                                    <%= category.name %>
-                                                </option>
-                                                <% }) %>
-                                        </select>
-                                    </div>
+								<!-- /////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+								<div class="form-group">
+									<label for="productImages">Images</label>
+									<img id="roundPreview0" alt="Preview" style="display: none;" class="round-preview" />
+									<input type="file" class="form-control product-image" id="productImage1" accept="image/*" onchange="previewAndCrop(event, 0)" name="productImage1" />
+									<div class="cropPreviewSection" id="cropPreviewSection0" style="display: none">
+										<img id="cropPreview0" style="max-width: 100%" />
+										<button type="button" onclick="startCropping(0)">
+											Crop Image 1
+										</button>
+									</div>
+									<img id="roundPreview1" alt="Preview" style="display: none;" class="round-preview" />
+									<input type="file" class="form-control product-image" id="productImage2" accept="image/*" onchange="previewAndCrop(event, 1)" name="productImage2" />
+									<div class="cropPreviewSection" id="cropPreviewSection1" style="display: none">
+										<img id="cropPreview1" style="max-width: 100%" />
+										<button type="button" onclick="startCropping(1)">
+											Crop Image 2
+										</button>
+									</div>
+									<img id="roundPreview2" alt="Preview" style="display: none;" class="round-preview" />
+									<input type="file" class="form-control product-image" id="productImage3" accept="image/*" onchange="previewAndCrop(event, 2)" name="productImage3" />
+									<div class="cropPreviewSection" id="cropPreviewSection2" style="display: none">
+										<img id="cropPreview2" style="max-width: 100%" />
+										<button type="button" onclick="startCropping(2)">
+											Crop Image 3
+										</button>
+									</div>
+									<img id="roundPreview3" alt="Preview" style="display: none;" class="round-preview" />
+									<input type="file" class="form-control product-image" id="productImage4" accept="image/*" onchange="previewAndCrop(event, 3)" name="productImage4" />
+									<div class="cropPreviewSection" id="cropPreviewSection3" style="display: none">
+										<img id="cropPreview3" style="max-width: 100%" />
+										<button type="button" onclick="startCropping(3)">
+											Crop Image 4
+										</button>
+									</div>
+								</div>
+								<!-- /////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+								<div class="form-group">
+									<label for="productDescription">Description</label>
+									<textarea class="form-control" id="productDescription" name="productDescription" required></textarea>
+								</div>
+								<div class="form-group">
+									<label for="productTags">Tags (Comma separated)</label>
+									<input type="text" class="form-control" id="productTags" name="productTags">
+								</div>
+								<div class="form-group">
+									<label for="productSizes">Sizes (Comma separated)</label>
+									<input type="text" class="form-control" id="productSizes" name="productSizes">
+								</div>
+								<div class="form-group">
+									<label for="productColors">Colors (Comma separated)</label>
+									<input type="text" class="form-control" id="productColors" name="productColors">
+								</div>
+								<div class="form-group">
+									<label for="productCategory">Category</label>
+									<select id="category" class="form-control" name="productCategory" required>
+										<% categories.forEach(category=> { %>
+										<option value="<%= category._id %>">
+											<%= category.name %>
+										</option>
+										<% }) %>
+									</select>
+								</div>
 
-                                    <div class="form-group">
-                                        <label for="productCashOnDelivery">Cash on Delivery</label>
-                                        <select class="form-control" id="productCashOnDelivery"
-                                            name="productCashOnDelivery">
-                                            <option value="true">Yes</option>
-                                            <option value="no">No</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productBrand">Brand</label>
-                                        <input type="text" class="form-control" id="productBrand" name="productBrand">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="productWarranty">Warranty</label>
-                                        <input type="text" class="form-control" id="productWarranty"
-                                            name="productWarranty">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="returnPolicy">Return Policy</label>
-                                        <input type="text" class="form-control" id="returnPolicy"
-                                            name="productReturnPolicy">
-                                    </div>
-                                    <div class="d-flex justify-content-center ">
-                                        <button type="submit" class="btn btn-primary mt-2 w-50 ">
-                                            Add Product
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    </div>
+								<div class="form-group">
+									<label for="productCashOnDelivery">Cash on Delivery</label>
+									<select class="form-control" id="productCashOnDelivery" name="productCashOnDelivery">
+										<option value="true">Yes</option>
+										<option value="no">No</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label for="productBrand">Brand</label>
+									<input type="text" class="form-control" id="productBrand" name="productBrand">
+								</div>
+								<div class="form-group">
+									<label for="productWarranty">Warranty</label>
+									<input type="text" class="form-control" id="productWarranty" name="productWarranty">
+								</div>
+								<div class="form-group">
+									<label for="returnPolicy">Return Policy</label>
+									<input type="text" class="form-control" id="returnPolicy" name="productReturnPolicy">
+								</div>
+								<div class="d-flex justify-content-center ">
+									<button type="submit" class="btn btn-primary mt-2 w-50 ">
+										Add Product
+									</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <script src="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.js"></script>
+	<script src="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.js"></script>
 
-    <script>
-        document.querySelectorAll('input[type="file"]').forEach((input, index) => {
-            input.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        document.getElementById(`roundPreview${index}`).src = reader.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        });
-    </script>
-    
-    <script>
-        const cropperInstances = [];
-const croppedImages = [];
+	<script>
+		document.querySelectorAll('input[type="file"]').forEach((input, index) => {
+			input.addEventListener('change', (event) => {
+				const file = event.target.files[0];
+				if(file) {
+					const reader = new FileReader();
+					reader.onload = () => {
+						document.getElementById(`roundPreview${index}`).src = reader.result;
+					};
+					reader.readAsDataURL(file);
+				}
+			});
+		});
+	</script>
 
-function previewAndCrop(event, index) {
-    const file = event.target.files[0];
-    if (!file) return;
+	<script>
+		const cropperInstances = [];
+		const croppedImages = [];
 
-    // Validate MIME type
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-        alert("Please select a valid image file (JPEG, PNG, GIF, or WebP).");
-        event.target.value = ""; // Clear the invalid file input
-        return;
-    }
+		function previewAndCrop(event, index) {
+			const file = event.target.files[0];
+			if(!file) return;
 
-    const cropPreview = document.getElementById(`cropPreview${index}`);
-    const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
-    const roundPreview = document.getElementById(`roundPreview${index}`);
+			// Validate MIME type
+			const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+			if(!allowedTypes.includes(file.type)) {
+				Swal.fire({
+					icon: 'warning', // Yellow warning icon
+					title: 'Invalid File!',
+					text: 'Please select a valid image file (JPEG, PNG, GIF, or WebP).',
+					confirmButtonColor: '#f8b400', // Yellow button for warning
+					confirmButtonText: 'OK'
+				});
+				event.target.value = ""; // Clear the invalid file input
+				return;
+			}
 
-    // Set the cropping preview
-    cropPreview.src = URL.createObjectURL(file);
-    cropPreviewSection.style.display = "block";
-    roundPreview.style.display = "none"; // Hide the main preview temporarily
+			const cropPreview = document.getElementById(`cropPreview${index}`);
+			const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
+			const roundPreview = document.getElementById(`roundPreview${index}`);
 
-    // Initialize or reinitialize the cropper
-    if (cropperInstances[index]) {
-        cropperInstances[index].destroy();
-    }
-    cropperInstances[index] = new Cropper(cropPreview, {
-        aspectRatio: 3 / 4,
-        viewMode: 1,
-        autoCropArea: 1,
-        scalable: true,
-        zoomable: true,
-        movable: true,
-    });
-}
+			// Set the cropping preview
+			cropPreview.src = URL.createObjectURL(file);
+			cropPreviewSection.style.display = "block";
+			roundPreview.style.display = "none"; // Hide the main preview temporarily
 
-function startCropping(index) {
-    const cropper = cropperInstances[index];
-    if (!cropper) return;
+			// Initialize or reinitialize the cropper
+			if(cropperInstances[index]) {
+				cropperInstances[index].destroy();
+			}
+			cropperInstances[index] = new Cropper(cropPreview, {
+				aspectRatio: 3 / 4,
+				viewMode: 1,
+				autoCropArea: 1,
+				scalable: true,
+				zoomable: true,
+				movable: true,
+			});
+		}
 
-    // Crop the image and convert it to a Blob
-    cropper.getCroppedCanvas().toBlob((blob) => {
-        croppedImages[index] = blob; // Store the cropped blob in the array
+		function startCropping(index) {
+			const cropper = cropperInstances[index];
+			if(!cropper) return;
 
-        const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
-        const roundPreview = document.getElementById(`roundPreview${index}`);
+			// Crop the image and convert it to a Blob
+			cropper.getCroppedCanvas().toBlob((blob) => {
+				croppedImages[index] = blob; // Store the cropped blob in the array
 
-        // Update the round preview with the cropped image
-        roundPreview.src = URL.createObjectURL(blob);
-        roundPreview.style.display = "block";
-        cropPreviewSection.style.display = "none";
+				const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
+				const roundPreview = document.getElementById(`roundPreview${index}`);
 
-        // Update the corresponding file input with the cropped image Blob
-        const fileInput = document.getElementById(`productImage${index + 1}`);
-        const dataTransfer = new DataTransfer();
-        const croppedFile = new File([blob], fileInput.files[0].name, { type: 'image/png' });
-        dataTransfer.items.add(croppedFile);
-        fileInput.files = dataTransfer.files;
-    });
-}
+				// Update the round preview with the cropped image
+				roundPreview.src = URL.createObjectURL(blob);
+				roundPreview.style.display = "block";
+				cropPreviewSection.style.display = "none";
 
-    </script>
+				// Update the corresponding file input with the cropped image Blob
+				const fileInput = document.getElementById(`productImage${index + 1}`);
+				const dataTransfer = new DataTransfer();
+				const croppedFile = new File([blob], fileInput.files[0].name, {
+					type: 'image/png'
+				});
+				dataTransfer.items.add(croppedFile);
+				fileInput.files = dataTransfer.files;
+			});
+		}
+	</script>
 
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

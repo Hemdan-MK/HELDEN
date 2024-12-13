@@ -5,6 +5,7 @@ const adminController = require('../controllers/admin/adminController.js')
 const categoryController = require('../controllers/admin/categoryController.js')
 const productController = require('../controllers/admin/productController.js')
 const userController = require('../controllers/admin/userManagement.js')
+const ordersController = require('../controllers/admin/orderController.js')
 const upload = require('../utils/productMulter.js')
 const upload_2 = require('../utils/categoryMulter.js')
 
@@ -68,6 +69,15 @@ router.post('/productManagement/add',
     productController.postAddProductsPage);
 router.patch("/productManagement/recoverProducts/:id", productController.recoverProducts);
 router.delete("/productManagement/permanentDeleteProducts/:id", productController.permanentDeleteProducts);
+
+
+// Order Management Routes
+router.get('/orderManagement', ordersController.loadOrderManagement)
+router.get('/orderManagement/getOrderDetails/:id', ordersController.getOrder)
+router.post('/orderManagement/updateOrderStatus/:id', ordersController.statusupdate)
+router.post('/orderManagement/cancelOrder/:id', ordersController.cancel)
+
+
 
 
 module.exports = router

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Category Panel</title>
+<link rel="stylesheet" href="/admin/admin.css">
+<!-- Bootstrap for modal styling -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+<style>
+	.cc {
+		background-color: #1a1c23;
+	}
+</style>
+</head>
+
+<body>
+	<div class="container-scroller">
+		<!-- partial:partials/_sidebar.html -->
+		<%- include('./layout/sidebar') %>
+
+		<!-- partial -->
+		<div class="container-fluid page-body-wrapper">
+			<!-- partial:partials/_navbar.html -->
+			<nav class="navbar p-0 fixed-top d-flex flex-row"></nav>
+
+			<!-- partial -->
+			<div class="row p-3 cc w-100">
+				<div class="col-12 grid-margin cc">
+					<div class="card ">
+						<div class="card-body ">
+							<h4 class="card-title">Order Management</h4>
+							<div class="table-responsive ">
+								<!-- Table with orders data -->
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Index</th>
+											<th>Order No</th>
+											<th>User Name</th>
+											<th>Date</th>
+											<th>Price</th>
+											<th>Payment Status</th>
+											<th>Status</th>
+											<th>Payment Mode</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<% orders.forEach((order, index) => { %>
+										<tr>
+											<td><%= index + 1 %></td>
+											<td><%= order._id %></td>
+											<td><%= order.userId.name %></td>
+											<td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+											<td><%= order.totalAmount %></td>
+											<td><%= order.paymentStatus %></td>
+											<td><%= order.status %></td>
+											<td><%= order.paymentMethod %></td>
+											<td>
+												<button class="btn btn-info" onclick="viewOrder('<%= order._id %>')">View</button>
+											</td>
+										</tr>
+										<% }); %>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal to view order details and update status -->
+		<div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="orderModalLabel">Order Details</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<!-- Order details will be dynamically inserted here -->
+						<form id="orderForm">
+							<div class="form-group">
+								<label for="orderNo">Order No</label>
+								<input type="text" class="form-control" id="orderNo" disabled>
+							</div>
+							<div class="form-group">
+								<label for="userName">User Name</label>
+								<input type="text" class="form-control" id="userName" disabled>
+							</div>
+							<div class="form-group">
+								<label for="orderItems">Order Items</label>
+								<!-- <textarea class="form-control" id="orderItems" rows="5" disabled></textarea> -->
+								<div id="orderItemsContainer"></div>
+
+							</div>
+							<div class="form-group">
+								<label for="shippingStatus">Shipping Status</label>
+								<select class="form-control" id="shippingStatus">
+									<option value="Pending">Pending</option>
+									<option value="Shipping">Shipping</option>
+									<option value="Completed">Completed</option>
+									<option value="Cancelled">Cancelled</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="paymentStatus">Payment Status</label>
+								<select class="form-control" id="paymentStatus">
+									<option value="Pending">Pending</option>
+									<option value="Completed">Completed</option>
+									<option value="Failed">Failed</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="totalAmount">Total Amount</label>
+								<input type="text" class="form-control" id="totalAmount" disabled>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" id="updateStatusBtn">Status Action</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+		<script>
+			// Function to populate and show order details in the modal
+			function viewOrder(orderId) {
+				fetch(`/admin/orderManagement/getOrderDetails/${orderId}`)
+					.then(response => response.json())
+					.then(order => {
+
+						// Populate the order details in the modal
+						document.getElementById('orderNo').value = order._id;
+						document.getElementById('userName').value = order.userId.name;
+
+						// Build order items HTML to show product details along with images
+						const orderItemsHtml = order.orderItems.map(item => {
+							return `
+            <div class="row mb-3">
+              <div class="col-2">
+                <img src="${item.productId.images[0]}" alt="${item.productId.name}" class="img-fluid" style="max-height: 50px; object-fit: cover;" />
+              </div>
+              <div class="col-10">
+                <div class="d-flex justify-content-between">
+                  <span><strong>Product:</strong> ${item.productId.name}</span>
+                  <span><strong>Price:</strong> Rs.${item.price}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span><strong>Quantity:</strong> ${item.quantity}</span>
+                </div>
+              </div>
+            </div>
+          `;
+
+						}).join('');
+
+						// Set the order items HTML to an element (not a text input)
+						document.getElementById('orderItemsContainer').innerHTML = orderItemsHtml;
+
+						document.getElementById('shippingStatus').value = order.status;
+						document.getElementById('paymentStatus').value = order.paymentStatus;
+						document.getElementById('totalAmount').value = order.totalAmount;
+
+						// Disable payment status for COD orders
+						if(order.paymentMethod === 'COD') {
+							document.getElementById('paymentStatus').disabled = true;
+						} else {
+							document.getElementById('paymentStatus').disabled = false;
+						}
+
+						// Show the modal
+						$('#orderModal').modal('show');
+					})
+					.catch(err => console.error('Error fetching order details:', err));
+			}
+
+			// Update the order status and payment status
+			document.getElementById('updateStatusBtn').addEventListener('click', () => {
+				const orderId = document.getElementById('orderNo').value;
+				const shippingStatus = document.getElementById('shippingStatus').value;
+				const paymentStatus = document.getElementById('paymentStatus').value;
+
+				fetch(`/admin/orderManagement/updateOrderStatus/${orderId}`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							shippingStatus,
+							paymentStatus
+						})
+					})
+					.then(response => response.json())
+					.then(data => {
+						Swal.fire({
+							icon: 'info', // Default to an 'info' icon, you can adjust based on the type of message
+							title: 'Message',
+							text: data.message,
+							confirmButtonColor: '#3085d6', // Blue color for confirmation
+							confirmButtonText: 'OK'
+						});
+						$('#orderModal').modal('hide');
+						location.reload(); // Reload to reflect changes
+					})
+					.catch(error => console.error('Error updating status:', error));
+			});
+		</script>
+
+	</div>
+</body>
+
+</html>

@@ -4,8 +4,8 @@ const User = require('../models/userRegister');
 const sendEmail = require('../utils/mail');
 const productModel = require('../models/productModel');
 const categoryModel = require('../models/categoryModel');
-const bcrypt = require('bcrypt')
-
+const bcrypt = require('bcrypt');
+const Order = require('../models/orderModel')
 
 const loadMain = async (req, res) => {
     try {
@@ -60,30 +60,23 @@ const loadContact = async (req, res) => {
 // loading dashboard
 const loadDash = async (req, res) => {
     try {
-        return res.status(200).render('user/dashboard', { user: req.session.user });
+        const user = req.session.user
+        console.log(user);
+        let userData = await User.findById(user.id)
+        return res.status(200).render('user/dashboard', { user: req.session.user, userData });
     } catch (error) {
         console.error('Error loading dashboard:', error);
         return res.status(500).send('Server Error');
     }
 };
 
-// dash session
-const loadDashExtra = async (req, res) => {
-    try {
-        return res.status(200).render('user/dash', { message: 'hemdan' });
-    } catch (error) {
-        console.error('Error loading dash:', error);
-        return res.status(500).send('Server Error');
-    }
-};
 
 // Orders session
 const loadOrders = async (req, res) => {
-    const orders = [
-        // Array of order objects as before
-    ];
+    const userId = req.session.user.id; // Assuming session stores user data
+    const orders = await Order.find({ userId }).populate('orderItems.productId');
     try {
-        return res.status(200).render('user/order', { orders });
+        return res.status(200).render('user/order', { orders, user: req.session.user });
     } catch (error) {
         console.error('Error loading orders:', error);
         return res.status(500).send('Server Error');
@@ -93,17 +86,62 @@ const loadOrders = async (req, res) => {
 // Update Profile session
 const loadUpdateProfile = async (req, res) => {
     try {
-        return res.status(200).render('user/updateProfile');
+        const userId = req.session.user.id;
+        const user = await User.findById(userId).select('name email phone');
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Render the profile update page with existing user data
+        res.render('user/updateProfile', {
+            user: user
+        });
     } catch (error) {
-        console.error('Error loading update profile:', error);
-        return res.status(500).send('Server Error');
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+};
+
+const updateProfile = async (req, res) => {
+    try {
+        const { name, email, phone } = req.body;
+
+        console.log('zi : ' + name)
+        // Validate data (you can add more validation logic if necessary)
+        if (!email) {
+            return res.status(400).send('Email is required');
+        }
+
+        // Update the user profile
+        const updatedUser = await User.findByIdAndUpdate(
+            req.session.user.id,
+            {
+                name,
+                email,
+                phone
+            },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedUser) {
+            return res.status(404).send('User not found');
+        }
+
+        // Respond with a success message
+        res.json({ message: 'Profile updated successfully', user: updatedUser });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
     }
 };
 
 // My Address session
 const loadMyAddress = async (req, res) => {
     try {
-        return res.status(200).render('user/myAddress');
+        const userId = req.session.user.id;
+        const person = await User.findById(userId)
+        return res.status(200).render('user/myAddress', { addresses: person.address, user: req.session.user });
     } catch (error) {
         console.error('Error loading address:', error);
         return res.status(500).send('Server Error');
@@ -123,7 +161,7 @@ const loadChangePassword = async (req, res) => {
 // Wallet session
 const loadWallet = async (req, res) => {
     try {
-        return res.status(200).render('user/wallet');
+        return res.status(200).render('user/wallet', { user: req.session.user });
     } catch (error) {
         console.error('Error loading wallet:', error);
         return res.status(500).send('Server Error');
@@ -169,20 +207,22 @@ const login = async (req, res) => {
 
         // Find user by email
         const user = await User.findOne({ email, isDeleted: false });
-        console.log('user : '+user);
         if (!user) {
             return res.render('user/login', { message: 'User not found', user: null, showAlert: true });
         }
 
         // Compare entered password with stored hashed password
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log('iSMATCH : '+isMatch);
-        
+
         if (!isMatch) {
             return res.render('user/login', { message: 'Incorrect password', user: null, showAlert: true });
         }
 
-        req.session.user = user;
+        req.session.user = {
+            email: user.email,
+            name: user.name,
+            id: user._id,
+        };
 
         const products = await productModel.find({ isDeleted: false });
         return res.render('user/home', { user: req.session.user, products });
@@ -196,8 +236,6 @@ const login = async (req, res) => {
 const checkuser = async (req, res) => {
     try {
         const { name, email, phno, password } = req.body;
-
-        console.log(req.body);
 
         // Find user by email
         const checkUserPresent = await User.findOne({ email });
@@ -372,40 +410,6 @@ const verifyOTP = async (req, res) => {
 };
 
 
-const getProductDetail = async (req, res) => {
-    try {
-        // Get product ID from route parameters
-        const productId = req.params.id;
-
-        // Fetch product from the database
-        const product = await productModel.findById(productId);
-        console.log(product.tags);
-        const productAll = await productModel.find({ isDeleted: false });
-        const category = await categoryModel.findById(product.category)
-        // const related1 = await productModel.find({ tags: product.tags })
-        const related = await productModel.find({
-            tags: { $in: product.tags },  // Match products with any tag from the current product's tags
-            _id: { $ne: product._id }    // Exclude the current product
-        });
-
-        console.log(related);
-        
-
-
-
-        // Check if the product exists
-        if (!product) {
-            return res.status(404).send('Product not found');
-        }
-
-        // Render the product detail page and pass the product data to the view
-        return res.status(200).render('user/productPage', { product, user: req.session.user, productAll, category, related });
-    } catch (error) {
-        console.error('Error fetching product:', error);
-        return res.status(500).send('Server error');
-    }
-}
-
 
 module.exports = {
     loadMain,
@@ -419,7 +423,6 @@ module.exports = {
     loadUpdateProfile,
     loadWallet,
     logout,
-    loadDashExtra,
     loadRegister,
     loadLogin,
     login,
@@ -427,6 +430,5 @@ module.exports = {
     resendOTP,
     verifyOTP,
     checkuser,
-    getProductDetail
-    // loadSession
+    updateProfile
 }
