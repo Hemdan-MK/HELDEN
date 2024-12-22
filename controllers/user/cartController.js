@@ -26,13 +26,15 @@ const loadCart = async (req, res) => {
         if (!cart || !Array.isArray(cart.items)) {
             return res.render('user/cart', {
                 cart: null,
-                total: 0,
                 subtotal: 0,
                 shipping: 0,
                 Total: 0,
                 user: req.session.user,
                 currentPage: page,
                 totalPages: 1,
+                mrp: 0,
+                offerTotal: 0,
+
             });
         }
 
@@ -283,7 +285,8 @@ const loadOrderSummary = async (req, res) => {
                 shipping,
                 offerTotal,
                 Total,
-                mrp
+                mrp,
+
             },
             items: updatedItems, // Provide updated items for the frontend
         });
@@ -344,7 +347,8 @@ const orderPlace = async (req, res) => {
         const cart = await Cart.findOne({ userId }).populate('items.productId');
 
         if (!cart || cart.items.length === 0) {
-            return res.status(400).json({ success: false, message: 'Your cart is empty.' });
+            console.log('no cart found');
+            return res.status(200).json({ success: false, message: 'Your cart is empty. Add some Items to cart' });
         }
 
         // Format order items from cart
@@ -372,7 +376,7 @@ const orderPlace = async (req, res) => {
         const Total = subtotal + shipping;
 
         const expiryTime = new Date();
-        expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+        expiryTime.setMinutes(expiryTime.getMinutes() + 30);
 
         // Create a new order
         const order = new Order({
@@ -386,7 +390,18 @@ const orderPlace = async (req, res) => {
         // Save the order
         const savedOrder = await order.save();
 
+        req.session.mrp = Total
 
+        req.session.orderId = savedOrder._id;
+        if (shipping !== 0) {
+            req.session.shipping = shipping;
+        } else {
+            req.session.shipping = 'Free Shipping';
+        }
+
+
+        console.log('----------------------------------------------------------------');
+        console.log(req.session);
 
         return res.status(200).json({
             success: true,

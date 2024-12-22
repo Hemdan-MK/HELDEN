@@ -1,6 +1,10 @@
 const Order = require('../../models/orderModel')
 const User = require('../../models/userRegister')
 const Cart = require('../../models/cartModel')
+const Coupon = require('../../models/coupenModel')
+const { instance } = require('../../utils/razorPay');
+const crypto = require('crypto'); // Import crypto for signature verification
+const Wallet = require('../../models/walletModel')
 
 
 const checkout = async (req, res) => {
@@ -95,29 +99,35 @@ const checkout = async (req, res) => {
 
 
 const done = async (req, res) => {
-    const { userId, addressId, paymentMethod } = req.body;
 
-    if (!userId || !addressId) {
+    const { userId, addressId, paymentMethod, razorpayPaymentId, totalAmount, appliedCoupon } = req.body;
+
+    // Validate required fields
+    if (!userId || !addressId || !paymentMethod || !totalAmount) {
         return res.status(400).json({
             success: false,
-            message: "Required fields are missing: userId or addressId."
+            message: "Required fields are missing: userId, addressId, or paymentMethod."
         });
     }
 
+    const orderId = req.session.orderId;
+
     try {
-        // Find the user to verify and get the address
+        // Find the user and verify
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found." });
         }
 
-        const address = user.address.id(addressId); // Find the specific address
+        // Find the address in the user's address array
+        const address = user.address.id(addressId);
         if (!address) {
             return res.status(404).json({ success: false, message: "Address not found." });
         }
 
         // Find the existing order for the user
-        const order = await Order.findOne({ userId: userId });
+        let order = await Order.findOne({ _id: orderId }).populate('coupon');
+        console.log('order  ->  : ' + order);
 
         if (!order) {
             return res.status(404).json({
@@ -125,42 +135,123 @@ const done = async (req, res) => {
                 message: "No existing order found for this user."
             });
         }
-        console.log(paymentMethod);
 
-        // Update the addressId in the order schema
+        const coupon = await Coupon.findOne({
+            couponCode: appliedCoupon,
+            status: true,
+            validFrom: { $lte: new Date() },
+            validUpto: { $gte: new Date() },
+            // isDeleted: false
+        });
+        
+        console.log('coupen : ' + coupon);
+
+        // Update order details
         order.addressId = address._id;
-        order.paymentMethod = paymentMethod.toString();
-        order.status = 'Shipping';
+        order.paymentMethod = paymentMethod;
+        order.status = paymentMethod === "Cash on Delivery" ? "Pending" : "Shipping"; // Update based on method
 
-        if (paymentMethod.toString() === "Net Banking") {
+        // For Razorpay, check if Razorpay Payment ID is provided
+        if (paymentMethod === "Net Banking") {
+            if (!razorpayPaymentId) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Razorpay Payment ID is required for online payments."
+                });
+            }
             order.paymentStatus = "Completed";
+            order.razorpayPaymentId = razorpayPaymentId;
+        } else if (paymentMethod === "Cash on Delivery") {
+            order.paymentStatus = "Pending";
         }
 
-        order.expiresAt = undefined; // Explicitly remove expiresAt
+        order.totalAmount = totalAmount;
+
+        console.log('coupon : ' +coupon);
+        
+        if (coupon) {
+            order.coupon = coupon._id;
+            // Update coupon count
+            coupon.couponCount = coupon.couponCount - 1;
+            await coupon.save()
+        }
+
+        // Remove any expiry
+        order.expiresAt = undefined;
+        console.log(coupon); 
 
         // Save the updated order
         const updatedOrder = await order.save();
 
-        
+        // Clear the user's cart
+        await Cart.deleteOne({ userId });
 
-        const cart = await Cart.findOne({ userId })
-        // Clear the cart after successful order placement
-        cart.items = [];
-        await cart.save();
 
         return res.status(200).json({
             success: true,
-            message: "Address updated successfully in the order.",
+            message: "Order updated successfully.",
+            paymentMethod: paymentMethod,
             order: updatedOrder
         });
     } catch (error) {
-        console.error("Error while updating order address:", error);
+        console.error("Error while updating order:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error."
         });
     }
 };
+
+
+const coupen = async (req, res) => {
+
+    try {
+        const { couponCode } = req.body;
+        const coupon = await Coupon.findOne({
+            couponCode: couponCode,
+            status: true,
+            validFrom: { $lte: new Date() },
+            validUpto: { $gte: new Date() },
+            couponCount:{$gt : 0}
+        });
+
+        if (!coupon) {
+            return res.json({ valid: false, message: 'Invalid or expired coupon.' });
+        }
+
+        res.json({ valid: true, coupon });
+    } catch (error) {
+        console.error('Coupon Error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const razerpay = async (req, res) => {
+    const { amount } = req.body;
+    const Razorpay = require('razorpay');
+
+    const razorpayInstance = new Razorpay({
+        key_id: 'rzp_test_W9utN834UAJerT',
+        key_secret: 'OFiG9mM7gu0gFkltYvq2iSkl'
+    });
+
+    const options = {
+        amount: amount * 100, // Convert to paise
+        currency: "INR",
+        receipt: "order_rcptid_" + Date.now(),
+    };
+
+    try {
+        const response = await razorpayInstance.orders.create(options);
+        res.json({
+            razorpayKey: "rzp_test_W9utN834UAJerT",
+            orderId: response.id
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Razorpay order creation failed");
+    }
+}
 
 
 const viewOrder = async (req, res) => {
@@ -179,9 +270,30 @@ const cancelOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
         const order = await Order.findById(orderId);
+        const wallet = await Wallet.findOne({ userId: order.userId });
 
-        if (order.status === 'Pending') {
+        if (!wallet) {
+            const newWallet = new Wallet({
+                userId: order.userId,
+                balance: 0, // Initialize with a default balance
+                transactions: [], // Initialize with an empty transactions array
+            });
+
+            await newWallet.save(); // Save the new wallet to the database
+            wallet = newWallet;
+            console.log("New wallet created for user:", order.userId);
+        }
+        if (order.status === 'Pending' || order.status === 'Shipping') {
             order.status = 'Cancelled';
+            if (order.paymentMethod === 'Net Banking' && order.paymentStatus === 'Completed') {
+                wallet.balance += order.totalAmount;
+                wallet.transactions.push({
+                    amount: order.totalAmount,
+                    type: 'Credit',
+                    description: 'Returning Order ' + order.id
+                });
+                await wallet.save();
+            }
             await order.save();
             res.json({ message: 'Order cancelled successfully' });
         } else {
@@ -193,8 +305,32 @@ const cancelOrder = async (req, res) => {
     }
 }
 
+
+const returnOrder = async (req, res) => {
+    const { id } = req.params; // Order ID
+    const { reason } = req.body; // Return reason from the modal form
+
+    try {
+        // Update the order status to "Requested" and save the return reason
+        await Order.findByIdAndUpdate(id, {
+            status: 'Requested',
+            refundReason: reason
+        });
+
+        console.log('Reason : ' + reason);
+
+
+        res.status(200).json({ message: "Return request submitted successfully!" });
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        res.status(500).json({ message: "Failed to submit return request" });
+    }
+};
+
+
 const success = async (req, res) => {
-    res.render('user/successPage' )
+    const orderId = req.session.orderId;
+    res.render('user/successPage',{orderId})
 }
 
 
@@ -203,5 +339,8 @@ module.exports = {
     done,
     viewOrder,
     cancelOrder,
-    success
+    success,
+    coupen,
+    razerpay,
+    returnOrder
 }

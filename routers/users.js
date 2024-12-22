@@ -11,8 +11,12 @@ const addressController = require('../controllers/user/addressController.js')
 const checkoutController = require('../controllers/user/orderCheckController.js')
 const filterController = require('../controllers/user/filterController.js')
 const wishlistController = require('../controllers/user/wishlistController.js')
+const walletController = require('../controllers/user/walletController.js')
+const downloadController= require('../controllers/user/downloadController.js')
 const checkProductStatus = require('../middleware/checkProductStatus.js')
-const checkBadge = require('../middleware/badgeCount.js')
+const checkBadge = require('../middleware/badgeCount.js');
+
+
 
 router.use(checkBadge)
 
@@ -24,7 +28,6 @@ router.get('/register', userController.loadRegister);
 router.get('/login', userController.loadLogin);
 router.post('/login', userController.login);
 
-router.get('/successPage', checkoutController.success);
 
 
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -65,13 +68,19 @@ router.delete('/deleteAddress/:addressId', checkUserStatus, addressController.de
 
 
 
+router.get('/wallet/:userId', checkUserStatus, walletController.wallet);
+
 
 
 router.get('/order/:id', checkUserStatus, checkoutController.viewOrder);
 router.post('/order/cancel/:id', checkUserStatus, checkoutController.cancelOrder);
+router.post('/order/return/:id', checkUserStatus, checkoutController.returnOrder);
 
 router.get('/checkout', checkUserStatus, checkoutController.checkout);
 router.post('/checkout/done', checkUserStatus,checkProductStatus, checkoutController.done);
+router.post('/razorpay/initiate', checkUserStatus, checkoutController.razerpay);
+router.post('/coupon/validate', checkUserStatus, checkoutController.coupen);
+router.get('/successPage',checkoutController.success);
 
 
 
@@ -116,6 +125,11 @@ router.post('/forgot-password/request', accountController.ForgetPassRequest);
 router.post('/forgot-password/verify', accountController.ForgetPassverify);
 router.put('/forgot-password/change-password', accountController.ForgetPassChange);
 router.post('/forgot-password/resendOtp', accountController.resendOTP);
+
+
+
+router.get("/download-receipt",downloadController.download)
+router.get('/download-invoice/:orderId',downloadController.frontDownload)
 
 
 

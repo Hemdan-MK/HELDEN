@@ -6,8 +6,13 @@ const categoryController = require('../controllers/admin/categoryController.js')
 const productController = require('../controllers/admin/productController.js')
 const userController = require('../controllers/admin/userManagement.js')
 const ordersController = require('../controllers/admin/orderController.js')
+const couponController = require('../controllers/admin/couponController.js')
+const offerController = require('../controllers/admin/offerController.js')
 const upload = require('../utils/productMulter.js')
 const upload_2 = require('../utils/categoryMulter.js')
+
+
+
 
 // Middleware to check if user is authenticated
 const { isAuthenticatedAdmin } = require('../middleware/adminAuth.js');
@@ -21,6 +26,14 @@ router.use(isAuthenticatedAdmin);
 
 // Admin dashboard route (protected)
 router.get('/dashboard',adminController.getDashboard);
+router.get('/get-sales-data',adminController.getSalesData);
+router.get('/custom-sales-data',adminController.getCustomSalesData);
+router.get('/pdf',adminController.pdf);
+router.get('/excel',adminController.excel);
+router.post("/modal/filter", adminController.modalFilter);
+router.get("/modal/pdf", adminController.modalPdf);
+router.get("/modal/excel", adminController.modalExcel);
+
 
 // Admin logout route
 router.get('/logout', adminController.logoutAdmin); // POST: Handle Logout
@@ -76,8 +89,22 @@ router.get('/orderManagement', ordersController.loadOrderManagement)
 router.get('/orderManagement/getOrderDetails/:id', ordersController.getOrder)
 router.post('/orderManagement/updateOrderStatus/:id', ordersController.statusupdate)
 router.post('/orderManagement/cancelOrder/:id', ordersController.cancel)
+router.post('/orderManagement/acceptReason/:id', ordersController.accept)
+router.post('/orderManagement/rejectReason/:id', ordersController.reject)
 
 
+
+// Coupon Management Routes
+router.get('/couponManagement', couponController.loadCoupon)
+router.post('/couponManagement', couponController.coupon)
+router.get('/couponManagement/:id', couponController.modal)
+router.post('/couponManagement/add', couponController.addCoupon)
+router.put('/couponManagement/edit/:id', couponController.updateCoupon)
+router.delete('/couponManagement/delete/:id', couponController.deleteCoupon)
+
+
+
+// router.delete('/offerManagement', offerController)
 
 
 module.exports = router

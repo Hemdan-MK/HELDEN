@@ -30,13 +30,18 @@
 <link rel="stylesheet" type="text/css" href="/users/css/main.css" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <!--===============================================================================================-->
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS Bundle (Popper.js included) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <style>
 	/* Modal styles */
 	.modal {
-		display: none;
 		/* Hidden by default */
 		position: fixed;
-		z-index: 1;
+		z-index: 100000000000 !important;
 		/* Stay on top */
 		left: 0;
 		top: 0;
@@ -50,13 +55,14 @@
 
 	.modal-content {
 		background-color: white;
-		margin: 5% auto;
+		margin: auto;
 		padding: 20px;
 		border: 1px solid #888;
 		width: 80%;
 		max-width: 600px;
 		border-radius: 8px;
 	}
+
 
 	.order-item {
 		background-color: #f9f9f9;
@@ -231,12 +237,37 @@
 						<h4 class="text-primary">Order ID: <%= order._id %></h4>
 						<p>Status: <%= order.status %></p>
 						<p>Total Amount: Rs. <%= order.totalAmount %></p>
-						<button class="btn btn-info view-order-btn" data-id="<%= order._id %>">View Order</button>
-						<% if (order.status === 'Pending') { %>
-						<button class="btn btn-danger cancel-order-btn " data-id="<%= order._id %>">Cancel Order</button>
-						<% } %>
+						<div class="d-flex w-100  justify-content-between">
+							<button class="btn btn-info view-order-btn" data-id="<%= order._id %>">View Order</button>
+							<% if (order.status === 'Pending' || order.status === 'Shipping') { %>
+							<button class="btn btn-danger cancel-order-btn " data-id="<%= order._id %>">Cancel Order</button>
+							<% } %>
+							<% if (order.status === 'Completed') { %>
+							<button class="btn btn-success return-order-btn " data-id="<%= order._id %>">Return Order</button>
+							<% } %>
+							<a href="/download-invoice/<%= order._id %>" class="btn btn-behance">Get PDF Receipt</a>
+						</div>
 					</div>
 					<% }); %>
+				</div>
+
+				<!-- Order Invoice Modal -->
+				<div class="modal fade" id="orderInvoiceModal" tabindex="-1" aria-labelledby="orderInvoiceLabel" aria-hidden="true">
+					<div class="modal-dialog modal-lg">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="orderInvoiceLabel">Order Invoice</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body" id="orderInvoiceContent">
+								<!-- Order details will be dynamically inserted here -->
+								<p>Loading...</p>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
 				</div>
 
 
@@ -250,6 +281,27 @@
 							<!-- Order details will be injected here -->
 						</div>
 					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Return Order Modal -->
+	<div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="returnOrderModalLabel">Return Order Request</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="returnOrderForm">
+						<div class="mb-3">
+							<label for="returnReason" class="form-label">Reason for Return</label>
+							<textarea id="returnReason" class="form-control" rows="3" placeholder="State your reason here..." required></textarea>
+						</div>
+						<button type="submit" class="btn btn-success">Submit Request</button>
+					</form>
 				</div>
 			</div>
 		</div>
@@ -352,7 +404,111 @@
 				}
 			});
 		});
+
+		// return the order
+		// ----------------------------------------------------------------
+
+		let currentOrderId = null; // To store the current order ID
+
+		document.querySelectorAll('.return-order-btn').forEach(button => {
+			button.addEventListener('click', () => {
+				currentOrderId = button.getAttribute('data-id'); // Store the order ID
+				const returnOrderModal = new bootstrap.Modal(document.getElementById('returnOrderModal'));
+				returnOrderModal.show(); // Open the modal
+			});
+		});
+
+		// Handle form submission inside the modal
+		document.getElementById('returnOrderForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+
+			const returnReason = document.getElementById('returnReason').value; // Get reason input
+
+
+			try {
+				// Send a request to the server to process the return request
+				const response = await fetch(`/order/return/${currentOrderId}`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						reason: returnReason
+					}) // Send reason to server
+				});
+
+				const result = await response.json(); // Parse the response
+
+				if(response.ok) {
+					Swal.fire({
+						title: 'Success!',
+						text: 'Your return request has been submitted!',
+						icon: 'success',
+						confirmButtonText: 'OK'
+					});
+
+					// Close the modal and disable the button
+					const modal = bootstrap.Modal.getInstance(document.getElementById('returnOrderModal'));
+					modal.hide();
+					document.querySelector(`[data-id="${currentOrderId}"]`).textContent = "Requested";
+					document.querySelector(`[data-id="${currentOrderId}"]`).disabled = true;
+				} else {
+					Swal.fire({
+						title: 'Failed!',
+						text: `Failed to submit return request: ${result.message}`,
+						icon: 'error',
+						confirmButtonText: 'Try Again'
+					});
+				}
+			} catch (error) {
+				console.error("Error submitting return request:", error);
+				Swal.fire({
+					title: 'Error!',
+					text: "Something went wrong. Please try again later.",
+					icon: 'error',
+					confirmButtonText: 'Close'
+				});
+			}
+		});
 	</script>
+
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+			const viewOrderButtons = document.querySelectorAll(".view-order-btn");
+
+			viewOrderButtons.forEach(button => {
+				button.addEventListener("click", async (e) => {
+					const orderId = e.target.getAttribute("data-id");
+
+					// Fetch order details
+					try {
+						const response = await fetch(`/api/orders/${orderId}`);
+						const orderDetails = await response.json();
+
+						// Populate modal content
+						const modalContent = document.getElementById("orderInvoiceContent");
+						modalContent.innerHTML = `
+			  <h4>Order ID: ${orderDetails._id}</h4>
+			  <p>Status: ${orderDetails.status}</p>
+			  <p>Total Amount: Rs. ${orderDetails.totalAmount}</p>
+			  <ul>
+				${orderDetails.items
+				  .map(item => `<li>${item.name} - Qty: ${item.quantity} - Price: Rs. ${item.price}</li>`)
+				  .join("")}
+			  </ul>
+			`;
+
+						// Show the modal
+						const orderModal = new bootstrap.Modal(document.getElementById("orderInvoiceModal"));
+						orderModal.show();
+					} catch (error) {
+						console.error("Error fetching order details:", error);
+					}
+				});
+			});
+		});
+	</script>
+
 	<!--===============================================================================================-->
 	<script src="/users/vendor/jquery/jquery-3.2.1.min.js"></script>
 	<!--===============================================================================================-->
@@ -361,8 +517,6 @@
 	<!--===============================================================================================-->
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert CDN -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

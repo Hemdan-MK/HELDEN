@@ -16,7 +16,7 @@ const loadProfile = async (req, res) => {
 }
 
 const loadOrders = async (req, res) => {
-    const orders = await Order.find()
+    const orders = await Order.find({userId: req.session.user.id}).sort(-1)
 
     try {
         res.render('user/orders', { orders: orders })

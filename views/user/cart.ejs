@@ -117,17 +117,7 @@
 		margin-bottom: 2%;
 	}
 
-	.coupon-section {
-		display: flex;
-
-	}
-
-	.coupon-input {
-		flex: 1;
-		padding: 8px;
-		border: 1px solid #d1d1d8;
-		border-radius: 4px;
-	}
+	
 
 	.checkout-btn {
 		background-color: #3aa39f;
@@ -198,10 +188,7 @@
 		color: #17183b;
 	}
 
-	.apply-coupon {
-		border-radius: 4px;
-		color: white;
-	}
+	
 
 	.prevnext {
 		padding: 10px 30px;
@@ -281,10 +268,7 @@
 								<% } else {%> <span>Rs. <%= shipping %></span>
 								<% } %>
 							</div>
-							<div class="detail-item">
-								<span>Coupon Applied</span>
-								<span>Rs. 0.00</span>
-							</div>
+							
 						</div>
 						<hr />
 						<div class="total-section">
@@ -300,12 +284,7 @@
 						<button class="checkout-btn mb-3 mt-3">Proceed to Checkout</button>
 					</div>
 
-					<div class="zzz mb-3">
-						<div class="coupon-section">
-							<input type="text" class="coupon-input" placeholder="Coupon Code" />
-							<button class="apply-coupon bg-success p-3 pl-4 pr-4 ">Apply</button>
-						</div>
-					</div>
+					
 					<!-- Offer Section -->
 					<div class="offer">
 						<div class="offer-icon"></div>
@@ -364,6 +343,7 @@
 	<!--===============================================================================================-->
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {
+			
 			const quantityElements = document.querySelectorAll('.quantity-control');
 			quantityElements.forEach((quantityElement) => {
 				const decreaseButton = quantityElement.querySelector('.btn-decrease');
@@ -531,7 +511,7 @@
 					} else {
 						Swal.fire({
 							title: 'Error',
-							text: 'There was an issue with your checkout. Please try again.',
+							text: `${data.message}, Please try again.`,
 							icon: 'error',
 							confirmButtonText: 'Retry'
 						});

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Coupon Management</title>
+<link rel="stylesheet" href="/admin/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+<style>
+	.cc {
+		background-color: #1a1c23;
+	}
+
+	.card {
+		background-color: #272b38;
+		color: white;
+	}
+
+	.hi {
+		color: white !important;
+		vertical-align: middle !important;
+
+	}
+</style>
+</head>
+
+<body>
+	<div class="container-scroller">
+		<!-- Sidebar -->
+		<%- include('./layout/sidebar') %>
+
+		<div class="container-fluid page-body-wrapper">
+			<div class="row p-3 cc w-100">
+				<div class="col-12 grid-margin cc">
+					<div class="card">
+						<div class="card-body">
+							<h4 class="card-title">Coupon Management</h4>
+							<div class="container mt-4">
+								<div class="text-right mb-3">
+									<button class="btn btn-primary" id="addCouponBtn">Add New Coupon</button>
+								</div>
+
+								<!-- Coupon Table -->
+								<div class="table-responsive">
+									<table class="table table-striped table-bordered text-center">
+										<thead class="thead-dark">
+											<tr>
+												<th>Coupon Code</th>
+												<th>Valid From</th>
+												<th>Valid Upto</th>
+												<th>Discount (%)</th>
+												<th>Min Price</th>
+												<th>Max Discount</th>
+												<th>Coupon Count</th>
+												<th>Status</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+										<tbody id="couponTableBody">
+											<!-- Dynamic Content -->
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Add/Update Modal -->
+		<div class="modal fade" id="couponModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalTitle">Add Coupon</h5>
+						<button type="button" class="close" data-dismiss="modal">
+							<span>&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="couponForm">
+							<input type="hidden" id="couponId" />
+							<div class="form-row">
+								<div class="form-group col-md-6">
+									<label>Coupon Code</label>
+									<input type="text" class="form-control" id="couponCode" required>
+								</div>
+								<div class="form-group col-md-6">
+									<label>Discount (%)</label>
+									<input type="number" class="form-control" id="discountPercentage" required>
+								</div>
+							</div>
+							<div class="form-row">
+								<div class="form-group col-md-6">
+									<label>Valid From</label>
+									<input type="date" class="form-control" id="validFrom" required>
+								</div>
+								<div class="form-group col-md-6">
+									<label>Valid Upto</label>
+									<input type="date" class="form-control" id="validUpto" required>
+								</div>
+							</div>
+							<div class="form-row">
+								<div class="form-group col-md-4">
+									<label>Min Price</label>
+									<input type="number" class="form-control" id="minPrice" required>
+								</div>
+								<div class="form-group col-md-4">
+									<label>Max Discount</label>
+									<input type="number" class="form-control" id="maxDiscount" required>
+								</div>
+								<div class="form-group col-md-4">
+									<label>Coupon Count</label>
+									<input type="number" class="form-control" id="couponCount" required>
+								</div>
+							</div>
+							<div class="form-group">
+								<label>Status</label>
+								<select class="form-control" id="status" required>
+									<option value="true">Active</option>
+									<option value="false">Inactive</option>
+								</select>
+							</div>
+							<button type="submit" class="btn btn-success">Save</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		const couponForm = document.getElementById('couponForm');
+		const couponModal = $('#couponModal');
+		let editingCouponId = null;
+
+		document.addEventListener('DOMContentLoaded', fetchCoupons);
+
+		// Fetch Coupons
+		async function fetchCoupons() {
+			const res = await fetch('/admin/couponManagement', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+			const coupons = await res.json();
+			const tableBody = document.getElementById('couponTableBody');
+			tableBody.innerHTML = '';
+			coupons.forEach(coupon => {
+				tableBody.innerHTML += `
+                    <tr>
+                        <td class='hi'>${coupon.couponCode}</td>
+                        <td class='hi'>${new Date(coupon.validFrom).toLocaleDateString()}</td>
+                        <td class='hi'>${new Date(coupon.validUpto).toLocaleDateString()}</td>
+                        <td class='hi'>${coupon.discountPercentage}</td>
+                        <td class='hi'>${coupon.minPrice}</td>
+                        <td class='hi'>${coupon.maxDiscount}</td>
+                        <td class='hi'>${coupon.couponCount}</td>
+                        <td class='hi'>${coupon.status ? 'Active' : 'Inactive'}</td>
+                        <td class='hi'>
+                            <button class="btn btn-warning btn-sm" onclick="openModal('${coupon._id}')">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCoupon('${coupon._id}')">Delete</button>
+                        </td>
+                    </tr>`;
+			});
+		}
+
+		// Add Event Listener for Add Coupon Button
+		document.getElementById('addCouponBtn').addEventListener('click', () => {
+			openModal(); // Open Modal for Adding Coupon
+		});
+
+		// Open Modal for Add/Update
+		function openModal(id = null) {
+			editingCouponId = id;
+			couponForm.reset(); // Reset form fields
+			document.getElementById('modalTitle').innerText = id ? 'Update Coupon' : 'Add Coupon';
+
+			if(id) {
+				fetch(`/admin/couponManagement/${id}`)
+					.then(res => res.json())
+					.then(coupon => {
+						console.log('coupons : ' + coupon);
+						document.getElementById('couponCode').value = coupon.couponCode;
+						document.getElementById('validFrom').value = coupon.validFrom.split('T')[0];
+						document.getElementById('validUpto').value = coupon.validUpto.split('T')[0];
+						document.getElementById('discountPercentage').value = coupon.discountPercentage;
+						document.getElementById('minPrice').value = coupon.minPrice;
+						document.getElementById('maxDiscount').value = coupon.maxDiscount;
+						document.getElementById('couponCount').value = coupon.couponCount;
+						document.getElementById('status').value = coupon.status;
+					});
+			}
+			couponModal.modal('show');
+		}
+
+		// Submit Form
+		couponForm.addEventListener('submit', async (e) => {
+			e.preventDefault();
+
+			const couponCode = couponForm.couponCode.value.trim();
+
+			const couponRegex = /^[A-Z0-9]{6,12}$/;
+			if(!couponRegex.test(couponCode)) {
+				Swal.fire({
+					icon: 'error',
+					title: 'Invalid Coupon Code',
+					text: 'Coupon code must be 6-12 characters long and contain only uppercase letters and digits.',
+				});
+				return;
+			}
+
+			const data = {
+				couponCode: couponForm.couponCode.value,
+				validFrom: couponForm.validFrom.value,
+				validUpto: couponForm.validUpto.value,
+				discountPercentage: couponForm.discountPercentage.value,
+				minPrice: couponForm.minPrice.value,
+				maxDiscount: couponForm.maxDiscount.value,
+				couponCount: couponForm.couponCount.value,
+				status: couponForm.status.value === "true"
+			};
+
+			const url = editingCouponId ? `/admin/couponManagement/edit/${editingCouponId}` : '/admin/couponManagement/add';
+			const method = editingCouponId ? 'PUT' : 'POST';
+
+			await fetch(url, {
+				method,
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data),
+			});
+
+			couponModal.modal('hide');
+			fetchCoupons(); // Refresh table
+		});
+
+		// Delete Coupon
+		async function deleteCoupon(id) {
+			if(confirm('Are you sure you want to delete this coupon?')) {
+				await fetch(`/admin/couponManagement/delete/${id}`, {
+					method: 'DELETE'
+				});
+				fetchCoupons();
+			}
+		}
+	</script>
+
+</body>
+
+</html>

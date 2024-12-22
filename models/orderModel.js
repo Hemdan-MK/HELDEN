@@ -30,8 +30,12 @@ const orderSchema = new mongoose.Schema({
     ],
     status: {
         type: String,
-        enum: ['Pending', 'Cancelled', 'Shipping', 'Completed'],
+        enum: ['Pending', 'Cancelled', 'Shipping', 'Completed', 'Returned', 'Requested', 'Rejected'],
         default: 'Pending'
+    },
+    refundReason: {
+        type: String,
+        default: null
     },
     paymentMethod: {
         type: String,
@@ -43,6 +47,20 @@ const orderSchema = new mongoose.Schema({
         enum: ['Pending', 'Completed', 'Failed'],
         default: 'Pending'
     },
+    razorpayOrderId: {  // Add this field to store the Razorpay order ID
+        type: String,
+        default: null
+    },
+    razorpayPaymentId: { // Add this field to store Razorpay's payment ID after successful payment
+        type: String,
+        default: null
+    },
+    coupon: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Coupon',
+        default: null
+    }, // Coupon reference
+
     createdAt: {
         type: Date,
         default: Date.now

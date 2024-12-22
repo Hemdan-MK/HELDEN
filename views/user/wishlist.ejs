@@ -222,9 +222,13 @@
 								Swal.fire({
 									icon: 'success',
 									title: 'Deleted!',
-									text: result.message
+									text: result.message,
+									showConfirmButton: false,
+									timer : 1500
 								});
-                                location.reload(); // Reload the page to reflect the changes
+                                setTimeout(()=>{
+									location.reload();
+								},1200) 
 							} else {
 								Swal.fire({
 									icon: 'error',

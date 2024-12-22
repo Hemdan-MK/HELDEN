@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/admin/admin.css">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
 	.round-preview {
@@ -316,8 +317,10 @@
 							text: 'Product updated successfully!',
 							confirmButtonColor: '#28a745', // Green button for success
 							confirmButtonText: 'OK'
-						});
-						window.location.href = '/admin/productManagement'; // Redirect to product list page
+						}).then(()=>{
+
+							window.location.href = '/admin/productManagement'; // Redirect to product list page
+						})
 					} else {
 						Swal.fire({
 							icon: 'error', // Red error icon

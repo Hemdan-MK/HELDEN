@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="/admin/admin.css">
 <!-- End layout styles -->
 <!-- <link rel="shortcut icon" href="assets/images/favicon.png" /> -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -118,9 +119,11 @@
 						icon: 'success', // Green checkmark icon for success
 						title: 'Success!',
 						text: result.message, // Dynamically displays the message from the controller
-						confirmButtonColor: '#28a745', // Green button for success
-						confirmButtonText: 'OK'
-					});
+						timer: 1500,
+						showConfirmButton: false,
+						timerProgressBar: true,
+					});	
+
 
 					// Update button text and class based on the new ban status
 					if(result.isDeleted) {

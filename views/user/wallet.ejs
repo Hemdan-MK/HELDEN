@@ -1,1 +1,278 @@
-<h1>hi this is wallet</h1>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--===============================================================================================-->
+<link rel="icon" type="image/png" href="/users/images/icons/favicon.png" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/bootstrap/css/bootstrap.min.css" />
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/fonts/font-awesome-4.7.0/css/font-awesome.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/iconic/css/material-design-iconic-font.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/fonts/linearicons-v1.0.0/icon-font.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animate/animate.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/css-hamburgers/hamburgers.min.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/vendor/animsition/css/animsition.min.css" />
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/select2/select2.min.css" /> -->
+<!--===============================================================================================-->
+<!-- <link rel="stylesheet" type="text/css" href="/users/vendor/perfect-scrollbar/perfect-scrollbar.css" /> -->
+<!--===============================================================================================-->
+<link rel="stylesheet" type="text/css" href="/users/css/util.css" />
+<link rel="stylesheet" type="text/css" href="/users/css/main.css" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!--===============================================================================================-->
+<style>
+	/* Responsive styling for smaller screens */
+	@media (max-width: 768px) {
+		.conte {
+			width: 100%;
+		}
+	}
+
+	a {
+		text-decoration: none;
+	}
+
+	.conte {
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	/* ATM Card Style */
+	.wallet-card {
+		background: linear-gradient(135deg, #4d86d0, #1b4965);
+		width: 300px;
+		height: 171px;
+		border-radius: 15px;
+		box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.wallet-card h5 {
+		font-size: 1.1rem;
+		font-weight: 500;
+	}
+
+	.wallet-card h2 {
+		font-size: 2.2rem;
+		margin: 0;
+	}
+
+	.card-details span {
+		font-size: 0.9rem;
+	}
+
+	.card-overlay {
+		position: absolute;
+		top: -50%;
+		right: -50%;
+		width: 300px;
+		height: 300px;
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 50%;
+		transform: rotate(25deg);
+	}
+
+	/* Beautified Table */
+	.custom-table {
+		background-color: #fff;
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+	}
+
+	.custom-table thead {
+		background: #4d86d0;
+		color: white;
+		text-align: center;
+	}
+
+	.custom-table tbody tr:hover {
+		background-color: #f1f8ff;
+		transition: background 0.3s ease;
+	}
+
+	.custom-table th,
+	.custom-table td {
+		padding: 12px;
+		text-align: center;
+		vertical-align: middle;
+		border: none;
+	}
+
+	.text-success {
+		color: #28a745 !important;
+	}
+
+	.text-danger {
+		color: #dc3545 !important;
+	}
+</style>
+</head>
+
+<body class="animsition">
+	<!-- Header -->
+	<%- include('./layout/header') %>
+	<!-- Dashboard -->
+	<div class="h-75 d-flex justify-content-around w-100">
+		<div class="inside p-all-50  h-full w-75 d-flex">
+			<div class="items w-25 bg-white h-100 d-flex flex-column">
+				<ul class="list-group w-100 h-100" id="sidebar-menu">
+					<a href="/myAccount" class="list-item">
+						<li data-session="/">Dashboard</li>
+					</a>
+					<a href="/myAccount/orders" class="list-item">
+						<li data-session="orders">Order</li>
+					</a>
+					<a href="/myAccount/update-profile" class="list-item">
+						<li data-session="update-profile">Update Profile</li>
+					</a>
+					<a href="/myAccount/saved-address" class="list-item">
+						<li data-session="saved-address">Saved Address</li>
+					</a>
+					<a href="/myAccount/wallet" class="list-item" style="background-color: #397f79; color: white;">
+						<li data-session="wallet">Wallet</li>
+					</a>
+					<a href="/logout" class="list-item">
+						<li data-session="logout">Logout</li>
+					</a>
+				</ul>
+			</div>
+			<!-- // contents to be shown on right -->
+
+			<!-- Update Profile Section -->
+			<!-- Wallet Section -->
+			<div class="conte w-75 h-100 position-relative d-flex flex-column p-4">
+				<div class="container">
+					<!-- ATM Card Wallet Balance -->
+					<div class="d-flex justify-content-center my-4">
+						<div class="wallet-card text-white p-4 position-relative">
+							<h5 class="mb-3">Your Wallet Balance</h5>
+							<h2 id="wallet-balance" class="text-white fw-bold">Loading...</h2>
+							<div class="card-details d-flex justify-content-between mt-3">
+								<span>Virtual Wallet</span>
+								<span id="wallet-card-id">**** **** **** 1234</span>
+							</div>
+							<div class="card-overlay"></div>
+						</div>
+					</div>
+
+					<!-- Transaction History Table -->
+					<h4 class="mt-4">Transaction History</h4>
+					<div class="table-responsive mt-3">
+						<table class="table table-hover table-borderless custom-table">
+							<thead class="table-dark">
+								<tr>
+									<th>#</th>
+									<th>Amount</th>
+									<th>Type</th>
+									<th>Description</th>
+									<th>Date</th>
+								</tr>
+							</thead>
+							<tbody id="transaction-history">
+								<!-- Transactions will be dynamically inserted here -->
+							</tbody>
+						</table>
+					</div>
+					<!-- Pagination Controls -->
+					<div class="d-flex justify-content-center mt-3">
+						<nav aria-label="Transaction Pagination">
+							<ul class="pagination" id="pagination-controls">
+								<!-- Pagination buttons will be dynamically inserted -->
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<!-- Footer -->
+	<%- include('./layout/footer') %>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+	<script>
+		let currentPage = 1; // Current page
+		const limit = 3; // Number of transactions per page
+
+		// Function to fetch wallet details and populate UI
+		async function fetchWalletDetails(page = 1) {
+			try {
+				const userId = "<%= user.id %>"; // Pass userId dynamically
+				const response = await fetch(`/wallet/${userId}?page=${page}&limit=${limit}`);
+				const wallet = await response.json();
+
+				// Handle Wallet Balance
+				const walletBalance = document.getElementById("wallet-balance");
+				walletBalance.textContent = `₹ ${wallet.balance.toFixed(2)}`;
+
+				// Handle Transaction History
+				const transactionHistory = document.getElementById("transaction-history");
+				transactionHistory.innerHTML = ""; // Clear previous entries
+
+				wallet.transactions.forEach((transaction, index) => {
+					const row = `
+						<tr>
+							<td>${(page - 1) * limit + index + 1}</td>
+							<td>₹ ${transaction.amount.toFixed(2)}</td>
+							<td class="${transaction.type === 'Credit' ? 'text-success' : 'text-danger'}">${transaction.type}</td>
+							<td>${transaction.description}</td>
+							<td>${new Date(transaction.createdAt).toLocaleString()}</td>
+						</tr>
+					`;
+					transactionHistory.insertAdjacentHTML("beforeend", row);
+				});
+
+				// Render Pagination Controls
+				renderPagination(wallet.totalPages, wallet.currentPage);
+			} catch (error) {
+				console.error("Error fetching wallet details:", error);
+				document.getElementById("wallet-balance").textContent = "Error loading wallet";
+			}
+		}
+
+		// Function to render pagination buttons
+		function renderPagination(totalPages, currentPage) {
+			const paginationControls = document.getElementById("pagination-controls");
+			paginationControls.innerHTML = ""; // Clear previous buttons
+
+			for(let page = 1; page <= totalPages; page++) {
+				const isActive = page === currentPage ? "active" : "";
+				const button = `
+					<li class="page-item ${isActive}">
+						<a class="page-link" href="#" onclick="fetchWalletDetails(${page})">${page}</a>
+					</li>
+				`;
+				paginationControls.insertAdjacentHTML("beforeend", button);
+			}
+		}
+
+		// Call the function when the page loads
+		window.onload = () => fetchWalletDetails();
+	</script>
+
+
+	<!--===============================================================================================-->
+	<script src="/users/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<!--===============================================================================================-->
+	<script src="/users/vendor/animsition/js/animsition.min.js"></script>
+	<script src="/users/js/main.js"></script>
+	<!--===============================================================================================-->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

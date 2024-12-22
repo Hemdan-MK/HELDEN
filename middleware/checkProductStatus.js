@@ -1,6 +1,8 @@
 const Product = require('../models/productModel'); // Adjust the path to your Product model
 const Cart = require('../models/cartModel'); // Adjust the path to your Product model
 
+
+
 // Middleware to check product status
 const checkProductStatus = async (req, res, next) => {
     try {

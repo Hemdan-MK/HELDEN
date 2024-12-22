@@ -3950,3 +3950,7 @@ input.num-product::-webkit-inner-spin-button {
   background-color: yellow;
 
 } */
+
+.swal2-timer-progress-bar {
+  background-color: #ff5733 !important; /* Replace with your desired color (e.g., red-orange) */
+}

@@ -34,8 +34,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!--===============================================================================================-->
 <style>
-	
-
 	.radio-selected {
 		width: 20px;
 		height: 20px;
@@ -391,11 +389,14 @@
 							<i class="bi bi-plus"></i> Add New Address
 						</button>
 					</div>
-					<div class="zzz mt-4 ">
+					<!-- Coupon Input Section -->
+					<div class="zzz mt-4">
 						<div class="coupon-section">
-							<input type="text" class="coupon-input " placeholder="Coupon Code" style="margin-right: 10px;"/>
-							<button class="apply-coupon bg-success p-3 pl-4 pr-4 ">Apply</button>
+							<input type="text" id="couponCode" class="coupon-input" placeholder="Coupon Code" style="margin-right: 10px;" />
+							<button id="applyCoupon" class="apply-coupon bg-success p-3 pl-4 pr-4">Apply</button>
 						</div>
+						<!-- Area to display coupon status -->
+						<p id="couponStatus" style="margin-top: 10px;"></p>
 					</div>
 				</div>
 
@@ -426,13 +427,13 @@
 							</div>
 							<div class="detail-item d-flex justify-content-between">
 								<span>Coupon Applied</span>
-								<span>Rs. 0.00</span>
+								<span id="couponDiscount">- Rs. 0.00</span>
 							</div>
 						</div>
 						<hr />
 						<div class="total-section d-flex justify-content-between">
-							<span class="fw-bold ">TOTAL</span>
-							<span class="fw-bold ">Rs. <%= totalAmount %></span>
+							<span class="fw-bold">TOTAL</span>
+							<span class="fw-bold" id="totalAmount">Rs. <%= totalAmount %></span>
 						</div>
 						<div class="delivery-info mt-2">
 							<span>Estimated Delivery by</span>
@@ -447,12 +448,12 @@
 								<% console.log('condition : ' + condition) %>
 								<% if(condition) {%>
 								<% if (totalAmount < 5000) { %>
-								<button id="cashOnDeliveryBtn" class="payment-btn btn btn-primary" style="width: 150px;" onclick="cod()">
+								<button id="cashOnDeliveryBtn" class="payment-btn btn btn-primary" style="width: 150px;">
 									Cash on Delivery
 								</button>
 								<% } %>
 								<% } %>
-								<button id="netBankingBtn" class="payment-btn btn btn-primary" style="width: 150px;" onclick="net()">
+								<button id="netBankingBtn" class="payment-btn btn btn-primary" style="width: 150px;">
 									Net Banking
 								</button>
 							</div>
@@ -463,10 +464,8 @@
 							<button class="btn btn-success w-100" id="proceedToCheckoutBtn">Proceed to Checkout</button>
 						</div>
 
-						<!-- Offer Section -->
-						<div class="offer mt-3 text-center">
-							<p class="offer-text pt-3 text-muted">10% Instant Discount with Federal Bank Debit Cards on a min spend of Rs. 999. TCA</p>
-						</div>
+						<!-- Coupon Status -->
+						<p id="couponStatus" class="text-center mt-3 text-success"></p>
 					</div>
 				</div>
 			</div>
@@ -847,102 +846,227 @@
 	</script>
 	<script src="users/js/main.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
 	<script>
-		function cod() {
-			document.getElementById('cashOnDeliveryBtn').classList.add('selected');
-			paymentMethod = 'COD';
-		}
+		let selectedPaymentMethod = ''; // Variable to store payment method
+		let couponDiscount = 0; // To store applied coupon discount
+		let totalAmount = <%= totalAmount %>; // Get the initial total amount from server-side rendering
+		let appliedCoupon = null; // Store applied coupon data
 
-		function net() {
-			document.getElementById('netBankingBtn').classList.add('selected');
-			paymentMethod = 'netBanking';
-		}
-
-		document.getElementById('proceedToCheckoutBtn').addEventListener('click', async function() {
-			// Get the selected address
-			const selectedAddressIndex = document.querySelector('input[name="selectedAddress"]:checked');
-
-			if(!selectedAddressIndex) {
+		// Event Listeners for Payment Method Buttons
+		if(<%= order.totalAmount %> < 5000) {
+			document.getElementById('cashOnDeliveryBtn').addEventListener('click', function() {
+				selectedPaymentMethod = 'COD';
 				Swal.fire({
-					icon: 'warning',
-					title: 'No Address Selected',
-					text: 'Please select an address before proceeding.',
+					icon: 'info',
+					title: 'Payment Method Selected',
+					text: 'You have selected Cash on Delivery.',
+					confirmButtonText: 'OK',
 				});
+			});
+		}
+
+		document.getElementById('netBankingBtn').addEventListener('click', function() {
+			selectedPaymentMethod = 'RAZORPAY';
+			Swal.fire({
+				icon: 'info',
+				title: 'Payment Method Selected',
+				text: 'You have selected Net Banking (Razorpay).',
+				confirmButtonText: 'OK',
+			});
+		});
+
+
+		// coupon
+		document.getElementById('applyCoupon').addEventListener('click', async () => {
+			const couponCode = document.getElementById('couponCode').value.trim();
+			const applyButton = document.getElementById('applyCoupon');
+
+
+			if(!couponCode) {
+				Swal.fire('Error', 'Please enter a coupon code.', 'error');
 				return;
 			}
 
-			const addressIndex = selectedAddressIndex.value;
-
-			// Get the selected payment method
-			const selectedPaymentMethod = document.querySelector('.payment-btn.selected');
-			if(!selectedPaymentMethod) {
-				Swal.fire({
-					icon: 'warning',
-					title: 'No Payment Method Selected',
-					text: 'Please select a payment method before proceeding.',
-				});
-				return;
+			if(appliedCoupon) {
+				window.location.replace(window.location.href)
+			return;
 			}
-
-			const paymentMethod = selectedPaymentMethod.textContent.trim(); // Get the text of the selected button
 
 			try {
-				// Assuming 'userId' is available from session or globally
-				const userId = document.getElementById('idid').dataset.userid;
-				console.log(userId + ' ////// ' + addressIndex + ' //' + paymentMethod);
-
-				// Send the selected address and payment method to the backend
-				const response = await fetch('/checkout/done', {
+				// Call server to validate coupon
+				const response = await fetch('/coupon/validate', {
 					method: 'POST',
 					headers: {
-						'Content-Type': 'application/json',
+						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
-						userId: userId,
-						addressId: addressIndex,
-						paymentMethod: paymentMethod, // Send the selected payment method
-						checkProductStatus: true // Check product status
+						couponCode
 					}),
 				});
 
-				const data = await response.json();
+				const result = await response.json();
 
-				if(data.expired) {
-					Swal.fire({
-						title: 'Session Expired',
-						text: 'Your session has expired. Please place your order again.',
-						icon: 'error',
-						confirmButtonText: 'OK'
-					}).then(() => {
-						window.location.href = '/cart'; // Redirect back to the cart page
-					});
-				} else if(data.success) {
-					// Redirect to the payment page if the address and payment method are passed successfully
-					Swal.fire({
-						icon: 'success',
-						title: 'Address and Payment Method Selected!',
-						text: 'Proceeding to the payment page...',
-						// timer: 4000,
+				if(result.valid) {
+					const {
+						coupon
+					} = result;
 
-						timerProgressBar: true,
-						allowOutsideClick: false,
-						showConfirmButton: true,
-					}).then(() => {
-						window.location.href = '/successPage';
-					});
+					// Calculate the discount (min between maxDiscount and percentage discount)
+					const discount = Math.min(
+						(coupon.discountPercentage / 100) * totalAmount,
+						coupon.maxDiscount
+					);
+
+					// Update global values
+					couponDiscount = discount.toFixed(2);
+					appliedCoupon = coupon.couponCode;
+
+					// Update the total amount and display it
+					updateOrderSummary();
+
+					// Update the button text to "Remove"
+					applyButton.innerText = 'Remove';
+					applyButton.classList.remove('bg-success');
+					applyButton.classList.add('bg-danger');
+
+					Swal.fire('Success', `Coupon Applied! You saved Rs. ${couponDiscount}`, 'success');
 				} else {
-					Swal.fire({
-						icon: 'error',
-						title: 'Failed to Proceed',
-						text: 'Something went wrong. Please try again.',
-					});
+					Swal.fire('Error', result.message || 'Invalid or expired coupon.', 'error');
 				}
 			} catch (error) {
-				console.error("Error while submitting address and payment method:", error);
-				alert("An error occurred. Please try again.");
+				console.error('Coupon Error:', error);
+				Swal.fire('Error', 'Something went wrong while applying the coupon.', 'error');
 			}
 		});
+
+		// Update Order Summary
+		function updateOrderSummary() {
+			const finalTotal = (totalAmount - couponDiscount).toFixed(2);
+			document.getElementById('couponDiscount').innerText = `- Rs. ${couponDiscount}`;
+			document.getElementById('totalAmount').innerText = `Rs. ${finalTotal}`;
+		}
+
+
+		document.getElementById('proceedToCheckoutBtn').addEventListener('click', async () => {
+			const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
+			const paymentMethod = document.querySelector('.payment-btn.active')?.innerText; // Active payment button
+			const userId = document.getElementById('idid').dataset.userid; // User ID from dataset
+
+			if(!selectedAddress) {
+				Swal.fire("Error", "Please select an address before proceeding.", "error");
+				return;
+			}
+
+			if(!paymentMethod) {
+				Swal.fire("Error", "Please select a payment method.", "error");
+				return;
+			}
+
+			const addressId = selectedAddress.value;
+
+
+			try {
+				const bodyData = {
+					userId,
+					addressId,
+					paymentMethod,
+					totalAmount: totalAmount - couponDiscount, // Send final total amount after coupon
+					appliedCoupon, // Send applied coupon code if any
+
+				};
+
+				console.log('-------------------------------- >>');
+				console.log(bodyData);
+
+
+				if(paymentMethod === "Net Banking") {
+					// Initiate Razorpay Payment
+					const paymentResponse = await fetch('/razorpay/initiate', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							amount: totalAmount - couponDiscount,
+							userId
+						})
+					});
+
+					const {
+						razorpayKey,
+						orderId
+					} = await paymentResponse.json();
+
+					const razorpayOptions = {
+						key: razorpayKey,
+						amount: (totalAmount - couponDiscount) * 100,
+						currency: "INR",
+						order_id: orderId,
+						name: "Your Store",
+						description: "Purchase Payment",
+						handler: async function(response) {
+							// On successful Razorpay payment
+							bodyData.razorpayPaymentId = response.razorpay_payment_id;
+
+							await completeOrder(bodyData);
+						},
+						prefill: {
+							name: "<%= user.name %>",
+							email: "<%= user.email %>",
+						},
+					};
+
+					const rzp = new Razorpay(razorpayOptions);
+					rzp.open();
+				} else if(paymentMethod === "Cash on Delivery") {
+					// Complete COD Order
+					await completeOrder(bodyData);
+				}
+			} catch (error) {
+				console.error("Error:", error);
+				Swal.fire("Error", "Something went wrong. Please try again.", "error");
+			}
+		});
+
+		// Function to complete the order
+		async function completeOrder(orderData) {
+			try {
+				const response = await fetch('/checkout/done', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(orderData),
+				});
+
+				const result = await response.json();
+
+				if(result.success) {
+					Swal.fire("Success", "Order placed successfully!", "success").then(() => {
+						window.location.href = '/successPage'; // Redirect to success page
+					});
+				} else {
+					Swal.fire("Error", result.message, "error");
+				}
+			} catch (error) {
+				console.error("Error completing order:", error);
+				Swal.fire("Error", "Failed to place the order. Try again later.", "error");
+			}
+		}
+
+		// To highlight selected payment method button
+		document.querySelectorAll('.payment-btn').forEach(btn => {
+			btn.addEventListener('click', () => {
+				document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('active'));
+				btn.classList.add('active', 'bg-danger');
+			});
+		});
 	</script>
+
+
 
 
 </body>
