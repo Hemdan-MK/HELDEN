@@ -179,6 +179,7 @@ const done = async (req, res) => {
         // Remove any expiry
         order.expiresAt = undefined;
         console.log(coupon); 
+        delete req.session.checkProductStatus
 
         // Save the updated order
         const updatedOrder = await order.save();

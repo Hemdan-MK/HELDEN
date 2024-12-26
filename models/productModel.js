@@ -5,6 +5,15 @@ const productSchema = new mongoose.Schema({
     description: { type: String, required: true },
     price: { type: Number, required: true },
     offerPrice: { type: Number },
+    prevOfferPrice: {
+        type: Map,
+        of: {
+            discountType: { type: String, enum: ['percentage', 'fixed'],  },
+            discountValue: { type: Number, },
+            price: { type: Number, required: true }
+        },
+        default: null
+    },
     stock: { type: Number, default: 0 },
     images: [{ type: String }], // Store image paths
     tags: [{ type: String }],

@@ -11,42 +11,123 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-	.cc {
+	body {
+		font-family: 'Poppins', sans-serif;
 		background-color: #121212;
-	}
-
-	.hi {
-		vertical-align: middle !important;
+		color: white;
+		margin: 0;
+		padding: 0;
 	}
 
 	.card {
-		background-color: #272b38;
+		background: linear-gradient(135deg, #1e1e2d, #2a2f45);
+		color: white;
+		border: none;
+		border-radius: 15px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		padding: 20px;
 	}
 
-	.vivi {
-		position: relative !important;
+	.card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
 	}
 
-	.pagination-container {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100vh;
+	/* Table Styles */
+	.table-responsive {
+		margin: 20px 0;
+		border-radius: 8px;
+		overflow: hidden;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 	}
 
-	/* Highlight the active page number */
-	.pagination .active .page-link {
-		background-color: #007bff;
-		/* Bootstrap blue */
-		border-color: #007bff;
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		background-color: #212338;
+	}
+
+	table thead tr {
+		text-transform: uppercase;
+		background-color: #2c2f48;
 		color: #fff;
+		border-bottom: 2px solid #444;
+		text-align: center;
 	}
 
-	/* Customize page link hover effect */
-	.pagination .page-link:hover {
-		background-color: #f8f9fa;
-		border-color: #007bff;
-		color: #007bff;
+	table tbody tr {
+		text-align: center;
+		color: #e0e0e0;
+		transition: background-color 0.3s ease, transform 0.2s ease;
+	}
+
+	table tr:nth-child(even) {
+		background: #1b1b2f;
+	}
+
+	table tr:hover {
+		background: #44446b;
+		color: white;
+		transform: scale(1.02);
+		cursor: pointer;
+	}
+
+	table tbody tr td {
+		padding: 10px;
+		border-bottom: 1px solid #333;
+	}
+
+	table tbody tr:last-child td {
+		border-bottom: 0;
+	}
+
+	.btn {
+		font-size: 12px;
+		color: #fff;
+		background-color: #5a67d8;
+		border: none;
+		padding: 5px 10px;
+		border-radius: 4px;
+		transition: background-color 0.3s ease, transform 0.2s ease;
+	}
+
+	.btn:hover {
+		background-color: #434aa8;
+		transform: scale(1.05);
+	}
+
+	.badge {
+		font-size: 10px;
+		padding: 3px 6px;
+		border-radius: 50%;
+	}
+
+
+	/* Pagination Styles */
+	.pagination {
+		background-color: #222;
+	}
+
+	.pagination .page-item.active .page-link {
+		background-color: #28a745;
+		border-color: #28a745;
+	}
+
+	/* Modal Styles */
+
+	.modal-content {
+		background-color: #292d41;
+		color: #fff;
+		border-radius: 10px;
+	}
+
+	.modal-header {
+		border-bottom: none;
+	}
+
+	.modal-footer {
+		border-top: none;
 	}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert CDN -->
@@ -54,62 +135,63 @@
 </head>
 
 <body>
-	<div class="container-scroller" >
-		<!-- partial:partials/_sidebar.html -->
+	<div class="container-scroller">
+		<!-- Sidebar -->
 		<%- include('./layout/sidebar') %>
 
-		<!-- partial -->
-		<div class="container-fluid " style="flex: 1; display: flex; background-color: #121212;">
-			<!-- partial -->
-			<div class="row cc w-100" style="flex: 1; display: flex; height: 100vh;">
+		<!-- Main Content -->
+		<div class=" w-100 d-flex flex-column min-vh-100">
+			<div class="col">
 				<div class="col-12 grid-margin">
-					<div class="card cc">
-						<div class="card-body cc">
-							<h4 class="card-title text-dark">Order Management</h4>
-							<hr>
-							<div class="table-responsive ">
-								<!-- Table with orders data -->
-								<table class="table text-white " style="text-align: center;  align-items: center;">
-									<thead>
-										<tr>
-											<th>Index</th>
-											<th>Order No</th>
-											<th>User Name</th>
-											<th>Date</th>
-											<th>Price</th>
-											<th>Payment Status</th>
-											<th>Status</th>
-											<th>Payment Mode</th>
-											<th>Action</th>
-										</tr>
-									</thead>
-									<tbody>
-										<% orders.forEach((order, index) => { %>
-										<tr>
-											<td class="hi"><%= index + 1 %></td>
-											<td class="hi"><%= order._id %></td>
-											<td class="hi"><%= order.userId.name %></td>
-											<td class="hi"><%= new Date(order.createdAt).toLocaleDateString() %></td>
-											<td class="hi"><%= order.totalAmount %></td>
-											<td class="hi"><%= order.paymentStatus %></td>
-											<td class="hi"><%= order.status %></td>
-											<td class="hi"><%= order.paymentMethod %></td>
-											<td class="hi pos-relative">
-												<button class="btn btn-info vivi" onclick="viewOrder('<%= order._id %>')">
-													View
-													<% if (order.status === 'Requested') { %>
-													<span class="badge badge-warning position-absolute" style="top: -5px; right: -5px;">1</span>
-													<% } %>
-												</button>
-											</td>
-										</tr>
-										<% }); %>
-									</tbody>
+					<h4 class="card-title text-light">Order Management</h4>
+					<hr class="text-white">
+					<div class="card border-0 rounded-3 shadow-sm bg-dark">
+						<div class="card-body">
+
+							<!-- Orders Table -->
+							<div class="table-responsive">
+								<table class="table table-dark table-striped text-center">
+								  <thead>
+									<tr>
+									  <th style="color: #00adb5 !important;">Index</th>
+									  <th style="color: #00adb5 !important;">Order No</th>
+									  <th style="color: #00adb5 !important;">User Name</th>
+									  <th style="color: #00adb5 !important;">Date</th>
+									  <th style="color: #00adb5 !important;">Price</th>
+									  <th style="color: #00adb5 !important;">Payment Status</th>
+									  <th style="color: #00adb5 !important;">Status</th>
+									  <th style="color: #00adb5 !important;">Payment Mode</th>
+									  <th style="color: #00adb5 !important;">Action</th>
+									</tr>
+								  </thead>
+								  <tbody>
+									<% orders.forEach((order, index) => { %>
+									  <tr>
+										<td><%= index + 1 %></td>
+										<td><%= order._id %></td>
+										<td><%= order.userId.name %></td>
+										<td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+										<td>₹ <%= order.totalAmount.toFixed(2) %></td>
+										<td><%= order.paymentStatus %></td>
+										<td><%= order.status %></td>
+										<td><%= order.paymentMethod %></td>
+										<td>
+										  <button class="btn btn-info position-relative btn-sm" onclick="viewOrder('<%= order._id %>')">
+											View
+											<% if (order.status === 'Requested') { %>
+											  <span class="badge bg-warning position-absolute" style="top: -5px; right: -5px;">1</span>
+											<% } %>
+										  </button>
+										</td>
+									  </tr>
+									<% }); %>
+								  </tbody>
 								</table>
-							</div>
-							<!-- Pagination Container -->
-							<div class="d-flex justify-content-center">
-								<ul class="pagination">
+							  </div>							  
+
+							<!-- Pagination -->
+							<div class="d-flex justify-content-center mt-3">
+								<ul class="pagination pagination-dark">
 									<% if (currentPage > 1) { %>
 									<li class="page-item">
 										<a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>">Previous</a>
@@ -131,81 +213,81 @@
 									<% } %>
 								</ul>
 							</div>
-
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	<!-- Modal to view order details and update status -->
-	<div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="orderModalLabel">Order Details</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<!-- Order details will be dynamically inserted here -->
-					<form id="orderForm">
-						<div class="form-group">
-							<label for="orderNo">Order No</label>
-							<input type="text" class="form-control" id="orderNo" disabled>
-						</div>
-						<div class="form-group">
-							<label for="userName">User Name</label>
-							<input type="text" class="form-control" id="userName" disabled>
-						</div>
-						<div class="form-group">
-							<label for="orderItems">Order Items</label>
-							<!-- <textarea class="form-control" id="orderItems" rows="5" disabled></textarea> -->
-							<div id="orderItemsContainer"></div>
 
-						</div>
-						<div class="form-group">
-							<label for="shippingStatus">Shipping Status</label>
-							<select class="form-control" id="shippingStatus">
-								<option value="Pending">Pending</option>
-								<option value="Shipping">Shipping</option>
-								<option value="Completed">Completed</option>
-								<option value="Returned">Returned</option>
-								<option value="Cancelled">Cancelled</option>
-							</select>
-						</div>
-						<div class="form-group">
-							<label for="paymentStatus">Payment Status</label>
-							<select class="form-control" id="paymentStatus">
-								<option value="Pending">Pending</option>
-								<option value="Completed">Completed</option>
-								<option value="Failed">Failed</option>
-							</select>
-						</div>
-						<div class="form-group">
-							<label for="totalAmount">Total Amount</label>
-							<input type="text" class="form-control" id="totalAmount" disabled>
-						</div>
-						<div class="ret" id="ret">
+		<!-- Modal for Viewing Order Details -->
+		<div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="orderModalLabel">Order Details</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="orderForm">
 							<div class="form-group">
-								<label for="reason">Reason</label>
-								<textarea class="form-control" id="reason" rows="3" readonly></textarea>
+								<label for="orderNo">Order No</label>
+								<input type="text" class="form-control" id="orderNo" disabled>
 							</div>
-							<div class="form-group d-flex justify-content-between">
-								<button type="button" class="btn btn-danger" id="rejectBtn">Reject</button>
-								<button type="button" class="btn btn-success" id="acceptBtn">Accept</button>
+							<div class="form-group">
+								<label for="userName">User Name</label>
+								<input type="text" class="form-control" id="userName" disabled>
 							</div>
-						</div>
-					</form>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary" id="updateStatusBtn">Status Action</button>
+							<div class="form-group">
+								<label for="orderItems">Order Items</label>
+								<div id="orderItemsContainer"></div>
+							</div>
+							<div class="form-group">
+								<label for="shippingStatus">Shipping Status</label>
+								<select class="form-control" id="shippingStatus">
+									<option value="Pending">Pending</option>
+									<option value="Shipping">Shipping</option>
+									<option value="Completed">Completed</option>
+									<option value="Returned">Returned</option>
+									<option value="Requested">Requested</option>
+									<option value="Rejected">Rejected</option>
+									<option value="Cancelled">Cancelled</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="paymentStatus">Payment Status</label>
+								<select class="form-control" id="paymentStatus">
+									<option value="Pending">Pending</option>
+									<option value="Completed">Completed</option>
+									<option value="Failed">Failed</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="totalAmount">Total Amount</label>
+								<input type="text" class="form-control" id="totalAmount" disabled>
+							</div>
+							<div class="ret" id="ret">
+								<div class="form-group">
+									<label for="reason">Reason</label>
+									<textarea class="form-control" id="reason" rows="3" readonly></textarea>
+								</div>
+								<div class="form-group d-flex justify-content-between">
+									<button type="button" class="btn btn-danger" id="rejectBtn">Reject</button>
+									<button type="button" class="btn btn-success" id="acceptBtn">Accept</button>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" id="updateStatusBtn">Status Action</button>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+
 
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -253,7 +335,7 @@
 					document.getElementById('reason').value = order.refundReason;
 
 					// Check if the order status is "Returned" or "Completed"
-					if(order.status === 'Returned' || order.status === 'Completed' || order.status === 'Cancelled') {
+					if(order.status === 'Returned' || order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Rejected' || order.status === 'Requested') {
 						// Disable editing of shipping and payment status if the order is Returned or Completed
 						document.getElementById('shippingStatus').disabled = true;
 						document.getElementById('paymentStatus').disabled = true;

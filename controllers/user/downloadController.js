@@ -1,6 +1,7 @@
 const Order = require("../../models/orderModel"); // Import your order model
 const User = require("../../models/userRegister");   // Import your user model
 const Product = require("../../models/productModel"); // Import your product model
+const Address = require('../../models/addressModel');
 
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
@@ -178,11 +179,11 @@ const frontDownload = async (req, res) => {
         .fontSize(20)
         .fillColor('#003366') // Dark Blue
         .text('Invoice', { align: 'center' })
-        .fontSize(16)
         .moveDown()
+        .fontSize(12)
         .fillColor('black')
-        .text(`Order ID: ${order._id}`)
-        .text(`Status: ${order.status}`)
+        .text(`Order ID: ${order._id}`, { align: 'left' })
+        .text(`Status: ${order.status}`, { align: 'left' })
         .text(`Total Amount: Rs. ${order.totalAmount}`, { align: 'right' })
         .moveDown();
 
@@ -194,36 +195,41 @@ const frontDownload = async (req, res) => {
         .moveDown();
 
     // Add Table Header
+    const headerY = doc.y; // Track header position
     doc
         .fontSize(14)
         .fillColor('white')
-        .rect(40, doc.y, 500, 25) // Table Header Background
+        .rect(40, headerY, 500, 25) // Table Header Background
         .fill('#003366') // Dark Blue Background
         .stroke()
         .fillColor('white')
-        .text('Product Name', 50, doc.y + 5, { width: 150 })
-        .text('Quantity', 250, doc.y + 5, { width: 100, align: 'center' })
-        .text('Price (Rs.)', 400, doc.y + 5, { width: 100, align: 'center' });
+        .text('Product Name', 50, headerY + 5, { width: 150 })
+        .text('Quantity', 250, headerY + 5, { width: 100, align: 'center' })
+        .text('Price (Rs.)', 400, headerY + 5, { width: 100, align: 'center' });
 
     doc.fillColor('black'); // Reset text color
     doc.moveDown(1.5);
 
     // Add Table Rows
+    const rowHeight = 25;
     order.orderItems.forEach((item, index) => {
         const isEvenRow = index % 2 === 0;
-        const backgroundColor = isEvenRow ? '#f9f9f9' : '#ffffff'; // Alternating row colors
+        const rowY = doc.y;
 
-        // Add row background
+        // Set alternating row background colors
         doc
-            .rect(40, doc.y, 500, 25)
-            .fill(backgroundColor)
-            .stroke()
-            .fillColor('black')
-            .text(item.productId.name, 50, doc.y + 5, { width: 150 })
-            .text(item.quantity.toString(), 250, doc.y + 5, { width: 100, align: 'center' })
-            .text(item.price.toString(), 400, doc.y + 5, { width: 100, align: 'center' });
+            .rect(40, rowY, 500, rowHeight)
+            .fill(isEvenRow ? '#f9f9f9' : '#ffffff')
+            .stroke();
 
-        doc.moveDown(1.3);
+        // Add row content
+        doc
+            .fillColor('black')
+            .text(item.productId.name, 50, rowY + 5, { width: 150, ellipsis: true })
+            .text(item.quantity.toString(), 250, rowY + 5, { width: 100, align: 'center' })
+            .text(item.price.toString(), 400, rowY + 5, { width: 100, align: 'center' });
+
+        doc.y += rowHeight; // Move to the next row
     });
 
     // Footer Section
@@ -239,6 +245,7 @@ const frontDownload = async (req, res) => {
     // Finalize the PDF and end the stream
     doc.end();
 };
+
 
 module.exports = {
     download,

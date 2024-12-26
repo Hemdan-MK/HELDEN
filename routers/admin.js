@@ -104,7 +104,13 @@ router.delete('/couponManagement/delete/:id', couponController.deleteCoupon)
 
 
 
-// router.delete('/offerManagement', offerController)
-
+router.get('/offerManagement', offerController.loadOffer)
+router.get('/offerManagement/getCategories', offerController.getCategory)
+router.get('/offerManagement/getProducts', offerController.getProducts)
+router.post("/offerManagement/create", offerController.createOffer); // Add a new offer
+router.get("/offerManagement/get", offerController.getOffers); // Get all offers
+router.get("/offerManagement/getOffer/:id", offerController.specific); // Get all offers
+router.put("/offerManagement/update/:id", offerController.updateOffer); // Update an offer by ID
+router.delete("/offerManagement/delete/:id", offerController.deleteOffer); // Delete an offer by ID
 
 module.exports = router

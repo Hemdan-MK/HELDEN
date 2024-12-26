@@ -14,6 +14,7 @@ const loadOrderManagement = async (req, res) => {
 
         // Fetch paginated orders
         const orders = await Order.find()
+            .sort({createdAt : -1})
             .populate('userId')
             .populate('orderItems.productId')
             .skip(skip)
@@ -133,6 +134,7 @@ const accept = async (req, res) => {
             await wallet.save();
         } else {
             const newWallet = new Wallet({ userId: order.userId, balance: order.totalPrice });
+            newWallet.balance += order.totalAmount;
             newWallet.transactions.push({
                 amount: order.totalAmount,
                 type: 'Credit',

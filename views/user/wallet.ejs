@@ -215,17 +215,22 @@
 				const userId = "<%= user.id %>"; // Pass userId dynamically
 				const response = await fetch(`/wallet/${userId}?page=${page}&limit=${limit}`);
 				const wallet = await response.json();
+				console.log(wallet);
 
 				// Handle Wallet Balance
 				const walletBalance = document.getElementById("wallet-balance");
-				walletBalance.textContent = `₹ ${wallet.balance.toFixed(2)}`;
+				walletBalance.textContent = `₹ ${wallet?.balance || 0}`;
+
 
 				// Handle Transaction History
 				const transactionHistory = document.getElementById("transaction-history");
 				transactionHistory.innerHTML = ""; // Clear previous entries
 
-				wallet.transactions.forEach((transaction, index) => {
-					const row = `
+				if(wallet.transactions.length === 0) {
+					transactionHistory.innerHTML = "<tr><td colspan='5'>No past transactions found</td></tr>";
+				} else {
+					wallet.transactions.forEach((transaction, index) => {
+						const row = `
 						<tr>
 							<td>${(page - 1) * limit + index + 1}</td>
 							<td>₹ ${transaction.amount.toFixed(2)}</td>
@@ -234,8 +239,9 @@
 							<td>${new Date(transaction.createdAt).toLocaleString()}</td>
 						</tr>
 					`;
-					transactionHistory.insertAdjacentHTML("beforeend", row);
-				});
+						transactionHistory.insertAdjacentHTML("beforeend", row);
+					});
+				}
 
 				// Render Pagination Controls
 				renderPagination(wallet.totalPages, wallet.currentPage);

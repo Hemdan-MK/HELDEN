@@ -30,6 +30,8 @@ const loadShop = async (req, res) => {
             isDeleted: false,
             category: { $in: activeCategoryIds },
         }).sort({ _id: -1 });
+        console.log(products);
+        
 
         // Render the shop page with the filtered products
         return res.status(200).render('user/shop', { user: req.session.user, products });
@@ -74,7 +76,7 @@ const loadDash = async (req, res) => {
 // Orders session
 const loadOrders = async (req, res) => {
     const userId = req.session.user.id; // Assuming session stores user data
-    const orders = await Order.find({ userId }).populate('orderItems.productId');
+    const orders = await Order.find({ userId }).populate('orderItems.productId').sort({ createdAt: -1 });
     try {
         return res.status(200).render('user/order', { orders, user: req.session.user });
     } catch (error) {

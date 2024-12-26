@@ -399,6 +399,12 @@ const orderPlace = async (req, res) => {
             req.session.shipping = 'Free Shipping';
         }
 
+        // FOR PRODUCT VALIDATION
+        req.session.checkProductStatus = true
+        console.log('----------------------------------------------------------------');
+        console.log(req.session)
+        console.log('----------------------------------------------------------------');
+
 
         console.log('----------------------------------------------------------------');
         console.log(req.session);

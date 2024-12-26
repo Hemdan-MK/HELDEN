@@ -6,7 +6,7 @@ const Cart = require('../models/cartModel'); // Adjust the path to your Product 
 // Middleware to check product status
 const checkProductStatus = async (req, res, next) => {
     try {
-        if (req.body.checkProductStatus === true) {
+        if (req.session.checkProductStatus === true) {
             // If 'cartProducts' exists in request body, proceed with validation logic
             const { userId } = req.body;
 

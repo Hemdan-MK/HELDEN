@@ -37,31 +37,29 @@ const PDFDocument = require("pdfkit");
 
 const getDashboard = async (req, res) => {
     try {
-        // 1. Total Orders
+        // Fetch total orders
         const totalOrders = await Order.countDocuments();
 
-        // 2. Revenue
+        // Calculate total revenue
         const revenueResult = await Order.aggregate([
-            { $match: { status: 'Completed' } }, // Only consider completed orders
+            { $match: { status: 'Completed' } },
             { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } }
         ]);
-        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+        const totalRevenue = revenueResult[0]?.totalRevenue || 0;
 
-        // 3. Top-Selling Products
+        // Fetch top-selling products
         const topProducts = await Order.aggregate([
-            { $match: { status: 'Completed' } }, // Filter only orders with status 'COMPLETED'
-            { $unwind: "$orderItems" }, // Flatten orderItems array
+            { $match: { status: 'Completed' } },
+            { $unwind: "$orderItems" },
             { $group: { _id: "$orderItems.productId", totalSold: { $sum: "$orderItems.quantity" } } },
             { $sort: { totalSold: -1 } },
-            { $limit: 50 } // Limit to top 50 products
+            { $limit: 50 }
         ]);
         const topSellingProducts = await Product.populate(topProducts, { path: "_id", select: "name price" });
 
-        console.log('topSellingProducts : ' + topSellingProducts);
-
-        // 4. Top Sold-Out Categories
+        // Fetch top category based on sales
         const categorySales = await Order.aggregate([
-            { $match: { status: 'Completed' } }, // Filter only orders with status 'COMPLETED'
+            { $match: { status: 'Completed' } },
             { $unwind: "$orderItems" },
             { $lookup: { from: "products", localField: "orderItems.productId", foreignField: "_id", as: "product" } },
             { $unwind: "$product" },
@@ -69,24 +67,13 @@ const getDashboard = async (req, res) => {
             { $sort: { totalSold: -1 } },
             { $limit: 1 }
         ]);
-        const topCategory = await Category.findById(categorySales[0]?._id);
+        const topCategory = categorySales.length > 0
+            ? await Category.findById(categorySales[0]._id)
+            : null;
 
-        // 5. Overall Discount (Total Discount Applied)
-        // const discountResult = await Product.aggregate([
-        //     { $match: { offerPrice: { $exists: true, $gt: 0 }, status: 'Completed' } }, // Products with offers
-        //     {
-        //         $project: {
-        //             name: 1,
-        //             discount: { $subtract: ["$price", "$offerPrice"] },
-        //             discountPercentage: {
-        //                 $multiply: [{ $divide: [{ $subtract: ["$price", "$offerPrice"] }, "$price"] }, 100]
-        //             }
-        //         }
-        //     }
-        // ]);
-        // const overallDiscount = discountResult.reduce((acc, p) => acc + p.discount, 0);
-
-        const overallDiscount = await Order.aggregate([
+        // Calculate total discount applied
+        const discountResult = await Order.aggregate([
+            { $match: { status: 'Completed' } },
             { $unwind: "$orderItems" },
             {
                 $project: {
@@ -113,74 +100,49 @@ const getDashboard = async (req, res) => {
                 }
             }
         ]);
+        const overallDiscount = discountResult[0]?.totalDiscount || 0;
 
-        console.log("Total Discount:", overallDiscount[0]?.totalDiscount || 0);
+        // Fetch sales data (daily, weekly, monthly)
+        const calculateSales = (startDate, endDate) =>
+            Order.aggregate([
+                { $match: { createdAt: { $gte: startDate, $lt: endDate }, status: 'Completed' } },
+                { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+            ]);
 
-        // 6. Daily/weekly/Monthly Sales
-        const dailySales = await Order.aggregate([
-            {
-                $match: { createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }, status: 'Completed' }
-            },
-            { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const startOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+        const [dailySalesResult, weeklySalesResult, monthlySalesResult] = await Promise.all([
+            calculateSales(startOfDay, new Date()),
+            calculateSales(startOfWeek, new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)),
+            calculateSales(startOfMonth, startOfNextMonth)
         ]);
 
-        const weeklySales = await Order.aggregate([
-            {
-                $match: {
-                    createdAt: {
-                        $gte: new Date(new Date().setDate(new Date().getDate() - new Date().getDay())), // Start of the week (Sunday)
-                        $lt: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 7)) // End of the week (next Sunday)
-                    },
-                    status: 'Completed'
-                }
-            },
-            {
-                $group: { _id: null, total: { $sum: "$totalAmount" } }
-            }
-        ]);
+        const dailySales = dailySalesResult[0]?.total || 0;
+        const weeklySales = weeklySalesResult[0]?.total || 0;
+        const monthlySales = monthlySalesResult[0]?.total || 0;
 
-        const monthlySales = await Order.aggregate([
-            {
-                $match: {
-                    createdAt: {
-                        $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-                        $lt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
-                    },
-                    status: 'Completed'
-                }
-            },
-            { $group: { _id: null, total: { $sum: "$totalAmount" } } }
-        ]);
-
-        console.log("====== Admin Dashboard Data ======");
-        console.log("Total Orders: ", totalOrders);
-        console.log("Total Revenue: $", totalRevenue);
-        console.log("Top-Selling Products: ", topSellingProducts.map(p => `${p._id.name} - ${p.totalSold} sold`));
-        console.log("Top Sold-Out Category: ", topCategory?.name || "No Category Found");
-        console.log("Overall Discount: $", overallDiscount);
-        console.log("Daily Sales: $", dailySales.length > 0 ? dailySales[0].total : 0);
-        console.log("Daily Sales: $", dailySales);
-        console.log("Weekly Sales: $", weeklySales.length > 0 ? weeklySales[0].total : 0);
-        console.log("Weekly Sales: $", weeklySales);
-        console.log("Monthly Sales: $", monthlySales.length > 0 ? monthlySales[0].total : 0);
-
-
+        // Render the dashboard
         res.status(200).render("admin/dashboard", {
             admin: 'hemdan',
-            topSellingProducts,
-            topCategory,
             totalOrders,
             totalRevenue,
-            overallDiscount: overallDiscount[0]?.totalDiscount,
-            dailySales: dailySales.length > 0 ? dailySales[0].total : 0,
-            weeklySales: weeklySales.length > 0 ? weeklySales[0].total : 0,
-            monthlySales: monthlySales.length > 0 ? monthlySales[0].total : 0,
-            // filter: 'daily' // Default filter to daily sales
-        })
+            topSellingProducts,
+            topCategory,
+            overallDiscount,
+            dailySales,
+            weeklySales,
+            monthlySales
+        });
     } catch (error) {
         console.error("Error calculating dashboard stats:", error.message);
+        res.status(500).send("Internal Server Error");
     }
 };
+
 
 // Load Login Page
 
@@ -336,6 +298,7 @@ const getCustomSalesData = async (req, res) => {
         const customSales = await Order.aggregate([
             {
                 $match: {
+                    status: { $in: ['Pending', 'Shipping', 'Completed', 'Cancelled'] },
                     createdAt: {
                         $gte: new Date(startDate),
                         $lte: new Date(endDate)
@@ -371,7 +334,7 @@ const getCustomSalesData = async (req, res) => {
 const pdf = async (req, res) => {
     try {
         // Fetch orders
-        const orders = await Order.find({ status: { $nin: ['Failed', 'Cancelled'] } })
+        const orders = await Order.find({ status: { $in: ['Pending', 'Shipping', 'Completed', 'Cancelled'] } })
             .populate("userId")
             .populate("orderItems.productId");
 
@@ -532,7 +495,7 @@ function drawTableBorders(doc, startX, startY, columnWidths, rowHeight) {
 
 const excel = async (req, res) => {
     try {
-        const orders = await Order.find({ status: { $nin: ['Failed', 'Cancelled'] } }).populate("userId").populate("orderItems.productId");
+        const orders = await Order.find({ status: { $in: ['Pending', 'Shipping', 'Completed', 'Cancelled'] } }).populate("userId").populate("orderItems.productId");
 
         // Aggregate overall discount and revenue
         const [overallDiscount, revenueResult] = await Promise.all([
@@ -634,7 +597,11 @@ const modalFilter = async (req, res) => {
     try {
         const { filterType, startDate, endDate } = req.body;
 
-        let matchStage = { status: "Completed" }; // Only completed orders
+        let matchStage = {
+            status: {
+                $in: ['Pending', 'Shipping', 'Completed', 'Cancelled']
+            }
+        };
         const today = new Date();
 
         // Function to validate and parse dates
@@ -678,8 +645,8 @@ const modalFilter = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const ordTable = await Order.find(matchStage)
-        .populate("userId","name email")
-        .populate("orderItems.productId");
+            .populate("userId", "name email")
+            .populate("orderItems.productId");
 
         // Aggregation pipeline
         // 
@@ -709,7 +676,7 @@ const modalFilter = async (req, res) => {
                 }
             }
         ]);
-        
+
 
         // Total count and revenue
         const summary = await Order.aggregate([
@@ -749,7 +716,12 @@ const modalPdf = async (req, res) => {
     try {
         const { filterType, startDate, endDate } = req.query;
 
-        let matchStage = { status: "Completed" }; // Default to 'Completed' orders
+        let matchStage = {
+            status: {
+                $in: ['Pending', 'Shipping', 'Completed', 'Cancelled']
+            }
+        };
+
         const today = new Date();
 
         // Function to validate and parse dates
@@ -789,11 +761,11 @@ const modalPdf = async (req, res) => {
 
         // Fetch filtered orders
         const orders = await Order.find(matchStage)
-            .populate("userId","name email")
+            .populate("userId", "name email")
             .populate("orderItems.productId");
 
-             
-            
+
+
         // Generate PDF Document
         const doc = new PDFDocument({ margin: 30 });
         const filename = `sales_report_${Date.now()}.pdf`;
@@ -868,7 +840,11 @@ const modalExcel = async (req, res) => {
         const { filterType, startDate, endDate } = req.query;
 
         // Reuse the same logic for filtering sales
-        let matchStage = { status: "Completed" };
+        let matchStage = {
+            status: {
+                $in: ['Pending', 'Shipping', 'Completed', 'Cancelled']
+            }
+        };
         if (filterType === "custom") {
             matchStage.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
         }

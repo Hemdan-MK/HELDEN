@@ -10,7 +10,13 @@ const wallet = async (req, res) => {
         const wallet = await Wallet.findOne({ userId });
 
         if (!wallet) {
-            return res.status(404).json({ message: "Wallet not found" });
+            return res.status(404).json({
+                message: "Wallet not found",
+                balance: 0,
+                transactions: [],
+                totalPages: 0,
+                currentPage: 0,
+            });
         }
 
         // Paginate transactions

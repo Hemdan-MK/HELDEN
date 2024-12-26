@@ -2,78 +2,138 @@
 <html lang="en">
 
 <head>
-<!-- Required meta tags -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Admin Panel</title>
-<!-- End plugin css for this page -->
-<!-- inject:css -->
-<!-- endinject -->
-<!-- Layout styles -->
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Custom CSS -->
 <link rel="stylesheet" href="/admin/admin.css">
-<!-- End layout styles -->
-<!-- <link rel="shortcut icon" href="assets/images/favicon.png" /> -->
+<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+	/* Custom Styles */
+	body {
+		font-family: 'Poppins', sans-serif !important;
+		background-color: #121212;
+		color: white;
+		margin: 0;
+		padding: 0;	}
+
+	
+
+	.card {
+		border-radius: 8px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	}
+
+	table {
+		border-collapse: collapse;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	thead th {
+		background-color: #007bff;
+		color: white;
+		text-transform: uppercase;
+	}
+
+	tbody tr:hover {
+		background-color: #f1f1f1;
+		transition: background-color 0.3s ease;
+	}
+
+	.btn-ban,
+	.btn-view {
+		cursor: pointer;
+	}
+
+	.badge-outline-danger {
+		border: 1px solid red;
+		color: red;
+		padding: 5px 10px;
+	}
+
+	.badge-outline-success {
+		border: 1px solid green;
+		color: green;
+		padding: 5px 10px;
+	}
+
+	.table-responsive {
+		margin-top: 20px;
+	}
+
+	.userInfoView {
+		margin-top: 30px;
+		background: white;
+		padding: 20px;
+		border-radius: 8px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	}
+
+	.search input {
+		border-radius: 20px;
+	}
+
+	.btn-primary {
+		border-radius: 20px;
+	}
+</style>
 </head>
 
 <body>
 	<div class="container-scroller">
-		<!-- partial:partials/_sidebar.html -->
+		<!-- Sidebar -->
 		<%- include('./layout/sidebar') %>
 
-		<!-- partial -->
-		<div class="container-fluid page-body-wrapper">
-			<!-- partial:partials/_navbar.html -->
-			<nav class="navbar p-0 fixed-top d-flex flex-row">
-			</nav>
+		<!-- Main Content -->
+		<div class="cont page-body-wrapper">
 
-			<!-- partial -->
-			<div class="row p-3">
+			<!-- Main Panel -->
+			<div class="col" style="width: 100%;height: 100vh;">
 				<div class="col-12 grid-margin">
 					<div class="card">
 						<div class="card-body">
 							<h4 class="card-title">Users Status</h4>
+
+							<!-- Search Bar -->
+							<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
+								<input type="text" class="form-control" placeholder="Search users">
+								<button style="height: 33px; margin-left: 10px;" class="btn btn-primary">Search</button>
+							</form>
+
+							<!-- Table -->
 							<div class="table-responsive">
-								<form class="nav-link mt-2 mt-md-0  d-lg-flex search">
-									<input type="text" class="form-control" placeholder="Search users">
-									<button style="height: 33px;margin: 3px 0px 0px 10px;" class="btn btn-primary">Search</button>
-								</form>
-								<table class="table">
+								<table class="table text-center table-striped">
 									<thead>
 										<tr>
-											<th> Username</th>
-											<th> Email</th>
-											<th> Role</th>
-											<th> Join Date </th>
-											<th> Ban </th>
-											<th> View </th>
+											<th>Username</th>
+											<th>Email</th>
+											<th>Role</th>
+											<th>Join Date</th>
+											<th>Ban</th>
+											<th>View</th>
 										</tr>
 									</thead>
 									<tbody>
-										<% user.forEach((value)=> { %>
+										<% user.forEach((value) => { %>
 										<tr>
+											<td><%= value.name %></td>
+											<td><%= value.email %></td>
+											<td><%= value.role %></td>
 											<td>
-												<%= value.name %>
-											</td>
-											<td>
-												<%= value.email %>
-											</td>
-											<td>
-												<%= value.role %>
-											</td>
-											<td>
-												<% const createdAt=new Date(value.createdAt); const day=createdAt.getDate(); const
-                            month=createdAt.getMonth() + 1; const year=createdAt.getFullYear(); const formattedDate=day
-                            + ":" + month + ":" + year; %>
+												<% const createdAt = new Date(value.createdAt); const day = createdAt.getDate(); const month = createdAt.getMonth() + 1; const year = createdAt.getFullYear(); const formattedDate = day + ":" + month + ":" + year; %>
 												<%= formattedDate %>
 											</td>
 											<td>
-												<button data-id="<%= value.email  %>" class="badge badge-outline-danger btn-ban">
-													<%= value.isDeleted?'Unban':'Ban' %>
+												<button data-id="<%= value.email %>" class="badge badge-outline-danger btn-ban">
+													<%= value.isDeleted ? 'Unban' : 'Ban' %>
 												</button>
 											</td>
 											<td>
-												<button data-id="<%= value.email  %>" class="badge badge-outline-warning btn-view">View</button>
+												<button data-id="<%= value.email %>" class="badge badge-outline-warning btn-view">View</button>
 											</td>
 										</tr>
 										<% }); %>
@@ -84,19 +144,33 @@
 					</div>
 				</div>
 			</div>
-			<div style="margin-top:100px ;" class="col-md-4 grid-margin stretch-card userInfoView">
-
+		</div>
+	</div>
+	<div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="userDetailModalLabel">User Details</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<!-- User details dynamically added here -->
+					<p><strong>Username:</strong> <span id="modalUsername"></span></p>
+					<p><strong>Email:</strong> <span id="modalEmail"></span></p>
+					<p><strong>Role:</strong> <span id="modalRole"></span></p>
+					<p><strong>Join Date:</strong> <span id="modalJoinDate"></span></p>
+					<p><strong>Status:</strong> <span id="modalStatus"></span></p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				</div>
 			</div>
 		</div>
-		<!-- main-panel ends -->
 	</div>
-	<!-- page-body-wrapper ends -->
-	</div>>
 
-
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
-		// ban
-		// ------------
+		// Ban button functionality
 		document.querySelectorAll('.btn-ban').forEach(button => {
 			button.addEventListener('click', async function() {
 				const email = this.getAttribute('data-id');
@@ -122,8 +196,7 @@
 						timer: 1500,
 						showConfirmButton: false,
 						timerProgressBar: true,
-					});	
-
+					});
 
 					// Update button text and class based on the new ban status
 					if(result.isDeleted) {
@@ -142,10 +215,8 @@
 				}
 			});
 		});
-	</script>
-	<script>
-		// view
-		//----------- 
+
+		// View button functionality
 		document.querySelectorAll('.btn-view').forEach(button => {
 			button.addEventListener('click', async function() {
 				const email = this.getAttribute('data-id');
@@ -159,30 +230,29 @@
 					});
 
 					if(!response.ok) {
-						throw new Error('Failed to fetch user details'); // Handle HTTP errors
+						throw new Error('Failed to fetch user details');
 					}
 
 					const userDetails = await response.json();
 
-					// Display user details in the UI (e.g., in a modal or dedicated section)
-					document.querySelector('.userInfoView').innerHTML = `
-            <h4>User Details</h4>
-            <p><strong>Username:</strong> ${userDetails.username}</p>
-            <p><strong>Email:</strong> ${userDetails.email}</p>
-            <p><strong>Role:</strong> ${userDetails.role}</p>
-            <p><strong>Join Date:</strong> ${userDetails.joinDate}</p>
-            <p><strong>Status:</strong> ${userDetails.isDeleted ? 'Banned' : 'Active'}</p>
-          `;
+					// Populate modal content
+					document.getElementById('modalUsername').textContent = userDetails.username;
+					document.getElementById('modalEmail').textContent = userDetails.email;
+					document.getElementById('modalRole').textContent = userDetails.role;
+					document.getElementById('modalJoinDate').textContent = userDetails.joinDate;
+					document.getElementById('modalStatus').textContent = userDetails.isDeleted ? 'Banned' : 'Active';
+
+					// Show modal
+					const userDetailModal = new bootstrap.Modal(document.getElementById('userDetailModal'));
+					userDetailModal.show();
 
 				} catch (error) {
-					console.log('Error fetching user details:', error);
+					console.error('Error fetching user details:', error);
 					alert('Failed to retrieve user details');
 				}
 			});
 		});
 	</script>
-
-
 
 </body>
 

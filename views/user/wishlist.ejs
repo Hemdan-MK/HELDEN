@@ -65,12 +65,22 @@
 							<!-- Wishlist Header -->
 							<div class="col-12 text-center mb-4">
 								<h1 class="text-dark font-weight-bold">Wishlist</h1>
-								<p class="text-muted"><%= wishlist.length %> ITEM<%= wishlist.length > 1 ? 'S' : '' %></p>
+								<p class="text-muted">
+									<% if (!wishlist || wishlist.length === 0) { %>
+									No items in wishlist
+									<% } else { %>
+									<%= wishlist.length %> ITEM<%= wishlist.length > 1 ? 'S' : '' %>
+									<% } %>
+								</p>
 							</div>
 
 							<!-- Wishlist Group -->
 							<div class="col-12 col-md-10 col-lg-8">
-								<% if (wishlist.length > 0) { %>
+								<% if (!wishlist || wishlist.length === 0) { %>
+								<div class="alert alert-info" role="alert">
+									Your wishlist is currently empty.
+								</div>
+								<% } else { %>
 								<div class="card shadow-sm border-0 mb-4">
 									<% wishlist.forEach((item) => { %>
 									<!-- Product Card -->
@@ -95,10 +105,6 @@
 									<!-- Divider -->
 									<hr class="my-3">
 									<% }); %>
-								</div>
-								<% } else { %>
-								<div class="alert alert-info" role="alert">
-									Your wishlist is currently empty.
 								</div>
 								<% } %>
 							</div>
@@ -213,8 +219,8 @@
 							});
 
 							const result = await response.json();
-                            console.log(result);
-                            
+							console.log(result);
+
 							if(result.success) {
 								// Remove the deleted product from the DOM
 								// button.closest('.product-item').remove();
@@ -224,11 +230,11 @@
 									title: 'Deleted!',
 									text: result.message,
 									showConfirmButton: false,
-									timer : 1500
+									timer: 1500
 								});
-                                setTimeout(()=>{
+								setTimeout(() => {
 									location.reload();
-								},1200) 
+								}, 1200)
 							} else {
 								Swal.fire({
 									icon: 'error',
