@@ -165,12 +165,16 @@
 								icon: 'success',
 								title: 'Product Added!',
 								text: result.message
+							}).then(()=>{
+								window.location.reload();
 							});
 						} else {
 							Swal.fire({
 								icon: 'warning',
 								title: 'Already in Cart',
 								text: result.message
+							}).then(()=>{
+								window.location.reload();
 							});
 						}
 					} catch (error) {
@@ -291,6 +295,7 @@
 			})
 		});
 	</script>
+	
 	<!--===============================================================================================-->
 	<script src="users/js/main.js"></script>
 	<!--===============================================================================================-->

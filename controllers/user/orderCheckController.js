@@ -13,14 +13,21 @@ const checkout = async (req, res) => {
         const userId = req.session.user.id;
 
         // Fetch the latest order of the user
-        const order = await Order.findOne({ userId })
+        const order = await Order.findOne({
+            userId,
+        })
             .populate('userId')
             .populate("orderItems.productId") // Populate product details
             .sort({ createdAt: -1 }); // Fetch the most recent order
 
+
+        const coupons = await Coupon.find();
+
+
         // If no order is found
         if (!order || !order.orderItems || order.orderItems.length === 0) {
             return res.render("user/checkout", {
+                coupons: null,
                 order: null,
                 subtotal: 0,
                 shipping: 0,
@@ -44,19 +51,6 @@ const checkout = async (req, res) => {
             }
         });
 
-        let condition = false;
-
-        // Check if any product supports Cash on Delivery
-        order.orderItems.forEach((item) => {
-            if (item.productId && item.productId.cashOnDelivery) {
-                condition = true; // Set condition to true if cashOnDelivery is true
-            }
-        });
-
-
-        console.log('con : ' + condition);
-
-
         // Calculate discount
         const offerTotal = mrp - subtotal;
 
@@ -77,8 +71,10 @@ const checkout = async (req, res) => {
         const estimatedDeliveryDate = new Date();
         estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5); // Add 5 days
 
+
         // Render the checkout page with the calculated values
         return res.render("user/checkout", {
+            coupons,
             order,
             subtotal,
             shipping,
@@ -88,7 +84,6 @@ const checkout = async (req, res) => {
             user: req.session.user,
             address: order.userId.address,
             estimatedDeliveryDate: estimatedDeliveryDate.toDateString(),
-            condition
         });
 
     } catch (error) {
@@ -143,7 +138,7 @@ const done = async (req, res) => {
             validUpto: { $gte: new Date() },
             // isDeleted: false
         });
-        
+
         console.log('coupen : ' + coupon);
 
         // Update order details
@@ -167,8 +162,8 @@ const done = async (req, res) => {
 
         order.totalAmount = totalAmount;
 
-        console.log('coupon : ' +coupon);
-        
+        console.log('coupon : ' + coupon);
+
         if (coupon) {
             order.coupon = coupon._id;
             // Update coupon count
@@ -178,7 +173,7 @@ const done = async (req, res) => {
 
         // Remove any expiry
         order.expiresAt = undefined;
-        console.log(coupon); 
+        console.log(coupon);
         delete req.session.checkProductStatus
 
         // Save the updated order
@@ -213,7 +208,7 @@ const coupen = async (req, res) => {
             status: true,
             validFrom: { $lte: new Date() },
             validUpto: { $gte: new Date() },
-            couponCount:{$gt : 0}
+            couponCount: { $gt: 0 }
         });
 
         if (!coupon) {
@@ -331,7 +326,7 @@ const returnOrder = async (req, res) => {
 
 const success = async (req, res) => {
     const orderId = req.session.orderId;
-    res.render('user/successPage',{orderId})
+    res.render('user/successPage', { orderId })
 }
 
 

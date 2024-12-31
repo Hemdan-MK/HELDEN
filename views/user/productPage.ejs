@@ -43,6 +43,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
 <style>
+	/* CSS for the selected button border color */
+	.size-btn.selected {
+		border: 2px solid red;
+		/* Add your desired border color */
+		background-color: #FF6F61;
+		/* Add your desired background color */
+	}
+
 	.img-magnifier-container {
 		position: relative;
 		display: inline-block;
@@ -64,6 +72,18 @@
 		box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 		z-index: 1000;
 	}
+
+	.out-of-stock {
+		padding: 10px 20px;
+		font-size: 16px;
+		background-color: #dcdcdc;
+		/* Light gray for out of stock */
+		color: #aaa;
+		/* Gray color for the text */
+		cursor: none;
+		/* Show a disabled cursor */
+	}
+
 </style>
 
 </head>
@@ -139,47 +159,25 @@
 
 						<!--  -->
 						<div class="p-t-33">
-							<!-- Size Selection -->
+							<!-- Size Selection as Buttons -->
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-203 flex-c-m respon6">
 									Size
 								</div>
 								<div class="size-204 respon6-next">
-									<div class="rs1-select2 bor8 bg0">
-										<select class="js-select2 product-size" name="size">
-											<% product.sizes.forEach((siz)=> { %>
-											<option value="<%= siz %>">
-												<%= siz %>
-											</option>
-											<% }) %>
-										</select>
-										<div class="dropDownSelect2"></div>
-									</div>
-								</div>
-							</div>
-
-							<!-- Color Selection -->
-							<div class="flex-w flex-r-m p-b-10">
-								<div class="size-203 flex-c-m respon6">
-									Color
-								</div>
-								<div class="size-204 respon6-next">
-									<div class="rs1-select2 bor8 bg0">
-										<select class="js-select2 product-color" name="color">
-											<% product.colors.forEach((clr)=> { %>
-											<option value="<%= clr %>">
-												<%= clr %>
-											</option>
-											<% }) %>
-										</select>
-										<div class="dropDownSelect2"></div>
+									<div class="size-buttons">
+										<% product.stockManagement.forEach((stock) => { %>
+										<button class="size-btn btn btn-behance m-1 <%= stock.quantity === 0 ? 'out-of-stock' : '' %>" data-size="<%= stock.size %>" data-stock="<%= stock.quantity %>">
+											<%= stock.size %>
+										</button>
+										<% }) %>
 									</div>
 								</div>
 							</div>
 
 							<!-- Quantity and Add to Cart Button -->
 							<div class="flex-w flex-r-m p-b-10">
-								<div class="size-204 flex-w flex-m respon6-next">
+								<div class="d-block size-204 flex-w flex-m respon6-next">
 									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
 										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-minus"></i>
@@ -189,19 +187,17 @@
 											<i class="fs-16 zmdi zmdi-plus"></i>
 										</div>
 									</div>
-									<% if (product.stock===0) { %>
-									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-outofstock-btn">
-										<span>Out of Stock</span>
-									</button>
-									<% } else { %>
-									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail" data-product-id="<%= product._id %>">
+									<!-- Add to Cart Button initially hidden -->
+									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail mt-5 w-100" style="display: block;">
 										<span>Add To Cart</span>
 									</button>
-									<% } %>
+									<!-- Out of Stock Button initially hidden -->
+									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-outofstock-btn" style="display: none;">
+										<span>Out of Stock</span>
+									</button>
 								</div>
 							</div>
 						</div>
-
 
 						<!--  -->
 						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
@@ -210,9 +206,37 @@
 									<i class="zmdi zmdi-favorite" style="font-size: 24px;"></i>
 								</a>
 							</div>
-							<% if (product.stock > 0 && product.stock <= 5 ) {%>
-							<h5 class="text-danger">only <%= product.stock %> is left !!! Buy FAST</h5>
-							<% } %>
+							<!-- Low Stock Warning (Initially Hidden) -->
+							<div class="low-stock-message" style="display: none;">
+							</div>
+						</div>
+						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
+							<div class="row  w-100">
+								<div class="">
+									<div class="p-lr-28 p-lr-15-sm">
+
+										<div class="flex-w flex-t p-b-7">
+											<span class="stext-102 cl3 size-205">
+												Warranty
+											</span>
+											<span class="stext-102 cl6 size-206">
+												<%= product.warranty %>
+											</span>
+										</div>
+
+
+										<div class="flex-w flex-t p-b-7">
+											<span class="stext-102 cl3 size-205">
+												Return Policy
+											</span>
+
+											<span class="stext-102 cl6 size-206">
+												<%= product.returnPolicy %>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -224,100 +248,13 @@
 					<!-- Nav tabs -->
 					<ul class="nav nav-tabs" role="tablist">
 						<li class="nav-item p-b-10">
-							<a class="nav-link active" data-toggle="tab" href="#description" role="tab">Description</a>
-						</li>
-
-						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#information" role="tab">Additional
-								information</a>
-						</li>
-
-						<li class="nav-item p-b-10">
 							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<%=
 										product.reviews.length %>)</a>
 						</li>
 					</ul>
 
 					<!-- Tab panes -->
-					<div class="tab-content p-t-43">
-						<!-- - -->
-						<div class="tab-pane fade show active" id="description" role="tabpanel">
-							<div class="how-pos2 p-lr-15-md">
-								<p class="stext-102 cl6">
-									<%= product.description %>
-								</p>
-							</div>
-						</div>
-
-						<!-- - -->
-						<div class="tab-pane fade" id="information" role="tabpanel">
-							<div class="row">
-								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-									<ul class="p-lr-28 p-lr-15-sm">
-
-
-										<li class="flex-w flex-t p-b-7">
-											<span class="stext-102 cl3 size-205">
-												Warranty
-											</span>
-
-											<span class="stext-102 cl6 size-206">
-												<%= product.warranty %>
-											</span>
-										</li>
-
-										<li class="flex-w flex-t p-b-7">
-											<span class="stext-102 cl3 size-205">
-												Cash On Delivery
-											</span>
-											<% if (product.cashOnDelivery.toString()=== 'true') {%>
-											<span class="stext-102 cl6 size-206">
-												Yes
-											</span>
-											<% } else { %>
-											<span class="stext-102 cl6 size-206">
-												Nooo
-											</span>
-											<% } %>
-										</li>
-
-										<li class="flex-w flex-t p-b-7">
-											<span class="stext-102 cl3 size-205">
-												Color
-											</span>
-
-											<span class="stext-102 cl6 size-206">
-												<% product.colors.forEach(element=> { %>
-												<%= element %>,
-												<% }); %>
-											</span>
-										</li>
-
-										<li class="flex-w flex-t p-b-7">
-											<span class="stext-102 cl3 size-205">
-												Size
-											</span>
-
-											<span class="stext-102 cl6 size-206">
-												<% product.sizes.forEach(element=> { %>
-												<%= element %>,
-												<% }); %>
-											</span>
-										</li>
-										<li class="flex-w flex-t p-b-7">
-											<span class="stext-102 cl3 size-205">
-												Retunr Policy
-											</span>
-
-											<span class="stext-102 cl6 size-206">
-												<%= product.returnPolicy %>
-											</span>
-										</li>
-									</ul>
-								</div>
-							</div>
-						</div>
-
+					<div class="tab-content p-t-43">						
 						<!-- - -->
 						<div class="tab-pane fade" id="reviews" role="tabpanel">
 							<div class="row">
@@ -579,14 +516,7 @@
 	<script src="/users/vendor/bootstrap/js/bootstrap.min.js"></script>
 	<!--===============================================================================================-->
 	<script src="/users/vendor/select2/select2.min.js"></script>
-	<script>
-		$(".js-select2").each(function() {
-			$(this).select2({
-				minimumResultsForSearch: 20,
-				dropdownParent: $(this).next('.dropDownSelect2')
-			});
-		})
-	</script>
+
 	<!--===============================================================================================-->
 	<script src="/users/vendor/daterangepicker/moment.min.js"></script>
 	<script src="/users/vendor/daterangepicker/daterangepicker.js"></script>
@@ -686,175 +616,225 @@
 	<!--===============================================================================================-->
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {
-			const productId = "<%= product._id %>"; // Dynamically pass product ID from EJS
-			const addToCartButtons = document.querySelectorAll(".js-addcart-detail");
+			const sizeButtons = document.querySelectorAll(".size-btn");
+			const addToCartButton = document.querySelector(".js-addcart-detail");
+			const outOfStockButton = document.querySelector(".js-outofstock-btn");
+			const lowStockMessage = document.querySelector(".low-stock-message");
+			const decrementButtons = document.querySelectorAll(".btn-num-product-down");
+			const incrementButtons = document.querySelectorAll(".btn-num-product-up");
+			const quantityInputs = document.querySelectorAll(".num-product");
+			const productId = "<%= product._id %>";
 
-			// Fetch the current stock from the backend
-			async function fetchStock() {
+			let selectedSize = null;
+
+			// Fetch stock from backend
+			async function fetchStock(size) {
 				try {
-					const response = await fetch(`/shop/product/${productId}/stock`);
+					const response = await fetch(`/shop/product/stock`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							productId,
+							size
+						}),
+					});
 					const data = await response.json();
-					console.log('-------------------------------->>');
-					console.log(data);
-
 					if(data.success) {
-						return data.stock; // Return the stock value
+						return data.stock;
 					} else {
-						console.error('Failed to fetch product stock');
-						return 0; // Default to 0 if fetching fails
+						console.error("Failed to fetch product stock");
+						return 0;
 					}
 				} catch (error) {
-					console.error('Error fetching stock:', error);
-					return 0; // Default to 0 in case of error
+					console.error("Error fetching stock:", error);
+					return 0;
 				}
 			}
 
-			// Decrement quantity
-			const decrementButtons = document.querySelectorAll('.btn-num-product-down');
-			decrementButtons.forEach(button => {
-				button.addEventListener('click', async function() {
-					const inputField = this.nextElementSibling;
-					let numProduct = Number(inputField.value);
-					const stock = await fetchStock(); // Get current stock from backend
-					if(numProduct > 1) {
-						inputField.value = numProduct - 1;
+			// Size button click event
+			sizeButtons.forEach((button) => {
+				button.addEventListener("click", async () => {
+					selectedSize = button.getAttribute("data-size");
+					const stockQuantity = parseInt(button.getAttribute("data-stock"));
+
+					console.log("Size selected:", selectedSize, "Stock:", stockQuantity);
+
+					if(stockQuantity > 0) {
+						addToCartButton.style.display = "block";
+						outOfStockButton.style.display = "none";
+						addToCartButton.setAttribute("data-size", selectedSize);
+
+						if(stockQuantity <= 5) {
+							lowStockMessage.style.display = "block";
+							lowStockMessage.innerHTML = `<h5 class="text-danger">Only ${stockQuantity} left in size ${selectedSize}! Buy FAST!</h5>`;
+						} else {
+							lowStockMessage.style.display = "none";
+						}
 					} else {
-						inputField.value = 1; // Minimum value
+						addToCartButton.style.display = "none";
+						outOfStockButton.style.display = "block";
+						lowStockMessage.style.display = "none";
 					}
+				});
+			});
+
+			// Update quantity
+			function updateQuantity(inputField, change) {
+				let numProduct = Number(inputField.value) + change;
+				numProduct = Math.max(1, numProduct); // Minimum 1
+				inputField.value = numProduct;
+			}
+
+			// Decrement quantity
+			decrementButtons.forEach((button) => {
+				button.addEventListener("click", function() {
+					if (!selectedSize) {
+						Swal.fire({
+							title: "Choose Size",
+							icon: "warning",
+							confirmButtonText: "OK",
+						});
+						return;
+					}
+					updateQuantity(this.nextElementSibling, -1);
 				});
 			});
 
 			// Increment quantity
-			const incrementButtons = document.querySelectorAll('.btn-num-product-up');
-			incrementButtons.forEach(button => {
-				button.addEventListener('click', async function() {
+			incrementButtons.forEach((button) => {
+				button.addEventListener("click", async function() {
+					if (!selectedSize) {
+						Swal.fire({
+							title: "Choose Size",
+							icon: "warning",
+							confirmButtonText: "OK",
+						});
+						return;
+					}
 					const inputField = this.previousElementSibling;
+					const stock = await fetchStock(selectedSize);
 					let numProduct = Number(inputField.value);
-					const stock = await fetchStock(); // Get current stock from backend
-					if(numProduct < 5 && numProduct < stock) {
+
+					if(numProduct < stock && numProduct < 5) {
 						inputField.value = numProduct + 1;
 					} else if(numProduct >= 5) {
-						inputField.value = 5; // Limit to 5 items
+						inputField.value = 5;
 						Swal.fire({
 							title: "Purchase Limit Reached",
 							text: "You can only add up to 5 items to the cart.",
 							icon: "warning",
-							confirmButtonText: "OK"
+							confirmButtonText: "OK",
 						});
 					} else if(numProduct >= stock) {
-						inputField.value = stock; // Limit to stock
+						inputField.value = stock;
 					}
 				});
 			});
 
-			// Manual input validation
-			const quantityInputs = document.querySelectorAll('.num-product');
-			quantityInputs.forEach(input => {
-				input.addEventListener('input', async function() {
+			// Manual quantity input validation
+			quantityInputs.forEach((input) => {
+				input.addEventListener("input", async function() {
+					const stock = await fetchStock(selectedSize);
 					let numProduct = Number(this.value);
-					const stock = await fetchStock(); // Get current stock from backend
+
 					if(numProduct < 1 || isNaN(numProduct)) {
-						this.value = 1; // Set to minimum value
+						this.value = 1;
 					} else if(numProduct > stock) {
-						this.value = stock; // Limit to stock
+						this.value = stock;
 						Swal.fire({
 							title: "Stock Limit Exceeded",
 							text: `Only ${stock} items are available in stock.`,
 							icon: "warning",
-							confirmButtonText: "OK"
+							confirmButtonText: "OK",
 						});
 					} else if(numProduct > 5) {
-						this.value = 5; // Limit to 5 items
+						this.value = 5;
 						Swal.fire({
 							title: "Purchase Limit Exceeded",
 							text: "You can only add up to 5 items to the cart.",
 							icon: "warning",
-							confirmButtonText: "OK"
+							confirmButtonText: "OK",
 						});
 					}
 				});
 			});
 
-			// Add to Cart Button Click Event
-			addToCartButtons.forEach(button => {
-				button.addEventListener("click", async function() {
-					const selectedSize = document.querySelector(".product-size").value;
-					const selectedColor = document.querySelector(".product-color").value;
-					const quantity = document.querySelector(".num-product").value;
+			// Add to Cart
+			addToCartButton.addEventListener("click", async function() {
+				const quantity = document.querySelector(".num-product").value;
 
-					// Log data for debugging
-					console.log('--------------------------------------------------------');
-					console.log(productId, selectedSize, selectedColor, quantity);
-					console.log('--------------------------------------------------------');
+				if(!selectedSize) {
+					Swal.fire({
+						title: "Select Options",
+						text: "Please select a size before adding to cart.",
+						icon: "warning",
+						confirmButtonText: "OK",
+					});
+					return;
+				}
 
-					// Validate if size and color are selected
-					if(!selectedSize || !selectedColor) {
+				const stock = await fetchStock(selectedSize);
+				if(Number(quantity) > stock) {
+					Swal.fire({
+						title: "Stock Limit Exceeded",
+						text: `Only ${stock} items are available in stock.`,
+						icon: "warning",
+						confirmButtonText: "OK",
+					});
+					return;
+				}
+
+				try {
+					const response = await fetch("/shop/product-detail/add-to-cart", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							productId,
+							size: selectedSize,
+							quantity
+						}),
+					});
+
+					const data = await response.json();
+					if(data.success && data.problem) {
 						Swal.fire({
-							title: "Select Options",
-							text: "Please select both size and color before adding to cart.",
+							title: "Too Much!",
+							text: data.message,
 							icon: "warning",
-							confirmButtonText: "OK"
+							confirmButtonText: "OK",
 						});
-						return;
-					}
-
-					// Validate if the quantity is greater than the stock
-					const stock = await fetchStock();
-					if(Number(quantity) > stock) {
+					} else if(data.success) {
 						Swal.fire({
-							title: "Stock Limit Exceeded",
-							text: `Only ${stock} items are available in stock.`,
-							icon: "warning",
-							confirmButtonText: "OK"
+							title: "Added to Cart!",
+							text: "The product has been successfully added to your cart.",
+							icon: "success",
+							confirmButtonText: "OK",
 						});
-						return;
-					}
-
-					// Send the data to the backend (add to cart)
-					try {
-						const response = await fetch("/shop/product-detail/add-to-cart", {
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								productId,
-								size: selectedSize,
-								color: selectedColor,
-								quantity
-							})
-						});
-
-						const data = await response.json();
-
-						if(data.success) {
-							Swal.fire({
-								title: "Added to Cart!",
-								text: "The product has been successfully added to your cart.",
-								icon: "success",
-								confirmButtonText: "OK"
-							});
-						} else {
-							Swal.fire({
-								title: "Error!",
-								text: "There was an error adding the product to your cart. Please try again.",
-								icon: "error",
-								confirmButtonText: "OK"
-							});
-						}
-					} catch (error) {
-						console.error("Error adding to cart:", error);
+					} else {
 						Swal.fire({
 							title: "Error!",
-							text: "Something went wrong. Please try again later.",
+							text: "There was an error adding the product to your cart. Please try again.",
 							icon: "error",
-							confirmButtonText: "OK"
+							confirmButtonText: "OK",
 						});
 					}
-				});
+				} catch (error) {
+					console.error("Error adding to cart:", error);
+					Swal.fire({
+						title: "Error!",
+						text: "Something went wrong. Please try again later.",
+						icon: "error",
+						confirmButtonText: "OK",
+					});
+				}
 			});
 		});
 	</script>
+
 	<!--===============================================================================================-->
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {
@@ -864,7 +844,7 @@
 				button.addEventListener('click', function(e) {
 					e.preventDefault();
 
-					
+
 
 					const productId = '<%= product._id  %>'
 					// const nameProduct = productContainer.querySelector('.js-name-detail') ? productContainer.querySelector('.js-name-detail').textContent : 'Unknown Product';

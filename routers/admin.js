@@ -54,6 +54,8 @@ router.post('/categoryManagement/add',upload_2.single('categoryImage'),categoryC
 router.get('/categoryManagement/del', categoryController.loadDelCategoryPage);
 router.patch("/categoryManagement/recoverCategory/:id", categoryController.recoverCategory);
 router.delete("/categoryManagement/permanentDeleteCategory/:id", categoryController.permanentDeleteCategory);
+router.post("/categoryManagement/offers/add", categoryController.addOffer);
+router.delete("/categoryManagement/offers/delete", categoryController.removeOffer);
 
 
 // Product management routes

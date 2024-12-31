@@ -93,6 +93,10 @@ const wishCart = async (req, res) => {
         const productExists = cart.items.find(item => item.productId.toString() === productId);
 
         if (productExists) {
+            await Wishlist.updateOne(
+                { userId },
+                { $pull: { products: { productId } } } // Remove the product from the wishlist
+            );
             return res.json({
                 success: false,
                 message: 'This product is already in your cart.'
@@ -102,6 +106,11 @@ const wishCart = async (req, res) => {
         // Add product to cart
         cart.items.push({ productId, quantity: 1 }); // Default quantity is 1
         await cart.save();
+        
+        await Wishlist.updateOne(
+            { userId },
+            { $pull: { products: { productId } } } // Remove the product from the wishlist
+        );
 
         return res.json({
             success: true,

@@ -85,13 +85,38 @@
 						<div class="card-body">
 							<h4 class="card-title">Update Product</h4>
 							<form class="updatePdt" id="updateProductForm" enctype="multipart/form-data">
-								<input type="hidden" class="form-control" id="productId" name="productId" value="<%= product.id %>" required>
+								<!-- Hidden Fields -->
+								<input type="hidden" id="productId" name="productId" value="<%= product.id %>">
 
-								<!-- Product Name -->
-								<div class="form-group">
-									<label for="productName">Product Name</label>
-									<input type="text" class="form-control" id="productName" name="productName" value="<%= product.name %>" required>
+								<!-- Basic Product Information -->
+								<div class="row">
+									<div class="col-md-12">
+										<div class="form-group">
+											<label for="productName" class="form-label">Product Name</label>
+											<input type="text" class="form-control" id="productName" name="productName" value="<%= product.name %>">
+											<p id="productNameError" class="text-danger" style="display:none;">Please enter a valid product name.</p>
+										</div>
+									</div>
 								</div>
+
+								<!-- Price Information -->
+								<div class="row">
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="productPrice" class="form-label">Price</label>
+											<input type="number" class="form-control" id="productPrice" name="productPrice" value="<%= product.price %>">
+											<p id="productPriceError" class="text-danger" style="display:none;">Please enter a valid price.</p>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="offerPrice" class="form-label">Offer Price</label>
+											<input type="number" class="form-control" id="offerPrice" name="productOfferPrice" value="<%= product.offerPrice %>">
+											<p id="offerPriceError" class="text-danger" style="display:none;">Please enter a valid offer price.</p>
+										</div>
+									</div>
+								</div>
+
 
 								<label>Product Images</label>
 								<div class="d-flex  justify-content-between">
@@ -122,92 +147,85 @@
 									</div>
 								</div>
 
-								<!-- Product Description -->
+								<!-- Product Details -->
 								<div class="form-group">
-									<label for="productDescription">Description</label>
-									<textarea class="form-control" id="productDescription" name="productDescription" required><%= product.description %></textarea>
+									<label for="productDescription" class="form-label">Description</label>
+									<textarea class="form-control" id="productDescription" name="productDescription" rows="3"><%= product.description %></textarea>
+									<p id="productDescriptionError" class="text-danger" style="display:none;">Please enter a product description.</p>
 								</div>
 
-								<!-- Product Price -->
-								<div class="form-group">
-									<label for="productPrice">Price</label>
-									<input type="number" class="form-control" id="productPrice" name="productPrice" value="<%= product.price %>" required>
+								<!-- Additional Information -->
+								<div class="row">
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="productTags" class="form-label">Tags</label>
+											<input type="text" class="form-control" id="productTags" name="productTags" placeholder="Comma separated" value="<%= product.tags %>">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="productBrand" class="form-label">Brand</label>
+											<input type="text" class="form-control" id="productBrand" name="productBrand" value="<%= product.brand %>">
+										</div>
+									</div>
 								</div>
 
-								<!-- Offer Price -->
-								<div class="form-group">
-									<label for="productOfferPrice">Offer Price</label>
-									<input type="number" class="form-control" id="productOfferPrice" name="productOfferPrice" value="<%= product.offerPrice %>">
-								</div>
-
-								<!-- Stock Quantity -->
-								<div class="form-group">
-									<label for="productStock">Stock</label>
-									<input type="number" class="form-control" id="productStock" name="productStock" value="<%= product.stock %>" required>
-								</div>
-
-								<!-- Product Tags -->
-								<div class="form-group">
-									<label for="productTags">Tags (comma-separated)</label>
-									<input type="text" class="form-control" id="productTags" name="productTags" value="<%= product.tags.join(', ') %>">
-								</div>
-
-								<!-- Sizes -->
-								<div class="form-group">
-									<label for="productSizes">Sizes (comma-separated)</label>
-									<input type="text" class="form-control" id="productSizes" name="productSizes" value="<%= product.sizes.join(', ') %>">
-								</div>
-
-								<!-- Colors -->
-								<div class="form-group">
-									<label for="productColors">Colors (comma-separated)</label>
-									<input type="text" class="form-control" id="productColors" name="productColors" value="<%= product.colors.join(', ') %>">
+								<!-- Warranty and Return Policy -->
+								<div class="row">
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="productWarranty" class="form-label">Warranty</label>
+											<input type="text" class="form-control" id="productWarranty" name="productWarranty" placeholder="e.g., 1 year" value="<%= product.warranty %>">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="productReturnPolicy" class="form-label">Return Policy</label>
+											<input type="text" class="form-control" id="productReturnPolicy" name="productReturnPolicy" placeholder="e.g., 30 days" value="<%= product.returnPolicy %>">
+										</div>
+									</div>
 								</div>
 
 								<!-- Category Selection -->
 								<div class="form-group">
-									<label for="productCategory">Category</label>
-									<select class="form-control" id="productCategory" name="productCategory" required>
-										<% categories.forEach(category=> { %>
-										<option value="<%= category._id %>" <%=category._id.equals(product.category) ? 'selected' : '' %>><%=
-                                                        category.name %>
+									<label for="productCategory" class="form-label">Category</label>
+									<select class="form-control" id="productCategory" name="productCategory">
+										<% categories.forEach(category => { %>
+										<option value="<%= category._id %>" <%= category._id.equals(product.category) ? 'selected' : '' %>>
+											<%= category.name %>
 										</option>
 										<% }) %>
 									</select>
+									<p id="productCategoryError" class="text-danger" style="display:none;">Please select a product category.</p>
 								</div>
 
-								<!-- Brand -->
+								<!-- TYPE -->
 								<div class="form-group">
-									<label for="productBrand">Brand</label>
-									<input type="text" class="form-control" id="productBrand" name="productBrand" value="<%= product.brand %>">
-								</div>
-
-								<!-- Cash on Delivery -->
-								<div class="form-group">
-									<label for="productCashOnDelivery">Cash on Delivery</label>
-									<select class="form-control" id="productCashOnDelivery" name="productCashOnDelivery">
-										<option value="true" <%=product.cashOnDelivery ? 'selected' : '' %>>Yes
-										</option>
-										<option value="false" <%=!product.cashOnDelivery ? 'selected' : '' %>>No
-										</option>
+									<label for="productType" class="form-label">Select Type</label>
+									<select class="form-control" id="productType" name="productType">
+										<option value="TopWare" <%= product.productType === 'TopWare' ? 'selected' : '' %>>TopWare</option>
+										<option value="BottomWare" <%= product.productType === 'BottomWare' ? 'selected' : '' %>>BottomWare</option>
 									</select>
 								</div>
 
-								<!-- Warranty -->
-								<div class="form-group">
-									<label for="productWarranty">Warranty</label>
-									<input type="text" class="form-control" id="productWarranty" name="productWarranty" value="<%= product.warranty %>">
-								</div>
+								<!-- Stock Management -->
+								<div class="row mt-3">
+									<div class="col-12">
+										<div class="form-group">
+											<label class="form-label">Stock Management</label>
+											<div id="stockManagementContainer" class="row g-3">
 
-								<!-- Return Policy -->
-								<div class="form-group">
-									<label for="productReturnPolicy">Return Policy</label>
-									<input type="text" class="form-control" id="productReturnPolicy" name="productReturnPolicy" value="<%= product.returnPolicy %>">
+											</div>
+											<input type="hidden" name="productStockManagement" id="productStockManagement" value="<%= JSON.stringify(product.stockManagement || []) %>">
+										</div>
+									</div>
 								</div>
 
 								<!-- Submit Button -->
-								<div class="d-flex justify-content-center">
-									<button type="submit" class="btn btn-primary mt-2 w-50">Update</button>
+								<div class="text-center">
+									<button type="submit" id="Updatesubmit" class="btn btn-primary btn-submit mt-3 w-50">
+										Update Product
+									</button>
 								</div>
 							</form>
 						</div>
@@ -299,11 +317,113 @@
 	<script>
 		// Handle form submission using fetch with PUT method
 		document.getElementById('updateProductForm').addEventListener('submit', function(e) {
-			e.preventDefault(); // Prevent default form submission
+			event.preventDefault();
+
+			// Clear previous error messages
+			const errorMessages = document.querySelectorAll(".error-message");
+			errorMessages.forEach((msg) => msg.remove());
+
+			// Get form values
+			const productId = document.getElementById("productId").value.trim();
+			const productName = document.getElementById("productName").value.trim();
+			const productPrice = parseFloat(document.getElementById("productPrice").value);
+			const offerPrice = parseFloat(document.getElementById("offerPrice").value) || null;
+			const productDescription = document.getElementById("productDescription").value.trim();
+			const productTags = document.getElementById("productTags").value.trim();
+			const productBrand = document.getElementById("productBrand").value.trim();
+			const productWarranty = document.getElementById("productWarranty").value.trim();
+			const productReturnPolicy = document.getElementById("productReturnPolicy").value.trim();
+			const productCategory = document.getElementById("productCategory").value;
+			const productType = document.getElementById("productType").value
+			const productStockManagement = document.getElementById("productStockManagement").value;
+
+
+			let hasError = false;
+
+
+			function showError(inputId, message) {
+				const inputElement = document.getElementById(inputId);
+
+
+				if(!inputElement) {
+					console.error(`Element with id "${inputId}" not found.`);
+					return;
+				}
+				const error = document.createElement("p");
+				error.classList.add("text-danger", "error-message");
+				error.textContent = message;
+				inputElement.parentElement.appendChild(error);
+				hasError = true;
+			}
+
+			// Validate fields
+			if(!productId) {
+				console.error("Missing product ID. This field is required for updates.");
+				hasError = true;
+			}
+
+			if(!productName) {
+				showError("productName", "Product name is required.");
+			}
+
+			if(isNaN(productPrice) || productPrice <= 0) {
+				showError("productPrice", "Please enter a valid price greater than zero.");
+			}
+
+			if(offerPrice !== null && (isNaN(offerPrice) || offerPrice >= productPrice)) {
+				showError("offerPrice", "Offer price must be less than the original price.");
+			}
+
+			if(!productDescription) {
+				showError("productDescription", "Product description is required.");
+			}
+
+			if(!productCategory) {
+				showError("productCategory", "Please select a product category.");
+			}
+
+			if(productTags && productTags.split(",").length > 10) {
+				showError("productTags", "You can add up to 10 tags only.");
+			}
+
+			if(productBrand && productBrand.length > 50) {
+				showError("productBrand", "Brand name cannot exceed 50 characters.");
+			}
+
+			if(productWarranty && !/^\d+\s*(day|year|month)s?$/i.test(productWarranty)) {
+				showError("productWarranty", "Warranty must be in the format (e.g., 1 year, 6 months).");
+			}
+
+			if(productReturnPolicy && !/^\d+\s*(day|month)s?$/i.test(productReturnPolicy)) {
+				showError("productReturnPolicy", "Return policy must be in the format (e.g., 30 days, 1 month).");
+			}
+
+			// Validate stock management (if applicable)
+			if(productStockManagement) {
+				try {
+					const stockData = JSON.parse(productStockManagement);
+					if(!Array.isArray(stockData)) {
+						throw new Error();
+					}
+					stockData.forEach((item) => {
+						if(item.quantity < 0) {
+							console.log(item.quantity);
+							
+							throw new Error();
+						}
+					});
+				} catch {
+					showError("productStockManagement", "Invalid stock management data. Please check your inputs.");
+				}
+			}
+
+			if(hasError) {
+				Swal.fire("Error", "Please fix the highlighted errors.", "error");
+				return;
+			}
 
 			const formData = new FormData(this); // Collect form data
 
-			// Use fetch to send the data to the server with PUT method
 			fetch('/admin/productManagement/update', {
 					method: 'PUT',
 					body: formData
@@ -317,7 +437,7 @@
 							text: 'Product updated successfully!',
 							confirmButtonColor: '#28a745', // Green button for success
 							confirmButtonText: 'OK'
-						}).then(()=>{
+						}).then(() => {
 
 							window.location.href = '/admin/productManagement'; // Redirect to product list page
 						})
@@ -335,6 +455,106 @@
 					console.error('Error:', error);
 					alert('An error occurred. Please try again.');
 				});
+		});
+
+
+
+		document.addEventListener('DOMContentLoaded', function() {
+			const categorySelect = document.getElementById('productType');
+			const stockContainer = document.getElementById('stockManagementContainer');
+			const stockManagementInput = document.getElementById('productStockManagement');
+
+			// Size configurations
+			const sizeConfigs = {
+				'bottomware': Array.from({
+					length: 9
+				}, (_, i) => (28 + (i * 2)).toString()),
+				'topware': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+			};
+
+
+			function createStockFields(category) {
+				const productType = categorySelect.value.toLowerCase();
+				console.log("THIS IS MY PRODUCT TYPE-->" + productType);
+
+
+
+
+				// Get appropriate sizes
+				const sizes = sizeConfigs[productType] || [];
+				console.log("THIS IS MY SIZE-->" + sizes);
+
+				// Get current stock data
+				let currentStock = {};
+				try {
+					const stockData = JSON.parse(stockManagementInput.value);
+					stockData.forEach(item => {
+						currentStock[item.size] = item.quantity;
+					});
+				} catch (e) {
+					console.error('Error parsing stock data:', e);
+				}
+
+				// Create HTML for stock inputs
+				stockContainer.innerHTML = '';
+				sizes.forEach(size => {
+					const quantity = currentStock[size] || 0;
+					const col = document.createElement('div');
+					col.className = 'col-md-3 mb-3';
+					col.innerHTML = `
+        <div class="input-group">
+          <span class="input-group-text">${size}</span>
+          <input 
+            type="number" 
+            class="form-control stock-input" 
+            data-size="${size}" 
+            value="${quantity}"
+            min="0"
+            placeholder="Quantity"
+          >
+        </div>
+      `;
+					stockContainer.appendChild(col);
+				});
+
+				// Add change listeners to new inputs
+				document.querySelectorAll('.stock-input').forEach(input => {
+					input.addEventListener('change', updateStockManagement);
+				});
+
+				// Update hidden input
+				updateStockManagement();
+			}
+
+			// Function to update hidden stock management input
+			function updateStockManagement() {
+				const stockData = [];
+				document.querySelectorAll('.stock-input').forEach(input => {
+					const quantity = parseInt(input.value) || 0;
+					if(quantity >= 0) {
+						stockData.push({
+							size: input.dataset.size,
+							quantity: quantity
+						});
+					}
+				});
+				stockManagementInput.value = JSON.stringify(stockData);
+			}
+
+			// Listen for category changes
+			categorySelect.addEventListener('change', function() {
+				createStockFields(this);
+			});
+
+			// Initialize stock fields with current category
+			createStockFields(categorySelect);
+
+			// Add change listeners to existing stock inputs
+			document.querySelectorAll('.stock-input').forEach(input => {
+				input.addEventListener('change', updateStockManagement);
+			});
+
+
 		});
 	</script>
 

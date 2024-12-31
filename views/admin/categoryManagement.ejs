@@ -10,6 +10,28 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="/admin/admin.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+	.modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+
+
+	.close {
+		cursor: pointer;
+		background: none;
+		border: none;
+		font-size: 20px;
+	}
+</style>
 </head>
 
 <body>
@@ -20,9 +42,6 @@
 		<!-- Page Content -->
 		<div class="container-fluid page-body-wrapper">
 			<!-- Navbar -->
-			<nav class="navbar navbar-expand-lg navbar-light fixed-top">
-				<!-- <a class="navbar-brand bg-transparent text-danger " href="/admin/categoryManagement">Category Panel</a> -->
-			</nav>
 
 			<!-- Main Content -->
 			<div class="container mt-5 pt-4">
@@ -33,12 +52,20 @@
 				</div>
 
 				<!-- Search Form -->
-				<div class="row mb-3">
-					<div class="col-md-6 offset-md-3">
-						<form class="form-inline justify-content-around">
-							<input type="text" class="form-control mr-2 w-75" placeholder="Search categories">
-							<button class="btn btn-primary">Search</button>
-						</form>
+				<div class="col">
+					<div class="row mb-3">
+						<div class="col-md-6 offset-md-3">
+							<form class="form-inline justify-content-around">
+								<input type="text" class="form-control mr-2 w-75" placeholder="Search categories">
+								<button class="btn btn-primary">Search</button>
+							</form>
+						</div>
+					</div>
+					<div class="row mt-4">
+						<div class="col-md-6 offset-md-3 text-center mb-3">
+							<button class="btn btn-primary btn-lg" id="btn-add-cat">Create New Category</button>
+							<button class="btn btn-danger btn-lg" id="btn-del-cat">Unlisted Categories</button>
+						</div>
 					</div>
 				</div>
 
@@ -57,6 +84,7 @@
 										<th>Updated Date</th>
 										<th>Update</th>
 										<th>Status</th>
+										<th>Offers</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -83,6 +111,15 @@
 										<td>
 											<button data-id="<%= category._id %>" class="btn btn-success btn-sm btn-delete">Unlink</button>
 										</td>
+										<% if(!category.offerApplied) {%>
+										<td>
+											<button data-id="<%= category._id %>" class="btn btn-behance btn-sm btn-offer">Add Offer</button>
+										</td>
+										<% } else { %>
+										<td>
+											<button data-id="<%= category._id %>" class="btn btn-danger btn-sm btn-offer-delete">Remove Offer</button>
+										</td>
+										<% } %>
 									</tr>
 									<% }); %>
 								</tbody>
@@ -91,12 +128,44 @@
 					</div>
 				</div>
 
-				<!-- Action Buttons -->
-				<div class="row mt-4">
-					<div class="col-md-6 offset-md-3 text-center">
-						<button class="btn btn-primary btn-lg mb-2" id="btn-add-cat">Create New Category</button>
-						<button class="btn btn-danger btn-lg" id="btn-del-cat">Unlisted Categories</button>
-					</div>
+				<div class="pagination">
+					<!-- Previous Page Button -->
+					<% if (currentPage > 1) { %>
+					<a href="/admin/categoryManagement?page=<%= currentPage - 1 %>&limit=<%= limit %>">Previous</a>
+					<% } %>
+
+					<!-- Page Numbers -->
+					<% for (let i = 1; i <= totalPages; i++) { %>
+					<a href="/admin/categoryManagement?page=<%= i %>&limit=<%= limit %>" <% if (i === currentPage) { %> class="active" <% } %>>
+						<%= i %>
+					</a>
+					<% } %>
+
+					<!-- Next Page Button -->
+					<% if (currentPage < totalPages) { %>
+					<a href="/admin/categoryManagement?page=<%= currentPage + 1 %>&limit=<%= limit %>">Next</a>
+					<% } %>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="offerModal" class="modal" style="display: none;">
+		<div class="modal-dialog w-100">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5>Add Offer</h5>
+					<button id="closeModal" class="close">&times;</button>
+				</div>
+				<div class="modal-body">
+					<form id="offerForm">
+						<input type="hidden" id="categoryId" name="categoryId">
+						<div class="form-group">
+							<label for="offerPercentage">Offer Percentage</label>
+							<input type="number" id="offerPercentage" name="offerPercentage" class="form-control" placeholder="Enter percentage" required>
+						</div>
+						<button type="submit" class="btn btn-primary">Save Offer</button>
+					</form>
 				</div>
 			</div>
 		</div>
@@ -158,6 +227,155 @@
 			window.location.href = '/admin/categoryManagement/del';
 		});
 	</script>
+	<script>
+		// Select modal and form elements
+		const offerModal = document.getElementById('offerModal');
+		const closeModalBtn = document.getElementById('closeModal');
+		const offerForm = document.getElementById('offerForm');
+		const categoryIdInput = document.getElementById('categoryId');
+		const offerPercentageInput = document.getElementById('offerPercentage');
+
+		// Event listener for the "Add Offer" button
+		document.querySelectorAll('.btn-offer').forEach(button => {
+			button.addEventListener('click', (event) => {
+				const categoryId = event.target.getAttribute('data-id');
+				categoryIdInput.value = categoryId; // Set category ID in the form
+				offerModal.style.display = 'flex'; // Show the modal
+			});
+		});
+
+		// Event listener to close the modal when clicking the close button
+		closeModalBtn.addEventListener('click', () => {
+			offerModal.style.display = 'none'; // Hide the modal
+		});
+
+		// Event listener to close the modal when clicking outside the modal content
+		offerModal.addEventListener('click', (event) => {
+			if(event.target === offerModal) {
+				offerModal.style.display = 'none'; // Close the modal when clicking outside
+			}
+		});
+
+		// Event listener for form submission
+		offerForm.addEventListener('submit', async (event) => {
+			event.preventDefault(); // Prevent default form submission
+
+			const categoryId = categoryIdInput.value;
+			const offerPercentage = offerPercentageInput.value;
+
+			// Validate offer percentage
+			if (!offerPercentage || offerPercentage <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Offer',
+            text: 'Please enter a valid offer percentage greater than 0.',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    if (offerPercentage > 70) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Offer',
+            text: 'The maximum allowed offer percentage is 70%.',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+			try {
+				// Send the data to the backend
+				const response = await fetch('/admin/categoryManagement/offers/add', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						categoryId,
+						offerPercentage
+					}),
+				});
+
+				if(response.ok) {
+					offerModal.style.display = 'none'; // Close the modal
+					Swal.fire({
+						icon: 'success',
+						title: 'Offer Added',
+						text: 'Offer has been successfully applied.',
+						confirmButtonText: 'OK'
+					}).then(() => {
+						window.location.reload();
+					});
+				} else {
+					const error = await response.json();
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: `Error adding offer: ${error.message}`,
+						confirmButtonText: 'OK'
+					});
+				}
+			} catch (error) {
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'There was an issue with the offer submission.',
+					confirmButtonText: 'OK'
+				});
+			}
+		});
+	</script>
+
+	<script>
+		// REMOVE OFFER
+		document.querySelectorAll('.btn-offer-delete').forEach(button => {
+			button.addEventListener('click', async (event) => {
+				const categoryId = event.target.getAttribute('data-id'); // Get the category ID
+
+				try {
+					// Send the data to the backend to remove the offer
+					const response = await fetch('/admin/categoryManagement/offers/delete', {
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							categoryId
+						}),
+					});
+
+					if(response.ok) {
+						Swal.fire({
+							icon: 'success',
+							title: 'Offer Removed',
+							text: 'The offer has been successfully removed.',
+							confirmButtonText: 'OK'
+						}).then(() => {
+							window.location.reload();
+						});
+
+					} else {
+						const error = await response.json();
+						Swal.fire({
+							icon: 'error',
+							title: 'Error',
+							text: `Error removing offer: ${error.message}`,
+							confirmButtonText: 'OK'
+						});
+					}
+				} catch (error) {
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: 'There was an issue with the offer removal.',
+						confirmButtonText: 'OK'
+					});
+				}
+			});
+		});
+	</script>
+
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>

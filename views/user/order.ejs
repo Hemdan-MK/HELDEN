@@ -319,7 +319,7 @@
 				// Populate modal with order details
 				let orderDetailsHTML = `<p><strong>Order ID:</strong> ${order._id}</p>
     <p><strong>Status:</strong> ${order.status}</p>
-    <p><strong>Total Amount:</strong> $${order.totalAmount}</p>
+    <p><strong>Total Amount:</strong> Rs. ${order.totalAmount}</p>
     <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
     <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
     <h3>Items:</h3>
@@ -333,7 +333,7 @@
                 <div>
                     <p style="margin: 5px 0;"><strong>Product Name:</strong> ${item.productId.name}</p>
                     <p style="margin: 5px 0;"><strong>Quantity:</strong> ${item.quantity}</p>
-                    <p style="margin: 5px 0;"><strong>Price:</strong> $${item.price}</p>
+                    <p style="margin: 5px 0;"><strong>Price:</strong> Rs. ${item.price}</p>
                 </div>
             </div>
         </li>`;

@@ -31,7 +31,7 @@ const filter = async (req, res) => {
 
         // 2. **Availability Filter**
         if (excludeOutOfStock) {
-            query.stock = { $gt: 0 };
+            query.stockManagement = { $elemMatch: { quantity: { $gt: 0 } } };
         }
 
         // 3. **Category Filter**

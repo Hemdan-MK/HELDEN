@@ -13,8 +13,10 @@ const loadOrderManagement = async (req, res) => {
         const totalOrders = await Order.countDocuments();
 
         // Fetch paginated orders
-        const orders = await Order.find()
-            .sort({createdAt : -1})
+        const orders = await Order.find({
+            expiresAt: { $exists: false }
+        })
+            .sort({ createdAt: -1 })
             .populate('userId')
             .populate('orderItems.productId')
             .skip(skip)

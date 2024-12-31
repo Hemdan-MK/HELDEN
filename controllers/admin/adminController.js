@@ -7,38 +7,13 @@ const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
 
 
-// Load Dashboard Page
-// const getDashboard = async (req, res) => {
-//     try {
-//         const topSellingProducts = [
-//             { name: 'Product A', sales: 150 },
-//             { name: 'Product B', sales: 120 }
-//         ];
-//         const topSoldOutCategory = { name: 'Category A', sales: 300 };
-//         const totalOrders = 450;
-//         const revenue = 5000;
-//         const overallDiscount = 25; // in percentage
-//         const filter = req.query['date-filter'] || 'daily';
-//         return res.status(200).render('admin/dashboard', {
-//             admin: req.session.admin,
-//             topSellingProducts,
-//             topSoldOutCategory,
-//             totalOrders,
-//             revenue,
-//             overallDiscount,
-//             filter
-//         });
-//     } catch (error) {
-//         console.error('Error loading dashboard:', error);
-//         return res.status(500).send('Server error');
-//     }
-// };
-
-
 const getDashboard = async (req, res) => {
     try {
         // Fetch total orders
-        const totalOrders = await Order.countDocuments();
+        const totalOrders = await Order.countDocuments({
+            status: { $in: ['Pending', 'Shipping', 'Completed'] },
+            expiresAt: { $exists: false }
+        });
 
         // Calculate total revenue
         const revenueResult = await Order.aggregate([
@@ -72,8 +47,8 @@ const getDashboard = async (req, res) => {
             : null;
 
         // Calculate total discount applied
-        const discountResult = await Order.aggregate([
-            { $match: { status: 'Completed' } },
+        const variation = await Order.aggregate([
+            { $match: { status: 'Completed', expiresAt: { $exists: false } } },
             { $unwind: "$orderItems" },
             {
                 $project: {
@@ -90,17 +65,17 @@ const getDashboard = async (req, res) => {
             },
             {
                 $project: {
-                    orderDiscount: { $subtract: ["$totalProductPrice", "$totalAmount"] }
+                    orderDiscount: { $subtract: ["$totalProductPrice", "$totalAmount"]  }
                 }
             },
             {
                 $group: {
                     _id: null,
-                    totalDiscount: { $sum: "$orderDiscount" }
+                    total: { $sum: "$orderDiscount" }
                 }
             }
         ]);
-        const overallDiscount = discountResult[0]?.totalDiscount || 0;
+        const overallDiscount = variation[0]?.total || 0;
 
         // Fetch sales data (daily, weekly, monthly)
         const calculateSales = (startDate, endDate) =>
@@ -201,6 +176,9 @@ const getSalesData = async (req, res) => {
     try {
         const dailySales = await Order.aggregate([
             {
+                $match: { expiresAt: { $exists: false }, status: "Completed" }
+            },
+            {
                 $project: {
                     day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
                     totalAmount: 1
@@ -218,6 +196,9 @@ const getSalesData = async (req, res) => {
         ]);
 
         const weeklySales = await Order.aggregate([
+            {
+                $match: { expiresAt: { $exists: false }, status: "Completed" }
+            },
             {
                 $project: {
                     year: { $year: "$createdAt" },  // Extract year
@@ -256,6 +237,9 @@ const getSalesData = async (req, res) => {
         ]);
 
         const monthlySales = await Order.aggregate([
+            {
+                $match: { expiresAt: { $exists: false }, status: "Completed" }
+            },
             {
                 $project: {
                     month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
@@ -302,7 +286,8 @@ const getCustomSalesData = async (req, res) => {
                     createdAt: {
                         $gte: new Date(startDate),
                         $lte: new Date(endDate)
-                    }
+                    },
+                    expiresAt: { $exists: false }
                 }
             },
             {
@@ -341,6 +326,9 @@ const pdf = async (req, res) => {
         // Aggregate overall discount and revenue
         const [overallDiscount, revenueResult] = await Promise.all([
             Order.aggregate([
+                {
+                    $match: { expiresAt: { $exists: false } }
+                },
                 { $unwind: "$orderItems" },
                 {
                     $project: {
@@ -500,6 +488,9 @@ const excel = async (req, res) => {
         // Aggregate overall discount and revenue
         const [overallDiscount, revenueResult] = await Promise.all([
             Order.aggregate([
+                {
+                    $match: { expiresAt: { $exists: false } }
+                },
                 { $unwind: "$orderItems" },
                 {
                     $project: {
@@ -600,7 +591,8 @@ const modalFilter = async (req, res) => {
         let matchStage = {
             status: {
                 $in: ['Pending', 'Shipping', 'Completed', 'Cancelled']
-            }
+            },
+            expiresAt: { $exists: false }
         };
         const today = new Date();
 
@@ -651,7 +643,9 @@ const modalFilter = async (req, res) => {
         // Aggregation pipeline
         // 
         const orders = await Order.aggregate([
-            { $match: matchStage }, // Match condition
+            {
+                $match: matchStage
+            },
             { $sort: { createdAt: -1 } }, // Sort by creation date
             { $skip: skip }, // Skip for pagination
             { $limit: limit }, // Limit for pagination
@@ -719,7 +713,8 @@ const modalPdf = async (req, res) => {
         let matchStage = {
             status: {
                 $in: ['Pending', 'Shipping', 'Completed', 'Cancelled']
-            }
+            },
+            expiresAt: { $exists: false }
         };
 
         const today = new Date();
@@ -758,6 +753,7 @@ const modalPdf = async (req, res) => {
                 $lte: validEndDate,
             };
         }
+
 
         // Fetch filtered orders
         const orders = await Order.find(matchStage)
@@ -843,7 +839,8 @@ const modalExcel = async (req, res) => {
         let matchStage = {
             status: {
                 $in: ['Pending', 'Shipping', 'Completed', 'Cancelled']
-            }
+            },
+            expiresAt: { $exists: false }
         };
         if (filterType === "custom") {
             matchStage.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };

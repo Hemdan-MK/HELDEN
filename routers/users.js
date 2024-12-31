@@ -102,8 +102,7 @@ router.post('/register/check-user', userController.checkuser);
 
 router.get('/shop/product-detail/:id', productDetailController.getProductDetail);
 router.post('/shop/product-detail/add-to-cart', checkUserStatus, productDetailController.addToCart);
-router.get('/shop/product/:id/stock', productDetailController.stock);
-
+router.post('/shop/product/stock', productDetailController.stock);
 
 
 
@@ -117,9 +116,6 @@ router.get('/cart/checkout', checkUserStatus, cartController.orderPlace);
 
 
 
-
-
-
 router.get('/forgot-password', accountController.forgotPassword);
 router.post('/forgot-password/request', accountController.ForgetPassRequest);
 router.post('/forgot-password/verify', accountController.ForgetPassverify);
@@ -128,8 +124,8 @@ router.post('/forgot-password/resendOtp', accountController.resendOTP);
 
 
 
-router.get("/download-receipt",downloadController.download)
-router.get('/download-invoice/:orderId',downloadController.frontDownload)
+router.get("/download-receipt",checkUserStatus,downloadController.download)
+router.get('/download-invoice/:orderId',checkUserStatus,downloadController.frontDownload)
 
 
 

@@ -9,7 +9,7 @@ const loadProductManagement = async (req, res) => {
     try {
         const products = await Products.find({ isDeleted: false }).populate('category');
         console.log(products);
-        
+
         if (!products || products.length === 0) {
             return res.status(200).render('admin/productManagement', { msg: 'No products found' });
         }
@@ -21,15 +21,19 @@ const loadProductManagement = async (req, res) => {
 }
 
 const loadUpdateProduct = async (req, res) => {
-    const productId = req.params.id; 
+    const productId = req.params.id;
     console.log('product updation : ' + productId);
 
     try {
-        const product = await Products.findById(productId).populate('category'); 
+        const product = await Products.findById(productId).populate('category');
         const categories = await Category.find();
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
+console.log("================================");
+console.log(product);
+console.log(product.productType);
+console.log("================================");
 
         // Render the update page with the product data
         return res.status(200).render('admin/productUpdate', { product, categories });
@@ -47,9 +51,23 @@ const updateProduct = async (req, res) => {
     console.log("---------------------- > ");
 
 
-    const { productId, productName, productDescription, productPrice, productOfferPrice, productStock, productTags, productSizes, productColors, productBrand, productCashOnDelivery, productWarranty, productReturnPolicy, productCategory } = req.body;
+    const {
+        productId,
+        productName,
+        productDescription,
+        productPrice,
+        productOfferPrice,
+        productStockManagement,
+        productTags,
+        productBrand,
+        productWarranty,
+        productReturnPolicy,
+        productCategory,
+        productType,
+    } = req.body;
 
     try {
+
         const product = await Products.findById(productId);
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
@@ -59,17 +77,14 @@ const updateProduct = async (req, res) => {
         product.description = productDescription;
         product.price = productPrice;
         product.offerPrice = productOfferPrice;
-        product.stock = productStock;
         product.tags = productTags;
-        product.sizes = productSizes;
-        product.colors = productColors;
         product.brand = productBrand;
-        product.cashOnDelivery = productCashOnDelivery;
         product.warranty = productWarranty;
         product.returnPolicy = productReturnPolicy;
         product.category = productCategory;
+        product.productType = productType;
         product.updatedAt = Date.now();
-        console.log(req.files);
+        product.stockManagement = JSON.parse(productStockManagement);
 
         const imageFields = ['productImage1', 'productImage2', 'productImage3', 'productImage4'];
         imageFields.forEach((field, index) => {
@@ -79,14 +94,14 @@ const updateProduct = async (req, res) => {
                 if (product.images[index]) {
                     const oldImagePath = product.images[index];
                     const absoluteOldImagePath = path.join(__dirname, '../../public', oldImagePath);
-        
+
                     console.log('Old image absolute path:', absoluteOldImagePath);
-        
+
                     if (fs.existsSync(absoluteOldImagePath)) {
                         fs.unlinkSync(absoluteOldImagePath);
                     }
                 }
-        
+
                 // Save new image URL
                 product.images[index] = `/productUploads/${file.filename}`;
             }
@@ -114,7 +129,7 @@ const deleteProduct = async (req, res) => {
             return res.status(404).send('Product not found');
         }
 
-        return res.status(200).json({ success: true }) 
+        return res.status(200).json({ success: true })
     } catch (error) {
         console.error('Error loading product update:', error);
         return res.status(500).json({ success: false });
@@ -134,8 +149,19 @@ const loadAddProductsPage = async (req, res) => {
 
 const postAddProductsPage = async (req, res) => {
     try {
-        const { productName, productDescription, productPrice, productOfferPrice, productStock, productTags, productSizes, productColors, productBrand, productCashOnDelivery, productWarranty, productReturnPolicy, productCategory } = req.body;
-
+        const {
+            productName,
+            productDescription,
+            productPrice,
+            productOfferPrice,
+            productStockManagement,
+            productTags,
+            productBrand,
+            productWarranty,
+            productReturnPolicy,
+            productCategory,
+            productType,
+        } = req.body;
 
 
         if (!req.files || req.files.length === 0) {
@@ -156,12 +182,10 @@ const postAddProductsPage = async (req, res) => {
             price: productPrice,
             offerPrice: productOfferPrice,
             images: imagePaths,
-            stock: productStock,
+            productType: productType,
+            stockManagement: JSON.parse(productStockManagement),
             tags: productTags.split(','),
-            sizes: productSizes.split(','),
-            colors: productColors.split(','),
             brand: productBrand,
-            cashOnDelivery: productCashOnDelivery,
             warranty: productWarranty,
             returnPolicy: productReturnPolicy,
             category: productCategory,
@@ -169,6 +193,7 @@ const postAddProductsPage = async (req, res) => {
             createdAt: Date.now(),
             updatedAt: Date.now()
         });
+
 
         await newProduct.save();
         return res.status(200).redirect('/admin/productManagement');
@@ -190,7 +215,7 @@ const loadDelProductPage = async (req, res) => {
 
 const recoverProducts = async (req, res) => {
     const { id } = req.params;
-    console.log('Recover req : '+id);
+    console.log('Recover req : ' + id);
 
     try {
         await Products.findByIdAndUpdate(id, { isDeleted: false });
@@ -204,7 +229,7 @@ const recoverProducts = async (req, res) => {
 // Function to permanently delete a product
 const permanentDeleteProducts = async (req, res) => {
     const { id } = req.params;
-    console.log('Permenetent delete req : '+id);
+    console.log('Permenetent delete req : ' + id);
 
     try {
         await Products.findByIdAndDelete(id);

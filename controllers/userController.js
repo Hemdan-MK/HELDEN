@@ -31,7 +31,7 @@ const loadShop = async (req, res) => {
             category: { $in: activeCategoryIds },
         }).sort({ _id: -1 });
         console.log(products);
-        
+
 
         // Render the shop page with the filtered products
         return res.status(200).render('user/shop', { user: req.session.user, products });
@@ -76,7 +76,10 @@ const loadDash = async (req, res) => {
 // Orders session
 const loadOrders = async (req, res) => {
     const userId = req.session.user.id; // Assuming session stores user data
-    const orders = await Order.find({ userId }).populate('orderItems.productId').sort({ createdAt: -1 });
+    const orders = await Order.find({
+        userId, expiresAt: { $exists: false }
+    }).populate('orderItems.productId').sort({ createdAt: -1 });
+
     try {
         return res.status(200).render('user/order', { orders, user: req.session.user });
     } catch (error) {
@@ -350,8 +353,7 @@ const resendOTP = async (req, res) => {
 const verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
-        console.log(req.session);
-        console.log(req.body);
+        
 
 
         // Find the OTP record associated with the email
@@ -390,15 +392,21 @@ const verifyOTP = async (req, res) => {
             role: userData.role || 'user', // Default to 'user' if not specified
             isValid: true,
         });
-
+        console.log('newUser : ');
+        console.log(newUser);
+        
         const savedUser = await newUser.save();
-        console.log("User saved successfully:", savedUser);
 
         // req.session.user.verified = true;
 
         // Delete the OTP record after successful verification
         await OTP.deleteOne({ email, otp });
-        delete req.session.user.password;
+
+        req.session.user = {
+            name: savedUser.name,
+            email: savedUser.email,
+            id: savedUser._id,
+        };
 
         // Redirect to a success page or respond with success message
         return res.status(200).json({

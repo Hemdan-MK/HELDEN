@@ -57,7 +57,7 @@
 									</thead>
 									<tbody>
 										<% products.forEach((product, index)=> { %>
-										<tr id="product-<%= product._id %>" data-name="<%= product.name %>" data-category="<%= product.category %>" data-price="<%= product.price %>" data-stock="<%= product.stock %>" data-image="<%= product.image %>">
+										<tr id="product-<%= product._id %>" data-name="<%= product.name %>" data-category="<%= product.category %>" data-price="<%= product.price %>" data-stock="<%= product.stockManagement.reduce((total, count) => total + count, 0) %>" data-image="<%= product.image %>">
 											<td>
 												<%= index + 1 %>
 											</td>
@@ -75,7 +75,11 @@
 												<%= product.price %>
 											</td>
 											<td>
-												<%= product.stock %>
+												<% if (Array.isArray(product.stockManagement) && product.stockManagement.length > 0) { %>
+												<%= product.stockManagement.reduce((total, stock) => total + stock.quantity, 0) %>
+												<% } else { %>
+												<span>No Stock Data</span>
+												<% } %>
 											</td>
 											<td>
 												<% const createdAt=new Date(product.createdAt); const
@@ -128,34 +132,40 @@
 			button.addEventListener('click', function(e) {
 				const productId = e.target.getAttribute('data-id');
 
-				// Perform soft delete using fetch
-				fetch(`/admin/productManagement/unlink`, {
-						method: 'PUT', // HTTP method
-						headers: {
-							'Content-Type': 'application/json' // Ensure the body is in JSON format
-						},
-						body: JSON.stringify({
-							productId: productId
-						}) // Data sent to the server
-					})
-					.then(response => response.json()) // Parse JSON response from server
-					.then(data => {
-						if(data.success) {
-							window.location.reload(); // Remove row from table
-						} else {
-							Swal.fire({
-								icon: 'error', // Red error icon
-								title: 'Error!',
-								text: 'Could not delete the product.',
-								confirmButtonColor: '#d33', // Red button for error
-								confirmButtonText: 'OK'
+				Swal.fire({
+					title: 'Are you sure?',
+					text: "You won't be able to undo this action!",
+					icon: 'warning',
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'Yes, delete it!'
+				}).then((result) => {
+					if(result.isConfirmed) {
+						fetch(`/admin/productManagement/unlink`, {
+								method: 'PUT',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									productId
+								})
+							})
+							.then(response => response.json())
+							.then(data => {
+								if(data.success) {
+									Swal.fire('Deleted!', 'Product has been deleted.', 'success');
+									window.location.reload();
+								} else {
+									Swal.fire('Error!', 'Could not delete the product.', 'error');
+								}
+							})
+							.catch(error => {
+								console.error('Error:', error);
+								Swal.fire('Error!', 'An unexpected error occurred.', 'error');
 							});
-						}
-					})
-					.catch(error => {
-						console.error('Error:', error);
-						alert('An error occurred while deleting the product.');
-					});
+					}
+				});
 			});
 		});
 

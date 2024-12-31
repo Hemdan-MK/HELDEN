@@ -4,7 +4,25 @@ const Products = require('../../models/productModel');
 // Load all categories (Category Management Page)
 const loadCategoryManagement = async (req, res) => {
     try {
-        const categories = await Category.find({ isDeleted: false });
+        // Get page number and limit from query params, default to page 1 and limit 10
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+
+        // Calculate how many items to skip
+        const skip = (page - 1) * limit;
+
+        // Get categories with pagination
+        const categories = await Category.find({ isDeleted: false })
+            .skip(skip)         // Skip the previous categories based on the page
+            .limit(limit);      // Limit the number of categories per page
+
+        // Get total count of categories to calculate total pages
+        const totalCategories = await Category.countDocuments({ isDeleted: false });
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalCategories / limit);
+
+        // Get product count for each category
         const categoriesWithCounts = await Promise.all(
             categories.map(async (category) => {
                 const productCount = await Products.countDocuments({ category: category._id });
@@ -15,15 +33,22 @@ const loadCategoryManagement = async (req, res) => {
             })
         );
 
-        return res.status(200).render('admin/categoryManagement', { 
-            admin: req.session.admin, 
-            categoriesWithCounts 
+        // Render the category management page with pagination data
+        return res.status(200).render('admin/categoryManagement', {
+            admin: req.session.admin,
+            categoriesWithCounts,
+            currentPage: page,
+            totalPages: totalPages,
+            totalCategories: totalCategories,
+            limit: limit
         });
     } catch (error) {
         console.error('Error loading categories:', error);
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+
 
 // Load the Add Category Page
 const loadAddCategoryPage = async (req, res) => {
@@ -72,9 +97,9 @@ const loadUpdateCategory = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Category not found' });
         }
 
-        return res.status(200).render('admin/categoryUpdate', { 
-            admin: req.session.admin, 
-            category 
+        return res.status(200).render('admin/categoryUpdate', {
+            admin: req.session.admin,
+            category
         });
     } catch (error) {
         console.error('Error loading category update page:', error);
@@ -135,9 +160,9 @@ const deleteCategory = async (req, res) => {
 const loadDelCategoryPage = async (req, res) => {
     try {
         const deletedCategories = await Category.find({ isDeleted: true });
-        return res.status(200).render('admin/categoryDelete', { 
-            admin: req.session.admin, 
-            deletedCategories 
+        return res.status(200).render('admin/categoryDelete', {
+            admin: req.session.admin,
+            deletedCategories
         });
     } catch (error) {
         console.error('Error fetching deleted categories:', error);
@@ -176,6 +201,87 @@ const permanentDeleteCategory = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+const addOffer = async (req, res) => {
+    try {
+        const { categoryId, offerPercentage } = req.body;
+
+        if (!categoryId || !offerPercentage) {
+            return res.status(400).json({ message: "Category ID and Offer Percentage are required." });
+        }
+
+        // Find products in the given category
+        const products = await Products.find({ category : categoryId });
+
+        console.log('hi');
+        console.log('products : ');
+        console.log(products);
+
+        // Update the products' offerPrice
+        for (const product of products) {
+            console.log(`Processing product: ${product._id}`);
+            const newOfferPrice = product.price - (product.price * offerPercentage) / 100;
+            if (!product.offerPrice || newOfferPrice < product.offerPrice) {
+                console.log(`Updating offer price for product: ${product._id}`);
+                product.prevOfferPrice = product.offerPrice || null;
+                product.offerPrice = newOfferPrice;
+                await product.save();
+                console.log(`Product saved: ${product._id}`);
+            }
+        }
+
+        // Update the category's offer details
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(404).json({ message: "Category not found." });
+        }
+
+        category.offer = offerPercentage;
+        category.offerApplied = true;
+        category.updatedAt = Date.now();
+        await category.save();
+
+        res.status(200).json({ message: "Offer prices updated successfully." });
+    } catch (error) {
+        console.error("Error updating offers:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+
+
+const removeOffer = async (req, res) => {
+    try {
+        const { categoryId } = req.body;
+
+        // Validate input
+        if (!categoryId) {
+            return res.status(400).json({ message: "Category ID is required." });
+        }
+
+        // Find products in the category
+        const products = await Products.find({ category : categoryId });
+
+        // Update each product's offerPrice and clear prevOfferPrice
+
+        for (let product of products) {
+            product.offerPrice = product.prevOfferPrice || product.offerPrice; // Revert to prevOfferPrice if it exists
+            product.prevOfferPrice = null; // Clear prevOfferPrice
+            await product.save(); // Save changes
+        }
+
+        const category = await Category.findById(categoryId);
+        category.offer = null;
+        category.offerApplied = false;
+        category.updatedAt = Date.now();
+        await category.save();
+
+        res.status(200).json({ message: "Offers removed successfully." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
 
 module.exports = {
     loadCategoryManagement,
@@ -186,5 +292,7 @@ module.exports = {
     deleteCategory,
     loadDelCategoryPage,
     recoverCategory,
-    permanentDeleteCategory
+    permanentDeleteCategory,
+    addOffer,
+    removeOffer
 };

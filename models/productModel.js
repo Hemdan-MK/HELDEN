@@ -1,3 +1,4 @@
+const { type } = require('express/lib/response');
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
@@ -6,22 +7,31 @@ const productSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     offerPrice: { type: Number },
     prevOfferPrice: {
-        type: Map,
-        of: {
-            discountType: { type: String, enum: ['percentage', 'fixed'],  },
-            discountValue: { type: Number, },
-            price: { type: Number, required: true }
-        },
-        default: null
+        type: Number,
+        // default: function () {
+        //     return this.offerPrice; // Assign offerPrice as default for prevOfferPrice
+        // }
     },
-    stock: { type: Number, default: 0 },
     images: [{ type: String }], // Store image paths
     tags: [{ type: String }],
-    sizes: [{ type: String }],
-    colors: [{ type: String }],
+    productType: { type: String, required: true },
+    stockManagement: [
+        {
+            size: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            quantity: {
+                type: Number,
+                required: true,
+                min: 0,
+                default: 0
+            }
+        }
+    ],
     category: { type: mongoose.Schema.ObjectId, ref: 'Category' },
     brand: { type: String },
-    cashOnDelivery: { type: Boolean },
     warranty: { type: String },
     returnPolicy: { type: String },
     rating: { type: Number, default: 0 },
@@ -38,3 +48,16 @@ const productSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Products', productSchema);
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -197,7 +197,7 @@
 		margin-bottom: 2%;
 	}
 
-	.coupon-section {
+	/* .coupon-section {
 		display: flex;
 
 	}
@@ -207,7 +207,95 @@
 		padding: 8px;
 		border: 1px solid #d1d1d8;
 		border-radius: 4px;
+	} */
+	/* Container for the input and dropdown */
+	.input-container {
+		position: relative;
+		width: 100%;
+
+		/* Adjust as per your layout */
 	}
+
+	/* Coupon Input Box */
+	.coupon-input {
+		width: 100%;
+		padding: 12px 15px;
+		font-size: 16px;
+		border: 2px solid #ddd;
+		border-radius: 4px;
+		box-sizing: border-box;
+		transition: border-color 0.3s ease, box-shadow 0.3s ease;
+		background-color: #fff;
+	}
+
+	.coupon-input:focus {
+		border-color: #5cb85c;
+		box-shadow: 0 0 8px rgba(92, 184, 92, 0.5);
+		outline: none;
+	}
+
+	/* Coupon Dropdown Menu */
+	.coupon-dropdown {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		width: 100%;
+		background-color: #fff;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		max-height: 200px;
+		overflow-y: auto;
+		z-index: 10;
+		display: none;
+		box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+		margin-top: 5px;
+	}
+
+	/* List style */
+	.coupon-dropdown ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	/* Individual List Items */
+	.coupon-dropdown li {
+		padding: 12px 15px;
+		cursor: pointer;
+		font-size: 16px;
+		color: #333;
+		transition: background-color 0.3s ease;
+	}
+
+	/* Hover effect for list items */
+	.coupon-dropdown li:hover {
+		background-color: #f1f1f1;
+		color: #5cb85c;
+	}
+
+	/* Apply button styles */
+	.apply-coupon {
+		margin: auto auto;
+		background-color: #5cb85c;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		font-size: 16px;
+		cursor: pointer;
+		width: 25%;
+		padding: 20px;
+		box-sizing: border-box;
+		transition: background-color 0.3s ease;
+	}
+
+	.apply-coupon:hover {
+		background-color: #4cae4c;
+	}
+
+	.apply-coupon:active {
+		background-color: #3e9c3e;
+	}
+
 
 	.checkout-btn {
 		background-color: #3aa39f;
@@ -278,10 +366,7 @@
 		color: #17183b;
 	}
 
-	.apply-coupon {
-		border-radius: 4px;
-		color: white;
-	}
+
 
 	.prevnext {
 		padding: 10px 30px;
@@ -391,9 +476,21 @@
 					</div>
 					<!-- Coupon Input Section -->
 					<div class="zzz mt-4">
-						<div class="coupon-section">
-							<input type="text" id="couponCode" class="coupon-input" placeholder="Coupon Code" style="margin-right: 10px;" />
-							<button id="applyCoupon" class="apply-coupon bg-success p-3 pl-4 pr-4">Apply</button>
+						<div class="coupon-section d-flex  ">
+							<div class="input-container d-flex align-content-center" style="position: relative;">
+								<input type="text" id="couponCode" class="coupon-input" placeholder="Coupon Code" style="margin-right: 10px;" autocomplete="off" />
+								<div id="couponDropdown" class="coupon-dropdown" style="display: none;">
+									<ul>
+										<li data-value="">Select Coupon</li>
+										<% coupons.forEach(function(coupon) { %>
+										<li data-value="<%= coupon.couponCode %>">
+											<%= coupon.couponCode %> - <%= coupon.discountPercentage %>% Off
+										</li>
+										<% }); %>
+									</ul>
+								</div>
+							</div>
+							<button id="applyCoupon" class="apply-coupon bg-success h-100">Apply</button>
 						</div>
 						<!-- Area to display coupon status -->
 						<p id="couponStatus" style="margin-top: 10px;"></p>
@@ -445,13 +542,10 @@
 						<div class="payment-methods mt-4 mb-4">
 							<h5 class="text-center mb-3">Payment Method</h5>
 							<div class="d-flex justify-content-center gap-3">
-								<% console.log('condition : ' + condition) %>
-								<% if(condition) {%>
 								<% if (totalAmount < 5000) { %>
-								<button id="cashOnDeliveryBtn" class="payment-btn btn btn-primary" style="width: 150px;">
+								<button id="cashOnDeliveryBtn" class="payment-btn btn btn-primary" style="width: 150px;   display: <%= totalAmount && totalAmount < 5000 ? 'block' : 'none' %>;">
 									Cash on Delivery
 								</button>
-								<% } %>
 								<% } %>
 								<button id="netBankingBtn" class="payment-btn btn btn-primary" style="width: 150px;">
 									Net Banking
@@ -880,19 +974,32 @@
 
 
 		// coupon
+		document.getElementById('couponCode').addEventListener('click', function() {
+			// Show the dropdown when the user clicks on the input field
+			const dropdown = document.getElementById('couponDropdown');
+			dropdown.style.display = 'block';
+		});
+
+		document.querySelectorAll('#couponDropdown li').forEach(function(item) {
+			item.addEventListener('click', function() {
+				const couponCode = this.getAttribute('data-value');
+				document.getElementById('couponCode').value = couponCode;
+				document.getElementById('couponDropdown').style.display = 'none';
+			});
+		});
+
 		document.getElementById('applyCoupon').addEventListener('click', async () => {
 			const couponCode = document.getElementById('couponCode').value.trim();
 			const applyButton = document.getElementById('applyCoupon');
 
-
 			if(!couponCode) {
-				Swal.fire('Error', 'Please enter a coupon code.', 'error');
+				Swal.fire('Error', 'Please select or enter a coupon code.', 'error');
 				return;
 			}
 
 			if(appliedCoupon) {
-				window.location.replace(window.location.href)
-			return;
+				window.location.replace(window.location.href);
+				return;
 			}
 
 			try {
@@ -941,6 +1048,7 @@
 				Swal.fire('Error', 'Something went wrong while applying the coupon.', 'error');
 			}
 		});
+
 
 		// Update Order Summary
 		function updateOrderSummary() {

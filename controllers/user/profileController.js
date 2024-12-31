@@ -16,7 +16,7 @@ const loadProfile = async (req, res) => {
 }
 
 const loadOrders = async (req, res) => {
-    const orders = await Order.find({userId: req.session.user.id}).sort(-1)
+    const orders = await Order.find({ userId: req.session.user.id }).sort(-1)
 
     try {
         res.render('user/orders', { orders: orders })
@@ -30,7 +30,14 @@ const loadOrders = async (req, res) => {
 const viewOrder = async (req, res) => {
     const orderId = req.params.orderId;
     try {
-        const order = await Order.findById(orderId).populate('orderItems.productId').populate('userId').populate('addressId')
+        const order = await Order.findOne({
+            _id: orderId, 
+            expiresAt: { $exists: false } 
+        })
+            .populate('orderItems.productId')
+            .populate('userId')
+            .populate('addressId');
+        
         if (!order) {
             return res.status(404).send('Order not found. Please try again')
         }

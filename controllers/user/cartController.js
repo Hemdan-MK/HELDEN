@@ -90,55 +90,6 @@ const loadCart = async (req, res) => {
 
 
 
-
-// const addToCart = async (req, res) => {
-//     const productId = req.params.id
-//     const { quantity } = req.body;
-//     const userId = req.session.userData.id
-
-//     try {
-//         const product = await Product.findById(productId);
-//         if (!product) {
-//             return res.status(404).json({ success: false, message: "Product not found" });
-//         }
-
-//         if (product.stock < quantity) {
-//             return res.status(400).json({ success: false, message: "Insufficient stock" })
-//         }
-
-
-
-//         let cart = await Cart.findOne({ userId });
-
-//         if (!cart) {
-//             cart = new Cart({ userId, items: [] });
-//         }
-
-//         const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
-//         if (itemIndex >= 0) {
-//             cart.items[itemIndex].quantity += Number(quantity);
-//         } else {
-//             cart.items.push({
-//                 productId: productId,
-//                 quantity: quantity
-//             })
-//         }
-
-//         await cart.save();
-
-//         product.stock -= parseInt(quantity, 10)
-//         await product.save();
-
-
-//         res.status(200).json({ success: true, message: "Product added to cart successfully" })
-
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ success: false, message: "Something went wrong while adding to cart" })
-//     }
-// }
-
-
 const removeItem = async (req, res) => {
     try {
         const { itemId } = req.body; // Get itemId from the request body
@@ -236,16 +187,24 @@ const loadOrderSummary = async (req, res) => {
         for (const item of cart.items) {
             const product = item.productId;
 
+            const sizeStock = product.stockManagement.find(stock => stock.size === item.size);
+
+            if (!sizeStock) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Size ${item.size} is not available for product ${product.name}`
+                });
+            }
+
             // Check stock and user quantity limits
-            const maxAllowedQuantity = Math.min(5, product.stock); // Maximum of 5 or available stock
+            const maxAllowedQuantity = Math.min(5, sizeStock.quantity); // Maximum of 5 or available stock
             if (item.quantity > maxAllowedQuantity) {
                 item.quantity = maxAllowedQuantity; // Enforce stock/user limit
                 await Cart.updateOne(
-                    { userId, "items.productId": product._id },
+                    { userId, "items.productId": product._id, "items.size": item.size },
                     { $set: { "items.$.quantity": maxAllowedQuantity } }
                 );
             }
-
             const itemTotal = product.offerPrice * item.quantity;
             const itemMRP = product.price * item.quantity;
 
@@ -255,10 +214,11 @@ const loadOrderSummary = async (req, res) => {
 
             updatedItems.push({
                 name: product.name,
+                size: item.size,
                 quantity: item.quantity,
                 price: product.offerPrice,
                 total: itemTotal,
-                stock: product.stock,
+                availableStock: sizeStock.quantity,
             });
         }
 
@@ -328,10 +288,19 @@ const getStock = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found.' });
         }
 
-        console.log("Product Stock:", product.stock);
+        const sizeStock = product.stockManagement.find(stock => stock.size === cartItem.size);
+
+        if (!sizeStock) {
+            return res.status(404).json({
+                success: false,
+                message: `Stock information for size '${cartItem.size}' is not available.`
+            });
+        }
+
+        console.log(`Stock for size ${cartItem.size}:`, sizeStock.quantity);
 
         // Send the stock information
-        res.status(200).json({ success: true, stock: product.stock });
+        res.status(200).json({ success: true, stock: sizeStock.quantity  });
     } catch (error) {
         console.error('Error fetching stock:', error);
         res.status(500).json({ success: false, message: 'Error fetching stock.', error: error.message });
@@ -421,72 +390,12 @@ const orderPlace = async (req, res) => {
     }
 }
 
-
-// const placeOrder = async (req, res) => {
-//     const userId = req.session.userData.id
-//     const { selectedAddress, paymentMethod, total, orderItems } = req.body;
-
-//     try {
-//         if (!selectedAddress || !paymentMethod) {
-//             return res.status(400).json({ success: false, message: "Please select address and payment method" })
-//         }
-//         const address = await Address.findById(selectedAddress)
-
-//         if (!address) {
-//             return res.status(404).json({ success: false, message: "Selected address not found" })
-//         }
-
-//         if (paymentMethod !== 'COD') {
-//             return res.status(400).json({ success: false, message: "Only COD payments are allowed" })
-//         }
-
-//         for (const item of orderItems) {
-//             const product = await Product.findById(item.productId)
-
-//             console.log(product.stock)
-
-
-
-//             if (!product) {
-//                 return res.status(404).json({ success: false, message: "Product not found" })
-//             }
-//             if (product.stock < item.quantity) {
-//                 return res.status(400).json({ success: false, message: "Insufficient stock for products" })
-//             }
-//             product.stock -= item.quantity;
-//             await product.save();
-//         }
-
-//         const newOrder = new Order({
-//             userId: req.session.userData.id,
-//             addressId: selectedAddress,
-//             paymentMethod: paymentMethod,
-//             totalAmount: total,
-//             orderItems: orderItems,
-//             paymentStatus: 'Pending',
-//             status: 'Pending',
-//         });
-
-//         await newOrder.save();
-
-//         await Cart.deleteOne({ userId });
-
-//         res.status(200).json({ success: true, message: "Order placed successfully", order: newOrder })
-//     } catch (error) {
-//         console.error("Error placing order", error);
-//         res.status(500).json({ success: false, message: "Something went Wrong" })
-//     }
-// }
-
 module.exports = {
     cartBadge,
     loadCart,
-    // addToCart,
     removeItem,
     updateQuantity,
     loadOrderSummary,
-    // loadCheckout,
-    // placeOrder,
     getStock,
     orderPlace
 }

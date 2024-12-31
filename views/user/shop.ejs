@@ -463,6 +463,11 @@
 
 			// Initial fetch of all products
 			fetchFilteredProducts();
+			const iso = new Isotope(productContainer, {
+				itemSelector: '.isotope-item',
+				layoutMode: 'fitRows'
+			});
+			iso.layout();
 		});
 	</script>
 
