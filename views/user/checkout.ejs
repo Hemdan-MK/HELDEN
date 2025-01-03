@@ -1058,7 +1058,7 @@
 		}
 
 
-		document.getElementById('proceedToCheckoutBtn').addEventListener('click', async () => {
+			document.getElementById('proceedToCheckoutBtn').addEventListener('click', async () => {
 			const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
 			const paymentMethod = document.querySelector('.payment-btn.active')?.innerText; // Active payment button
 			const userId = document.getElementById('idid').dataset.userid; // User ID from dataset
@@ -1128,6 +1128,9 @@
 					};
 
 					const rzp = new Razorpay(razorpayOptions);
+					rzp.on('payment.failed', ()=>{
+						Swal.fire("Error", "Payment failed. Please try again.", "error");
+					})
 					rzp.open();
 				} else if(paymentMethod === "Cash on Delivery") {
 					// Complete COD Order

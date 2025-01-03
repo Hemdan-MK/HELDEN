@@ -2,9 +2,8 @@ const Order = require('../../models/orderModel')
 const User = require('../../models/userRegister')
 const Cart = require('../../models/cartModel')
 const Coupon = require('../../models/coupenModel')
-const { instance } = require('../../utils/razorPay');
-const crypto = require('crypto'); // Import crypto for signature verification
-const Wallet = require('../../models/walletModel')
+const Wallet = require('../../models/walletModel');
+const Products = require('../../models/productModel');
 
 
 const checkout = async (req, res) => {
@@ -121,8 +120,9 @@ const done = async (req, res) => {
         }
 
         // Find the existing order for the user
-        let order = await Order.findOne({ _id: orderId }).populate('coupon');
-        console.log('order  ->  : ' + order);
+        let order = await Order.findOne({ _id: orderId })
+            .populate('coupon')
+            .populate('orderItems.productId');
 
         if (!order) {
             return res.status(404).json({
@@ -136,10 +136,7 @@ const done = async (req, res) => {
             status: true,
             validFrom: { $lte: new Date() },
             validUpto: { $gte: new Date() },
-            // isDeleted: false
         });
-
-        console.log('coupen : ' + coupon);
 
         // Update order details
         order.addressId = address._id;
@@ -162,8 +159,6 @@ const done = async (req, res) => {
 
         order.totalAmount = totalAmount;
 
-        console.log('coupon : ' + coupon);
-
         if (coupon) {
             order.coupon = coupon._id;
             // Update coupon count
@@ -173,7 +168,6 @@ const done = async (req, res) => {
 
         // Remove any expiry
         order.expiresAt = undefined;
-        console.log(coupon);
         delete req.session.checkProductStatus
 
         // Save the updated order
@@ -182,6 +176,46 @@ const done = async (req, res) => {
         // Clear the user's cart
         await Cart.deleteOne({ userId });
 
+        // update product collection
+        for (const item of order.orderItems) {
+            console.log("================================");
+            console.log('item : ');
+            console.log(item);
+            
+            const { productId, quantity } = item;
+            
+            // Find the product
+            const product = await Products.findById(productId);
+            console.log(product);
+            console.log("--------------------------------");
+
+            if (!product) {
+                return res.status(404).json({ message: `Product with ID ${productId} not found` });
+            }
+
+            // Update stock for the product
+            const updatedStockManagement = product.stockManagement.map(stockItem => {
+                console.log(typeof stockItem.size);
+                console.log(typeof item.size);
+                
+                if (stockItem.size == item.size) { // Assuming order item specifies size
+                    if (stockItem.quantity < quantity) {
+                        throw new Error(`Insufficient stock for product ${product.name} (Size: ${stockItem.size})`);
+                    }
+                    return { ...stockItem, quantity: stockItem.quantity - quantity };
+                }
+                return stockItem;
+            });
+
+            console.log(updatedStockManagement);
+            console.log("--------------------------------");
+            
+            
+            product.stockManagement = updatedStockManagement;
+
+            // Save the product
+            await product.save();
+        }
 
         return res.status(200).json({
             success: true,
@@ -254,7 +288,7 @@ const viewOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
         const order = await Order.findById(orderId).populate('orderItems.productId');
-        res.json(order); // Send order data for modal
+        res.json(order); //
     } catch (error) {
         console.error(error);
         res.status(500).send('Error viewing order');

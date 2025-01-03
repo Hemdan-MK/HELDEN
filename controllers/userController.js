@@ -75,13 +75,36 @@ const loadDash = async (req, res) => {
 
 // Orders session
 const loadOrders = async (req, res) => {
-    const userId = req.session.user.id; // Assuming session stores user data
-    const orders = await Order.find({
-        userId, expiresAt: { $exists: false }
-    }).populate('orderItems.productId').sort({ createdAt: -1 });
-
     try {
-        return res.status(200).render('user/order', { orders, user: req.session.user });
+        const userId = req.session.user.id;
+        const page = parseInt(req.query.page) || 1; // Get page from query params
+        const limit = 2; // Number of orders per page
+        const skip = (page - 1) * limit;
+
+        // Get total count for pagination
+        const totalOrders = await Order.countDocuments({
+            userId
+        });
+
+        const totalPages = Math.ceil(totalOrders / limit);
+
+        // Get paginated orders
+        const orders = await Order.find({
+            userId,
+        })
+            .populate('orderItems.productId')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        return res.status(200).render('user/order', {
+            orders,
+            user: req.session.user,
+            currentPage: page,
+            totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1
+        });
     } catch (error) {
         console.error('Error loading orders:', error);
         return res.status(500).send('Server Error');
@@ -353,7 +376,7 @@ const resendOTP = async (req, res) => {
 const verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
-        
+
 
 
         // Find the OTP record associated with the email
@@ -394,7 +417,7 @@ const verifyOTP = async (req, res) => {
         });
         console.log('newUser : ');
         console.log(newUser);
-        
+
         const savedUser = await newUser.save();
 
         // req.session.user.verified = true;

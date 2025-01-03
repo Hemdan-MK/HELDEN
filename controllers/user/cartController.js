@@ -1,6 +1,6 @@
 const Cart = require('../../models/cartModel')
 const Product = require('../../models/productModel');
-const Order = require('../../models/orderModel')
+const Order = require('../../models/orderModel');
 
 
 const cartBadge = async (req, res) => {
@@ -96,7 +96,7 @@ const removeItem = async (req, res) => {
         console.log('Item ID : ' + itemId);
 
         // Assuming the cart is stored under the user's session or userId
-        const userId = req.user.id; // Get userId from session or JWT token
+        const userId = req.session.user.id; // Get userId from session or JWT token
         console.log('userID :' + userId);
 
         // Find the cart for the user and remove the item
@@ -126,7 +126,7 @@ const updateQuantity = async (req, res) => {
         const { itemId, quantity } = req.body; // Get itemId and quantity from the request body
 
         // Assuming the cart is stored under the user's session or userId
-        const userId = req.user.id; // Get userId from session or JWT token
+        const userId = req.session.user.id; // Get userId from session or JWT token
 
         // Find the cart for the user
         const cart = await Cart.findOne({ userId });
@@ -325,6 +325,7 @@ const orderPlace = async (req, res) => {
             productId: item.productId._id,
             quantity: item.quantity,
             price: item.productId.offerPrice, // Assuming the price is stored in the Product model
+            size: item.size
         }));
 
         // Calculate total amount

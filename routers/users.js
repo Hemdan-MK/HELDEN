@@ -80,7 +80,7 @@ router.get('/checkout', checkUserStatus, checkoutController.checkout);
 router.post('/checkout/done', checkUserStatus,checkProductStatus, checkoutController.done);
 router.post('/razorpay/initiate', checkUserStatus, checkoutController.razerpay);
 router.post('/coupon/validate', checkUserStatus, checkoutController.coupen);
-router.get('/successPage',checkoutController.success);
+router.get('/successPage',checkUserStatus,checkoutController.success);
 
 
 
@@ -111,7 +111,7 @@ router.get('/cart', checkUserStatus, cartController.loadCart);
 router.post('/cart/quantity', checkUserStatus, cartController.updateQuantity);
 router.post('/cart/remove', checkUserStatus, cartController.removeItem);
 router.get('/cart/summary', checkUserStatus, cartController.loadOrderSummary);
-router.post('/cart/stock', cartController.getStock);
+router.post('/cart/stock', checkUserStatus,cartController.getStock);
 router.get('/cart/checkout', checkUserStatus, cartController.orderPlace);
 
 

@@ -44,13 +44,7 @@ console.log("================================");
 };
 
 const updateProduct = async (req, res) => {
-    console.log("---------------------- > ");
-    console.log('req.body:', req.body);
-    console.log("------ >< --------");
-    console.log('req.files:', req.files);
-    console.log("---------------------- > ");
-
-
+    
     const {
         productId,
         productName,

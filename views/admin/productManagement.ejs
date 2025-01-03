@@ -2,132 +2,115 @@
 <html lang="en">
 
 <head>
-<!-- Required meta tags -->
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Product Panel</title>
-<!-- End plugin css for this page -->
-<!-- inject:css -->
-<!-- endinject -->
-<!-- Layout styles -->
-<link rel="stylesheet" href="/admin/admin.css">
-<!-- End layout styles -->
-<!-- <link rel="shortcut icon" href="assets/images/favicon.png" /> -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<link rel="stylesheet" href="/admin/admin.css">
 </head>
+<style>
+	.search input {
+		border-radius: 20px;
+	}
+</style>
 
 <body>
-	<div class="container-scroller">
-		<!-- partial:partials/_sidebar.html -->
-		<%- include('./layout/sidebar') %>
-
-		<!-- partial -->
-		<div class="container-fluid page-body-wrapper">
-			<!-- partial:partials/_navbar.html -->
-			<nav class="navbar p-0 fixed-top d-flex flex-row">
-			</nav>
-
-			<!-- partial -->
-			<div class="row p-3">
-				<div class="col-12 grid-margin">
-					<div class="card">
-						<div class="card-body">
-							<h4 class="card-title">Product Management</h4>
-							<div class="table-responsive">
-								<!-- Table with products data -->
-								<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
-									<input type="text" class="form-control" placeholder="Search products">
-									<button class="btn btn-primary">Search</button>
-								</form>
-
-								<table class="table">
-									<thead>
-										<tr>
-											<th>Index</th>
-											<th>Name</th>
-											<th>Category</th>
-											<th>Price</th>
-											<th>Stock</th>
-											<th>Created Date</th>
-											<th>Updated Date</th>
-											<th>Update</th>
-											<th>Delete</th>
-										</tr>
-									</thead>
-									<tbody>
-										<% products.forEach((product, index)=> { %>
-										<tr id="product-<%= product._id %>" data-name="<%= product.name %>" data-category="<%= product.category %>" data-price="<%= product.price %>" data-stock="<%= product.stockManagement.reduce((total, count) => total + count, 0) %>" data-image="<%= product.image %>">
-											<td>
-												<%= index + 1 %>
-											</td>
-											<td>
-												<%= product.name %>
-											</td>
-											<td>
-												<% if ( product.category !== null){ %>
-												<%= product.category.name %>
-												<% } else { %>
-												<span>NO</span>
-												<% } %>
-											</td>
-											<td>
-												<%= product.price %>
-											</td>
-											<td>
-												<% if (Array.isArray(product.stockManagement) && product.stockManagement.length > 0) { %>
-												<%= product.stockManagement.reduce((total, stock) => total + stock.quantity, 0) %>
-												<% } else { %>
-												<span>No Stock Data</span>
-												<% } %>
-											</td>
-											<td>
-												<% const createdAt=new Date(product.createdAt); const
-                                                            formattedDate=`${createdAt.getDate()}:${createdAt.getMonth()
-                                                            + 1}:${createdAt.getFullYear()}`; %>
-												<%= formattedDate %>
-											</td>
-											<td>
-												<% const updatedAt=new Date(product.updatedAt); const
-                                                            formattedUpdatedDate=`${updatedAt.getDate()}:${updatedAt.getMonth()
-                                                            + 1}:${updatedAt.getFullYear()}`; %>
-												<%= formattedUpdatedDate %>
-											</td>
-											<td>
-												<a href="/admin/productManagement/update/<%= product._id %>" class="btn btn-primary">Update</a>
-											</td>
-											<td>
-												<button data-id="<%= product._id %>" class="btn btn-success btn-delete">
-													Unlink
-												</button>
-											</td>
-										</tr>
-										<% }); %>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div style="margin-top:100px ;" class="col-md-4 grid-margin stretch-card userInfoView">
-				<button class="btn-category bg-primary" id="btn-add-prod">Create New Product</button>
-				<button class="btn-category bg-danger" id="btn-del-prod">Deleted Products</button>
-			</div>
-
+	<div class="sidebar">
+		<div class="sidebar-brand">
+			H E L D E N
 		</div>
-		<!-- main-panel ends -->
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">Dashboard</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">User Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/productManagement">Product Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">Order Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">Category Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">Coupon Management</a>
+			</li>
+			<li class="nav-item mt-5">
+				<a class="nav-link text-warning" href="/admin/logout">Logout</a>
+			</li>
+		</ul>
 	</div>
-	<!-- page-body-wrapper ends -->
+	<div class="main-content container-fluid">
+		<h2 class="mb-4 pt-3">Product Management</h2>
+		<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
+			<input type="text" class="form-control" placeholder="Search users">
+			<button style=" margin-left: 10px;" class="btn btn-primary">Search</button>
+		</form>
+		<div class="table-responsive">
+			<table class="table-hover">
+				<thead>
+					<tr>
+						<th>Index</th>
+						<th>Name</th>
+						<th>Category</th>
+						<th>Price</th>
+						<th>Stock</th>
+						<th>Created Date</th>
+						<th>Updated Date</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% products.forEach((product, index) => { %>
+					<tr id="product-<%= product._id %>">
+						<td><%= index + 1 %></td>
+						<td><%= product.name %></td>
+						<td>
+							<% if (product.category !== null) { %>
+							<%= product.category.name %>
+							<% } else { %>
+							<span class="text-muted">NO</span>
+							<% } %>
+						</td>
+						<td>$<%= product.price %></td>
+						<td>
+							<% if (Array.isArray(product.stockManagement) && product.stockManagement.length > 0) { %>
+							<%= product.stockManagement.reduce((total, stock) => total + stock.quantity, 0) %>
+							<% } else { %>
+							<span class="text-muted">No Stock</span>
+							<% } %>
+						</td>
+						<td><%= new Date(product.createdAt).toLocaleDateString() %></td>
+						<td><%= new Date(product.updatedAt).toLocaleDateString() %></td>
+						<td>
+							<a href="/admin/productManagement/update/<%= product._id %>" class="btn btn-outline-primary btn-sm">Update</a>
+							<button data-id="<%= product._id %>" class="btn btn-outline-danger btn-sm btn-delete">Delete</button>
+						</td>
+					</tr>
+					<% }); %>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="action-buttons">
+			<button class="btn btn-success btn-custom" id="btn-add-prod">
+				Create New Product
+			</button>
+			<button class="btn btn-warning btn-custom" id="btn-del-prod">
+				Deleted Products
+			</button>
+		</div>
 	</div>
 
-	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 	<script>
 		// SOFT DELETE PRODUCT
-		// --------------------------------
 		document.querySelectorAll('.btn-delete').forEach(button => {
 			button.addEventListener('click', function(e) {
 				const productId = e.target.getAttribute('data-id');
@@ -169,20 +152,16 @@
 			});
 		});
 
-
 		// ADDING PRODUCT
-		// --------------------------------
 		document.getElementById('btn-add-prod').addEventListener('click', () => {
 			window.location.href = '/admin/productManagement/add';
 		});
 
 		// DELETED PRODUCTS
-		// --------------------------------
 		document.getElementById('btn-del-prod').addEventListener('click', () => {
 			window.location.href = '/admin/productManagement/deleted';
 		});
 	</script>
-
 </body>
 
 </html>

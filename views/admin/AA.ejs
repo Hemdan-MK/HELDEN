@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Coupon Management</title>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin/admin.css">
+
+<style>
+	body {
+		font-family: 'Poppins', sans-serif;
+		background-color: #121212;
+		color: white;
+		margin: 0;
+		padding: 0;
+		height: 100vh;
+	}
+
+	.table-container {
+		max-height: 400px;
+		overflow-y: auto;
+		border: 1px solid #444;
+		border-radius: 8px;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		background-color: #1e1e2d;
+	}
+
+	table th {
+		background-color: #2a2f45;
+		color: #00adb5;
+		text-transform: uppercase;
+		padding: 12px;
+		border: 1px solid #444;
+		text-align: center;
+	}
+
+	table td {
+		padding: 12px;
+		border: 1px solid #444;
+		text-align: center;
+		color: #fff;
+	}
+
+	table tr:nth-child(even) {
+		background: #1b1b2f;
+	}
+
+	table tr:hover {
+		background: #3b3b5e;
+		color: white;
+	}
+ 
+
+	.btn {
+		border-radius: 20px;
+		padding: 10px 20px;
+		transition: background-color 0.3s ease, color 0.3s ease;
+	}
+
+	.btn-outline-info:hover,
+	.btn-outline-danger:hover {
+		background-color: #00adb5;
+		color: #fff;
+	}
+
+	.row {
+		margin: 0;
+		display: flex;
+		gap: 15px;
+		flex-wrap: wrap;
+	}
+
+	.row .card {
+		flex: 1 1 250px;
+	}
+
+	.download-btns {
+		display: flex;
+		gap: 15px;
+	}
+
+	hr {
+		border-top: 2px solid #3b3b5e;
+	}
+
+	canvas {
+		max-width: 100%;
+		margin-top: 20px;
+	}
+
+	.bb {
+		font-size: 900;
+		font-weight: bold;
+		color: darkorange;
+		text-align: end;
+	}
+
+	.table-body-scroll {
+		max-width: 300px;
+		overflow-y: auto;
+		/* Optional: Light background color */
+		border-top: 1px solid #000;
+		/* Optional: Border for distinction */
+	}
+
+	/* Custom Styles for ATM Card Appearance */
+	.atm-card {
+		width: 320px;
+		/* Set a width similar to an ATM card */
+		height: 200px;
+		/* Set a height to make it look proportionate */
+		border-radius: 15px;
+		/* Rounded corners like an ATM card */
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+		/* Light shadow for depth */
+		background: linear-gradient(135deg, #00aaff, #00cc99);
+		/* Soft gradient for style */
+		color: white;
+		/* White text color */
+		padding: 20px;
+		/* Add padding to make text look better inside */
+		text-align: center;
+		/* Center text horizontally */
+	}
+
+	/* Optional: You can adjust the card title and text for better visual hierarchy */
+	.atm-card .card-title {
+		font-size: 1.25rem;
+		font-weight: bold;
+		margin-bottom: 15px;
+	}
+
+	.atm-card .card-text {
+		font-size: 1rem;
+		margin-bottom: 10px;
+	}
+
+	/* Optional: Adjust font size for smaller screens */
+	@media (max-width: 576px) {
+		.atm-card {
+			width: 90%;
+			/* Card will be smaller on mobile devices */
+		}
+	}
+</style>
+</head>
+
+<body style="background-color: #121212;">
+	<div class="sidebar">
+		<div class="sidebar-brand">
+			HELDEN
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">Dashboard</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">User Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/productManagement">Product Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">Order Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">Category Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">Coupon Management</a>
+			</li>
+			<li class="nav-item mt-5">
+				<a class="nav-link text-warning" href="/admin/logout">Logout</a>
+			</li>
+		</ul>
+	</div>
+	<div class="main-content">
+		<!-- Sidebar -->
+
+		<div class="container-fluid" style="height: 100vh; overflow-y: auto;">
+			<!-- Header -->
+			<h2 class="mb-4 pt-3">Dashboard Overview</h2>
+
+			<!-- Cards Section -->
+			<div class="row mb-4">
+				<div class="card">
+					<h3>Total Orders</h3>
+					<h1 class="bb"><%= totalOrders %></h1>
+				</div>
+				<div class="card">
+					<h3>Total Revenue</h3>
+					<h1 class="bb">₹ <%= totalRevenue.toFixed(2) %></h1>
+				</div>
+				<div class="card">
+					<h3>Net Change</h3>
+					<h1 class="bb">₹ <%= overallDiscount.toFixed(2) %></h1>
+				</div>
+				<div class="card">
+					<h3>Top Category</h3>
+					<h1 class="bb"><%= topCategory ? topCategory.name : 'No Data' %></h1>
+				</div>
+			</div>
+
+			<!-- Top-Selling Products Table -->
+			<h2>Top-Selling Products</h2>
+			<div class="pr-4 pl-4">
+				<div class="table-container" style="max-height: 400px; overflow-y: auto;">
+					<table>
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Product Name</th>
+								<th>Quantity Sold</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% if (topSellingProducts && topSellingProducts.length > 0) { %>
+							<% topSellingProducts.forEach((product, index) => { %>
+							<tr>
+								<td><%= index + 1 %></td>
+								<td><%= product._id.name %></td>
+								<td><%= product.totalSold %></td>
+							</tr>
+							<% }) %>
+							<% } else { %>
+							<tr>
+								<td colspan="3">No Data Available</td>
+							</tr>
+							<% } %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+
+			<!-- Sales Summary -->
+			<hr>
+			<h2>Sales Summary</h2>
+			<div class="row ">
+				<div class="card ">
+					<h3>Daily Sales</h3>
+					<p>₹ <%= dailySales.toFixed(2) %></p>
+					<canvas id="dailySalesChart"></canvas> <!-- Canvas for the chart -->
+				</div>
+				<div class="card">
+					<h3>Weekly Sales</h3>
+					<p>₹ <%= weeklySales.toFixed(2) %></p>
+					<canvas id="weeklySalesChart"></canvas> <!-- Canvas for the chart -->
+				</div>
+				<div class="card">
+					<h3>Monthly Sales</h3>
+					<p>₹ <%= monthlySales.toFixed(2) %></p>
+					<canvas id="monthlySalesChart"></canvas> <!-- Canvas for the chart -->
+				</div>
+			</div>
+			<div class="container mt-5">
+				<div class="card shadow-lg ">
+					<div class="card-body">
+						<h3 class="card-title text-center mb-4">Custom Date Range Sales</h3>
+
+						<!-- Input Group -->
+						<div class="row mb-4 align-items-center justify-content-center">
+							<div class="col-md-4 mb-2 mb-md-0">
+								<label for="startDate" class="form-label">Start Date</label>
+								<input type="date" id="startDate" class="form-control" />
+							</div>
+							<div class="col-md-4 mb-2 mb-md-0">
+								<label for="endDate" class="form-label">End Date</label>
+								<input type="date" id="endDate" class="form-control" />
+							</div>
+							<div class="col-md-2 d-grid">
+								<button id="fetchCustomSales" class="btn btn-primary mt-4">Fetch Sales</button>
+							</div>
+						</div>
+
+						<!-- Chart -->
+						<div class="chart-container" style="position: relative; height: fit-content;">
+							<canvas id="customSalesChart"></canvas>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<!-- Download Options -->
+			<hr>
+			<div class="d-flex justify-content-between">
+				<div>
+					<h2>Download Reports : </h2>
+				</div>
+				<div class="download-btns">
+					<button id="downloadPDF" class="btn btn-outline-info border-info">Download PDF</button>
+					<button id="downloadExcel" class="btn btn-outline-danger border-danger">Download Excel</button>
+					<div class="custom-sales-report">
+						<button class="btn btn-outline-light border-light" onclick="openSalesReportModal()">Custom Sales Report</button>
+					</div>
+				</div>
+
+
+			</div>
+			<hr>
+			<div class="mt-4">
+				<p class="text-white-50">Work Done by Hemdan</p>
+			</div>
+		</div>
+	</div>
+
+	<div id="salesReportModal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-xl" role="document">
+			<div class="modal-content" style="background-color: #121212; border: 2px solid#3b3b5e;">
+				<div class="modal-header">
+					<h5 class="modal-title">Custom Sales Report</h5>
+					<button type="button" class="close " data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true" class="text-warning">&times;</span>
+					</button>
+				</div>
+
+				<!-- Modal Body -->
+				<div class="modal-body">
+					<!-- Date Filters -->
+					<form id="filterSalesForm" onsubmit="fetchFilteredSales(event)">
+						<div class="row w-100 d-flex justify-content-center">
+							<div class="col-md-3 ">
+								<label for="filterType">Filter By</label>
+								<select id="filterType" class="form-control" onchange="toggleCustomDates()">
+									<option value="daily">Daily</option>
+									<option value="weekly">Weekly</option>
+									<option value="monthly">Monthly</option>
+									<option value="yearly">Yearly</option>
+									<option value="custom">Custom Date</option>
+								</select>
+							</div>
+							<div class="col-md-4" id="customDateInputs" style="display: none;">
+								<label for="startDate">Start Date</label>
+								<input type="date" id="startDate" class="form-control" />
+								<label for="endDate">End Date</label>
+								<input type="date" id="endDate" class="form-control" />
+							</div>
+							<div class="col-md-2 d-flex align-items-end">
+								<button type="submit" class="btn btn-success">Search</button>
+							</div>
+						</div>
+					</form>
+
+					<!-- Total Sales and Revenue -->
+					<div class="mt-3 w-100 d-flex justify-content-center">
+						<div class="card atm-card">
+							<div class="card-body">
+								<h5 class="card-title">Sales Summary</h5>
+								<p class="card-text">Total Sales Count: <span id="totalSalesCount">0</span></p>
+								<p class="card-text">Total Revenue: ₹<span id="totalRevenue">0</span></p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Sales Report Table -->
+					<table class="table table-bordered mt-3">
+						<thead>
+							<tr>
+								<th>Order ID</th>
+								<th>User</th>
+								<th>Email</th>
+								<th>Total Amount</th>
+								<th>Status</th>
+								<th>Date</th>
+							</tr>
+						</thead>
+						<tbody id="salesReportTableBody" class="table-body-scroll" style="max-height: 300px; overflow-y: auto;">
+							<!-- Data will be dynamically loaded here -->
+						</tbody>
+					</table>
+
+					<!-- Pagination -->
+					<nav>
+						<ul class="pagination" id="pagination"></ul>
+					</nav>
+
+					<!-- Download Buttons -->
+					<div class="mt-3 w-100 d-flex justify-content-center">
+						<button class="btn  btn-outline-info border-info m-2" onclick="downloadReport('pdf')">Download PDF</button>
+						<button class="btn  btn-outline-danger border-danger m-2" onclick="downloadReport('excel')">Download Excel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- Scripts -->
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- Include Chart.js from CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<script>
+		// Fetch sales data from backend
+		async function fetchSalesData() {
+			try {
+				const response = await fetch('/admin/get-sales-data');
+				const data = await response.json();
+
+				// Prepare data for daily sales chart
+				const dailyLabels = data.dailySales.map(item => item._id);
+				const dailySales = data.dailySales.map(item => item.sales);
+
+				const weeklyLabels = data.weeklySales.map(item => item._id);
+				const weeklySales = data.weeklySales.map(item => item.sales);
+
+				// Prepare data for monthly sales chart
+				const monthlyLabels = data.monthlySales.map(item => item._id);
+				const monthlySales = data.monthlySales.map(item => item.sales);
+
+				// Daily Sales Chart
+				const dailySalesCtx = document.getElementById('dailySalesChart').getContext('2d');
+				new Chart(dailySalesCtx, {
+					type: 'line',
+					data: {
+						labels: dailyLabels,
+						datasets: [{
+							label: 'Daily Sales',
+							data: dailySales,
+							borderColor: '#00adb5',
+							backgroundColor: 'rgba(0, 173, 181, 0.2)',
+							borderWidth: 2,
+							fill: true,
+							tension: 0.4, // Makes the line more curved (increase this value for more curve)
+						}]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Date'
+								}
+							},
+							y: {
+								title: {
+									display: true,
+									text: 'Sales ($)'
+								},
+								beginAtZero: true
+							}
+						}
+					}
+				});
+
+				// weekly Sales Chart
+				const weeklySalesCtx = document.getElementById('weeklySalesChart').getContext('2d');
+				new Chart(weeklySalesCtx, {
+					type: 'bar',
+					data: {
+						labels: weeklyLabels,
+						datasets: [{
+							label: 'Weekly Sales',
+							data: weeklySales,
+							borderColor: '#00adb5',
+							backgroundColor: 'rgba(0, 173, 181, 0.2)',
+							borderWidth: 2,
+							fill: true,
+							tension: 0.4, // Makes the line more curved (increase this value for more curve)
+						}]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Date'
+								}
+							},
+							y: {
+								title: {
+									display: true,
+									text: 'Sales ($)'
+								},
+								beginAtZero: true
+							}
+						}
+					}
+				});
+
+				// Create Monthly Sales Chart
+				const monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
+				new Chart(monthlySalesCtx, {
+					type: 'bar',
+					data: {
+						labels: monthlyLabels,
+						datasets: [{
+							label: 'Monthly Sales',
+							data: monthlySales,
+							backgroundColor: '#343a40',
+							borderColor: '#00adb5',
+							borderWidth: 1
+						}]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Month'
+								}
+							},
+							y: {
+								title: {
+									display: true,
+									text: 'Sales ($)'
+								},
+								beginAtZero: true
+							}
+						}
+					}
+				});
+
+			} catch (error) {
+				console.error('Error fetching sales data:', error);
+			}
+		}
+
+		// Call fetchSalesData on page load
+		document.addEventListener('DOMContentLoaded', fetchSalesData);
+	</script>
+	<script>
+		// Custom Date Range Sales Chart
+		document.getElementById('fetchCustomSales').addEventListener('click', async () => {
+			const startDate = document.getElementById('startDate').value;
+			const endDate = document.getElementById('endDate').value;
+
+			if(!startDate || !endDate) {
+				Swal.fire({
+					title: 'Error!',
+					text: 'Please select both start and end dates.',
+					icon: 'error',
+					confirmButtonText: 'OK'
+				});
+				return;
+			}
+
+			try {
+				const response = await fetch(`/admin/custom-sales-data?startDate=${startDate}&endDate=${endDate}`);
+				const data = await response.json();
+
+				if(data.customSales.length === 0) {
+					alert("No sales data found for the selected date range.");
+					return;
+				}
+
+				const customLabels = data.customSales.map(item => item._id);
+				const customSales = data.customSales.map(item => item.sales);
+
+				if(window.customSalesChart instanceof Chart) {
+					window.customSalesChart.destroy();
+				}
+				// Get canvas context
+				const customSalesCtx = document.getElementById('customSalesChart').getContext('2d');
+
+
+
+				// Create a new chart instance
+				window.customSalesChart = new Chart(customSalesCtx, {
+					type: 'line',
+					data: {
+						labels: customLabels,
+						datasets: [{
+							label: 'Custom Date Range Sales',
+							data: customSales,
+							borderColor: '#ff6f61',
+							backgroundColor: 'rgba(255, 111, 97, 0.2)',
+							borderWidth: 2,
+							fill: true,
+							tension: 0.4
+						}]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Date'
+								}
+							},
+							y: {
+								title: {
+									display: true,
+									text: 'Sales ($)'
+								},
+								beginAtZero: true
+							}
+						}
+					}
+				});
+			} catch (error) {
+				console.error("Error fetching custom sales data:", error);
+			}
+		});
+	</script>
+
+	<!-- Include SweetAlert2 -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+	<script>
+		// Function to download files using fetch
+		async function downloadFile(url, filename, fileType) {
+			try {
+				const response = await fetch(url);
+
+				if(!response.ok) {
+					throw new Error("Failed to fetch the file.");
+				}
+
+				// Convert response to a Blob
+				const blob = await response.blob();
+
+				// Create a temporary link to download the file
+				const link = document.createElement("a");
+				link.href = window.URL.createObjectURL(blob);
+				link.download = filename;
+
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+
+				// Show success notification with Swal2
+				const now = new Date();
+				const time = now.toLocaleTimeString();
+				Swal.fire({
+					icon: "success",
+					title: `${fileType} Downloaded`,
+					text: `Downloaded successfully at ${time}`,
+					timer: 3000,
+					showConfirmButton: false
+				});
+			} catch (error) {
+				console.error("Error:", error);
+				Swal.fire({
+					icon: "error",
+					title: "Download Failed",
+					text: "Something went wrong while downloading the file.",
+					timer: 3000,
+					showConfirmButton: false
+				});
+			}
+		}
+
+		// Event listeners for buttons
+		document.getElementById("downloadPDF").addEventListener("click", () => {
+			downloadFile("/admin/pdf", `sales_report_${Date.now()}.pdf`, "PDF");
+		});
+
+		document.getElementById("downloadExcel").addEventListener("click", () => {
+			downloadFile("/admin/excel", `sales_report_${Date.now()}.xlsx`, "Excel");
+		});
+	</script>
+
+
+
+
+	<!-- CUSTOM SALES -->
+	<script>
+		function openSalesReportModal() {
+			$('#salesReportModal').modal('show');
+		}
+
+		// Show or hide custom date inputs
+		function toggleCustomDates() {
+			const filterType = document.getElementById("filterType").value;
+			document.getElementById("customDateInputs").style.display =
+				filterType === "custom" ? "block" : "none";
+		}
+
+		// Fetch Filtered Sales Data
+		async function fetchFilteredSales(event, page = 1) {
+			event.preventDefault();
+
+			const filterType = document.getElementById("filterType").value;
+			const startDate = document.getElementById("startDate").value;
+			const endDate = document.getElementById("endDate").value;
+
+			try {
+				const response = await fetch(`/admin/modal/filter?page=${page}`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({
+						filterType,
+						startDate,
+						endDate
+					}),
+				});
+
+				const data = await response.json();
+				populateSalesReport(data.orders);
+				updateStats(data.totalSales, data.totalRevenue);
+				updatePagination(data.totalPages, page);
+			} catch (error) {
+				console.error("Error fetching sales data:", error);
+			}
+		}
+
+		// Populate Sales Report Table
+		function populateSalesReport(orders) {
+			const tbody = document.getElementById("salesReportTableBody");
+			tbody.innerHTML = "";
+			orders.forEach((order) => {
+				tbody.innerHTML += `
+            <tr style=''>
+                <td>${order._id}</td>
+                <td>${order.userName || "Guest"}</td>
+                <td>${order.email || "N/A"}</td>
+                <td>₹${order.totalAmount}</td>
+                <td>${order.status}</td>
+                <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+            </tr>
+        `;
+			});
+		}
+
+		// Update Sales Count and Revenue
+		function updateStats(totalSales, totalRevenue) {
+			document.getElementById("totalSalesCount").innerText = totalSales;
+			document.getElementById("totalRevenue").innerText = totalRevenue;
+		}
+
+		// Update Pagination
+		function updatePagination(totalPages, currentPage) {
+			const pagination = document.getElementById("pagination");
+			pagination.innerHTML = "";
+			for(let i = 1; i <= totalPages; i++) {
+				pagination.innerHTML += `
+            <li class="page-item ${i === currentPage ? "active" : ""}">
+                <a class="page-link" href="#" onclick="fetchFilteredSales(event, ${i})">${i}</a>
+            </li>
+        `;
+			}
+		}
+
+		// Download Filtered Report
+		function downloadReport(type) {
+			const filterType = document.getElementById("filterType").value;
+			const startDate = document.getElementById("startDate").value;
+			const endDate = document.getElementById("endDate").value;
+
+			window.location.href = `/admin/modal/${type}?filterType=${filterType}&startDate=${startDate}&endDate=${endDate}`;
+		}
+	</script>
+
+</body>
+
+</html>

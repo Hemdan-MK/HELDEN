@@ -1,65 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Corona Admin</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href="/admin/assets/vendors/mdi/css/materialdesignicons.min.css">
-    <link rel="stylesheet" href="/admin/assets/vendors/css/vendor.bundle.base.css">
-    <!-- endinject -->
-    <!-- Plugin css for this page -->
-    <!-- End plugin css for this page -->
-    <!-- inject:css -->
-    <!-- endinject -->
-    <!-- Layout styles -->
-    <link rel="stylesheet" href="/admin/assets/css/style.css">
-    <!-- End layout styles -->
-    <link rel="shortcut icon" href="/admin/assets/images/favicon.png" />
-  </head>
-  <body>
-    <div class="container-scroller">
-      <div class="container-fluid page-body-wrapper full-page-wrapper">
-        <div class="row w-100 m-0">
-          <div class="content-wrapper full-page-wrapper d-flex align-items-center auth login-bg">
-            <div class="card col-lg-4 mx-auto">
-              <div class="card-body px-5 py-5">
-                <h3 class="card-title text-left mb-3">Login</h3>
-                <form action="/admin/login" method="post">
-                  <div class="form-group">
-                    <label>Username or email *</label>
-                    <input name="email" type="text" class="form-control p_input">
-                  </div>
-                  <div class="form-group">
-                    <label>Password *</label>
-                    <input name="password" type="text" class="form-control p_input">
-                  </div>
-                  <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-block enter-btn">Login</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          <!-- content-wrapper ends -->
-        </div>
-        <!-- row ends -->
-      </div>
-      <!-- page-body-wrapper ends -->
-    </div>
-    <!-- container-scroller -->
-    <!-- plugins:js -->
-    <script src="/admin/assets/vendors/js/vendor.bundle.base.js"></script>
-    <!-- endinject -->
-    <!-- Plugin js for this page -->
-    <!-- End plugin js for this page -->
-    <!-- inject:js -->
-    <script src="/admin/assets/js/off-canvas.js"></script>
-    <script src="/admin/assets/js/hoverable-collapse.js"></script>
-    <script src="/admin/assets/js/misc.js"></script>
-    <script src="/admin/assets/js/settings.js"></script>
-    <script src="/admin/assets/js/todolist.js"></script>
-    <!-- endinject -->
-  </body>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Login</title>
+<!-- Bootstrap 5 CSS -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+	body {
+    background: linear-gradient(180deg, #121212 10%, #242537 100%);
+    background-size: cover  c;		/* Darker gradient background */
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.login-card {
+		background: rgba(0, 0, 0, 0.85);
+		/* Darker background with a slight transparency */
+		border-radius: 15px;
+		box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+		/* Stronger shadow */
+		padding: 3rem;
+		min-width: 400px;
+		width: 100%;
+		margin: 1rem;
+		border: 3px solid #c3b034;
+		/* Bold red border */
+	}
+
+	.login-title {
+		color: #ecf0f1;
+		/* Red color for the title */
+		font-weight: 900;
+		/* Ultra-bold font */
+		margin-bottom: 1.5rem;
+		text-align: center;
+		text-transform: uppercase;
+		/* All caps for a more aggressive feel */
+		font-size: 1.8rem;
+		letter-spacing: 2px;
+		/* Spread out the letters */
+	}
+
+	.form-control {
+		border-radius: 10px;
+		padding: 0.75rem 1rem;
+		border: 2px solid #2a2f45;
+		/* Red border for inputs */
+		background-color: #b3c1cf;
+		/* Dark background for inputs */
+		color: #ecf0f1;
+		/* Light text color */
+		font-weight: 600;
+		/* Bold text */
+		transition: all 0.3s ease;
+		/* Smooth transition for focus effect */
+	}
+
+	.form-control:focus {
+		border-color: #e74c3c;
+		background-color: #34495e;
+		/* Slightly lighter background on focus */
+		box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.5);
+		/* Red focus ring */
+	}
+
+	.form-label {
+		color: #ecf0f1;
+		/* Lighter label color */
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+		text-transform: uppercase;
+	}
+
+	.login-btn {
+		/* Red background */
+		border-radius: 10px;
+		padding: 1rem 2rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		transition: all 0.3s ease;
+		color: #fff;
+		/* White text */
+	}
+
+	.login-btn:hover {
+		transform: translateY(4px);
+		/* Aggressive hover effect */
+		box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6);
+		/* Stronger shadow */
+		background-color: #c0392b;
+		/* Darker red when hovered */
+	}
+
+	.required-star {
+		color: #e74c3c;
+		/* Red color for required asterisk */
+	}
+
+	/* Responsive adjustments */
+	@media (max-width: 576px) {
+		.login-card {
+			padding: 2rem;
+		}
+	}
+</style>
+</head>
+
+<body>
+	<div class="d-flex container-fluid  justify-content-center">
+		<div class="row justify-content-center">
+			<div class="col-12">
+				<div class="login-card">
+					<h2 class="login-title">Admin Login</h2>
+					<form action="/admin/login" method="post">
+						<div class="mb-3">
+							<label class="form-label">
+								Username or Email <span class="required-star">*</span>
+							</label>
+							<input name="email" type="text" class="form-control" placeholder="Enter your username or email" required>
+						</div>
+						<div class="mb-3">
+							<label class="form-label">
+								Password <span class="required-star">*</span>
+							</label>
+							<input name="password" type="password" class="form-control" placeholder="Enter your password" required>
+						</div>
+						<div class="d-grid gap-2">
+							<button type="submit" class="btn btn-outline-danger login-btn">
+								Login
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Bootstrap 5 JS Bundle -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+
 </html>

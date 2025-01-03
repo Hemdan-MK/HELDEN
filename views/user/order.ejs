@@ -193,6 +193,35 @@
 	.orders::-webkit-scrollbar-thumb:hover {
 		background-color: #555;
 	}
+
+	.pagination-container {
+		margin-top: 2rem;
+		margin-bottom: 2rem;
+	}
+
+	.pagination .page-link {
+		color: #397f79;
+		border-color: #dee2e6;
+	}
+
+	.pagination .page-item.active .page-link {
+		background-color: #397f79;
+		border-color: #397f79;
+		color: white;
+	}
+
+	.pagination .page-link:hover {
+		color: #2c605c;
+		background-color: #e9ecef;
+		border-color: #dee2e6;
+	}
+
+	.pagination .page-item.disabled .page-link {
+		color: #6c757d;
+		pointer-events: none;
+		background-color: #fff;
+		border-color: #dee2e6;
+	}
 </style>
 </head>
 
@@ -249,6 +278,34 @@
 						</div>
 					</div>
 					<% }); %>
+				</div>
+				<!-- Add this right after the orders div -->
+				<div class="pagination-container d-flex justify-content-center mt-4">
+					<nav aria-label="Orders pagination">
+						<ul class="pagination">
+							<% if (hasPrevPage) { %>
+							<li class="page-item">
+								<a class="page-link" href="/myAccount/orders?page=<%= currentPage - 1 %>" aria-label="Previous">
+									<span aria-hidden="true">&laquo;</span>
+								</a>
+							</li>
+							<% } %>
+
+							<% for(let i = 1; i <= totalPages; i++) { %>
+							<li class="page-item <%= currentPage === i ? 'active' : '' %>">
+								<a class="page-link" href="/myAccount/orders?page=<%= i %>"><%= i %></a>
+							</li>
+							<% } %>
+
+							<% if (hasNextPage) { %>
+							<li class="page-item">
+								<a class="page-link" href="/myAccount/orders?page=<%= currentPage + 1 %>" aria-label="Next">
+									<span aria-hidden="true">&raquo;</span>
+								</a>
+							</li>
+							<% } %>
+						</ul>
+					</nav>
 				</div>
 
 				<!-- Order Invoice Modal -->

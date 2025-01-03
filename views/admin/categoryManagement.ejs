@@ -7,145 +7,142 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Category Panel</title>
 <!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/admin/admin.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-	.modal {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-
-
-	.close {
-		cursor: pointer;
-		background: none;
-		border: none;
-		font-size: 20px;
+	.search input {
+		border-radius: 20px;
 	}
 </style>
 </head>
 
 <body>
-	<div class="container-scroller">
-		<!-- Sidebar -->
-		<%- include('./layout/sidebar') %>
-
+	<div class="sidebar">
+		<div class="sidebar-brand">
+			HELDEN
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">Dashboard</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">User Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/productManagement">Product Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">Order Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/categoryManagement">Category Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">Coupon Management</a>
+			</li>
+			<li class="nav-item mt-5">
+				<a class="nav-link text-warning" href="/admin/logout">Logout</a>
+			</li>
+		</ul>
+	</div>
+	<div class="main-content">
 		<!-- Page Content -->
-		<div class="container-fluid page-body-wrapper">
+		<div class="container-fluid" style="width: 100%; height: 100vh;">
 			<!-- Navbar -->
+			<h2 class="mb-4 pt-3">Category Management</h2>
 
-			<!-- Main Content -->
-			<div class="container mt-5 pt-4">
-				<div class="row mb-4">
-					<div class="col-12">
-						<h4 class="text-center h1">Category Management</h4>
-					</div>
-				</div>
+			<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
+				<input type="text" class="form-control" placeholder="Search users">
+				<button style=" margin-left: 10px;" class="btn btn-primary">Search</button>
+			</form>
 
-				<!-- Search Form -->
-				<div class="col">
-					<div class="row mb-3">
-						<div class="col-md-6 offset-md-3">
-							<form class="form-inline justify-content-around">
-								<input type="text" class="form-control mr-2 w-75" placeholder="Search categories">
-								<button class="btn btn-primary">Search</button>
-							</form>
-						</div>
-					</div>
-					<div class="row mt-4">
-						<div class="col-md-6 offset-md-3 text-center mb-3">
-							<button class="btn btn-primary btn-lg" id="btn-add-cat">Create New Category</button>
-							<button class="btn btn-danger btn-lg" id="btn-del-cat">Unlisted Categories</button>
-						</div>
-					</div>
-				</div>
+			<div class="table-responsive">
+				<table>
+					<thead>
+						<tr>
+							<th>Index</th>
+							<th>Name</th>
+							<th>Picture</th>
+							<th>Product Count</th>
+							<th>Created Date</th>
+							<th>Updated Date</th>
+							<th>Update</th>
+							<th>Status</th>
+							<th>Offers</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% categoriesWithCounts.forEach((category, index)=> { %>
+						<tr id="category-<%= category._id %>">
+							<td>
+								<%= index + 1 %>
+							</td>
+							<td>
+								<%= category.name %>
+							</td>
+							<td><img src="<%= category.image %>" class="img-thumbnail" style="width: 60px; height: 60px;">
+							</td>
+							<td>
+								<%= category.productCount %>
+							</td>
+							<td>
+								<%= new Date(category.createdAt).toLocaleDateString() %>
+							</td>
+							<td>
+								<%= new Date(category.updatedAt).toLocaleDateString() %>
+							</td>
+							<td><a href="/admin/categoryManagement/update/<%= category._id %>" class="btn btn-outline-warning btn-sm">Update</a></td>
+							<td>
+								<button data-id="<%= category._id %>" class="btn btn-outline-success btn-sm btn-delete">Unlink</button>
+							</td>
+							<% if(!category.offerApplied) {%>
+							<td>
+								<button data-id="<%= category._id %>" class="btn btn-outline-primary btn-sm btn-offer">Add Offer</button>
+							</td>
+							<% } else { %>
+							<td>
+								<button data-id="<%= category._id %>" class="btn btn-outline-danger btn-sm btn-offer-delete">Remove Offer</button>
+							</td>
+							<% } %>
+						</tr>
+						<% }); %>
+					</tbody>
+				</table>
+			</div>
+			<div class="pagination-container my-4">
+				<nav aria-label="Page navigation">
+					<ul class="pagination pagination-dark justify-content-center">
+						<% if (currentPage > 1) { %>
+						<li class="page-item">
+							<a class="page-link" href="/admin/categoryManagement?page=<%= currentPage - 1 %>&limit=<%= limit %>">
+								<span>&laquo; Previous</span>
+							</a>
+						</li>
+						<% } %>
 
-				<!-- Categories Table -->
-				<div class="row">
-					<div class="col-12">
-						<div class="table-responsive table-bordered border-danger">
-							<table class="table table-borderless table-hover">
-								<thead class="thead-dark">
-									<tr>
-										<th>Index</th>
-										<th>Name</th>
-										<th>Picture</th>
-										<th>Product Count</th>
-										<th>Created Date</th>
-										<th>Updated Date</th>
-										<th>Update</th>
-										<th>Status</th>
-										<th>Offers</th>
-									</tr>
-								</thead>
-								<tbody>
-									<% categoriesWithCounts.forEach((category, index)=> { %>
-									<tr id="category-<%= category._id %>">
-										<td>
-											<%= index + 1 %>
-										</td>
-										<td>
-											<%= category.name %>
-										</td>
-										<td><img src="<%= category.image %>" class="img-thumbnail" style="width: 60px; height: 60px;">
-										</td>
-										<td>
-											<%= category.productCount %>
-										</td>
-										<td>
-											<%= new Date(category.createdAt).toLocaleDateString() %>
-										</td>
-										<td>
-											<%= new Date(category.updatedAt).toLocaleDateString() %>
-										</td>
-										<td><a href="/admin/categoryManagement/update/<%= category._id %>" class="btn btn-primary btn-sm">Update</a></td>
-										<td>
-											<button data-id="<%= category._id %>" class="btn btn-success btn-sm btn-delete">Unlink</button>
-										</td>
-										<% if(!category.offerApplied) {%>
-										<td>
-											<button data-id="<%= category._id %>" class="btn btn-behance btn-sm btn-offer">Add Offer</button>
-										</td>
-										<% } else { %>
-										<td>
-											<button data-id="<%= category._id %>" class="btn btn-danger btn-sm btn-offer-delete">Remove Offer</button>
-										</td>
-										<% } %>
-									</tr>
-									<% }); %>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
+						<% for (let i = 1; i <= totalPages; i++) { %>
+						<li class="page-item <%= i === currentPage ? 'active' : '' %>">
+							<a class="page-link" href="/admin/categoryManagement?page=<%= i %>&limit=<%= limit %>">
+								<%= i %>
+							</a>
+						</li>
+						<% } %>
 
-				<div class="pagination">
-					<!-- Previous Page Button -->
-					<% if (currentPage > 1) { %>
-					<a href="/admin/categoryManagement?page=<%= currentPage - 1 %>&limit=<%= limit %>">Previous</a>
-					<% } %>
-
-					<!-- Page Numbers -->
-					<% for (let i = 1; i <= totalPages; i++) { %>
-					<a href="/admin/categoryManagement?page=<%= i %>&limit=<%= limit %>" <% if (i === currentPage) { %> class="active" <% } %>>
-						<%= i %>
-					</a>
-					<% } %>
-
-					<!-- Next Page Button -->
-					<% if (currentPage < totalPages) { %>
-					<a href="/admin/categoryManagement?page=<%= currentPage + 1 %>&limit=<%= limit %>">Next</a>
-					<% } %>
-				</div>
+						<% if (currentPage < totalPages) { %>
+						<li class="page-item">
+							<a class="page-link" href="/admin/categoryManagement?page=<%= currentPage + 1 %>&limit=<%= limit %>">
+								<span>Next &raquo;</span>
+							</a>
+						</li>
+						<% } %>
+					</ul>
+				</nav>
+			</div>
+			<div class="action-buttons">
+				<button class="btn btn-primary btn-lg" id="btn-add-cat">Create New Category</button>
+				<button class="btn btn-danger btn-lg" id="btn-del-cat">Unlisted Categories</button>
 			</div>
 		</div>
 	</div>
@@ -264,25 +261,25 @@
 			const offerPercentage = offerPercentageInput.value;
 
 			// Validate offer percentage
-			if (!offerPercentage || offerPercentage <= 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Invalid Offer',
-            text: 'Please enter a valid offer percentage greater than 0.',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
+			if(!offerPercentage || offerPercentage <= 0) {
+				Swal.fire({
+					icon: 'warning',
+					title: 'Invalid Offer',
+					text: 'Please enter a valid offer percentage greater than 0.',
+					confirmButtonText: 'OK'
+				});
+				return;
+			}
 
-    if (offerPercentage > 70) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Invalid Offer',
-            text: 'The maximum allowed offer percentage is 70%.',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
+			if(offerPercentage > 70) {
+				Swal.fire({
+					icon: 'warning',
+					title: 'Invalid Offer',
+					text: 'The maximum allowed offer percentage is 70%.',
+					confirmButtonText: 'OK'
+				});
+				return;
+			}
 
 			try {
 				// Send the data to the backend

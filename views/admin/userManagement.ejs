@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Admin Panel</title>
-<!-- Bootstrap 5 CSS -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <!-- Custom CSS -->
 <link rel="stylesheet" href="/admin/admin.css">
@@ -13,36 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 	/* Custom Styles */
-	body {
-		font-family: 'Poppins', sans-serif !important;
-		background-color: #121212;
-		color: white;
-		margin: 0;
-		padding: 0;	}
 
-	
-
-	.card {
-		border-radius: 8px;
-		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-	}
-
-	table {
-		border-collapse: collapse;
-		border-radius: 8px;
-		overflow: hidden;
-	}
-
-	thead th {
-		background-color: #007bff;
-		color: white;
-		text-transform: uppercase;
-	}
-
-	tbody tr:hover {
-		background-color: #f1f1f1;
-		transition: background-color 0.3s ease;
-	}
 
 	.btn-ban,
 	.btn-view {
@@ -84,89 +55,121 @@
 </head>
 
 <body>
-	<div class="container-scroller">
-		<!-- Sidebar -->
-		<%- include('./layout/sidebar') %>
+	<div class="sidebar">
+		<div class="sidebar-brand">
+			HELDEN
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">Dashboard</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/userManagement">User Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/productManagement">Product Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">Order Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">Category Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">Coupon Management</a>
+			</li>
+			<li class="nav-item mt-5">
+				<a class="nav-link text-warning" href="/admin/logout">Logout</a>
+			</li>
+		</ul>
+	</div>
+	<!-- Sidebar -->
+	<!-- Main Content -->
+	<div class="main-content">
+		<!-- Main Panel -->
+		<div class="container-fluid" style="width: 100%;height: 100vh;">
+			<!-- <div class="card-body"> -->
+			<h2 class="mb-4 pt-3">Users Status</h2>
 
-		<!-- Main Content -->
-		<div class="cont page-body-wrapper">
+			<!-- Search Bar -->
+			<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
+				<input type="text" class="form-control" placeholder="Search users">
+				<button style=" margin-left: 10px;" class="btn btn-primary">Search</button>
+			</form>
 
-			<!-- Main Panel -->
-			<div class="col" style="width: 100%;height: 100vh;">
-				<div class="col-12 grid-margin">
-					<div class="card">
-						<div class="card-body">
-							<h4 class="card-title">Users Status</h4>
-
-							<!-- Search Bar -->
-							<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
-								<input type="text" class="form-control" placeholder="Search users">
-								<button style="height: 33px; margin-left: 10px;" class="btn btn-primary">Search</button>
-							</form>
-
-							<!-- Table -->
-							<div class="table-responsive">
-								<table class="table text-center table-striped">
-									<thead>
-										<tr>
-											<th>Username</th>
-											<th>Email</th>
-											<th>Role</th>
-											<th>Join Date</th>
-											<th>Ban</th>
-											<th>View</th>
-										</tr>
-									</thead>
-									<tbody>
-										<% user.forEach((value) => { %>
-										<tr>
-											<td><%= value.name %></td>
-											<td><%= value.email %></td>
-											<td><%= value.role %></td>
-											<td>
-												<% const createdAt = new Date(value.createdAt); const day = createdAt.getDate(); const month = createdAt.getMonth() + 1; const year = createdAt.getFullYear(); const formattedDate = day + ":" + month + ":" + year; %>
-												<%= formattedDate %>
-											</td>
-											<td>
-												<button data-id="<%= value.email %>" class="badge badge-outline-danger btn-ban">
-													<%= value.isDeleted ? 'Unban' : 'Ban' %>
-												</button>
-											</td>
-											<td>
-												<button data-id="<%= value.email %>" class="badge badge-outline-warning btn-view">View</button>
-											</td>
-										</tr>
-										<% }); %>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
+			<!-- Table -->
+			<div class="table-responsive">
+				<table>
+					<thead>
+						<tr>
+							<th>Username</th>
+							<th>Email</th>
+							<th>Role</th>
+							<th>Join Date</th>
+							<th>Ban</th>
+							<th>View</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% user.forEach((value) => { %>
+						<tr>
+							<td><%= value.name %></td>
+							<td><%= value.email %></td>
+							<td><%= value.role %></td>
+							<td>
+								<% const createdAt = new Date(value.createdAt); const day = createdAt.getDate(); const month = createdAt.getMonth() + 1; const year = createdAt.getFullYear(); const formattedDate = day + ":" + month + ":" + year; %>
+								<%= formattedDate %>
+							</td>
+							<td>
+								<button data-id="<%= value.email %>" class="btn btn-outline-danger btn-ban">
+									<%= value.isDeleted ? 'Unban' : 'Ban' %>
+								</button>
+							</td>
+							<td>
+								<button data-id="<%= value.email %>" class="btn btn-outline-primary btn-view">View</button>
+							</td>
+						</tr>
+						<% }); %>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>
 	<div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
+				<!-- Modal Header -->
 				<div class="modal-header">
 					<h5 class="modal-title" id="userDetailModalLabel">User Details</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
+	
+				<!-- Modal Body -->
 				<div class="modal-body">
-					<!-- User details dynamically added here -->
-					<p><strong>Username:</strong> <span id="modalUsername"></span></p>
-					<p><strong>Email:</strong> <span id="modalEmail"></span></p>
-					<p><strong>Role:</strong> <span id="modalRole"></span></p>
+					<div class="user-icon-section d-flex align-items-center">
+						<div class="user-icon me-3">
+							<i class="bi bi-person-fill fs-1"></i>
+						</div>
+						<div class="user-info">
+							<p class="mb-1"><strong>Username:</strong> <span id="modalUsername"></span></p>
+							<p class="mb-1"><strong>Email:</strong> <span id="modalEmail"></span></p>
+						</div>
+					</div>
+					<p class="mt-3"><strong>Role:</strong> <span id="modalRole"></span></p>
 					<p><strong>Join Date:</strong> <span id="modalJoinDate"></span></p>
 					<p><strong>Status:</strong> <span id="modalStatus"></span></p>
 				</div>
+	
+				<!-- Modal Footer -->
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 				</div>
 			</div>
 		</div>
 	</div>
+	
+
+
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
