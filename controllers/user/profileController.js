@@ -2,7 +2,6 @@ const Order = require('../../models/orderModel')
 
 const loadProfile = async (req, res) => {
     const { email } = req.session.userData
-    console.log(email);
 
     const user = await User.findOne({ email: email })
     try {

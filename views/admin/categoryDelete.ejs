@@ -95,7 +95,6 @@
 		document.querySelectorAll(".btn-recover").forEach(button => {
 			button.addEventListener("click", async function(e) {
 				e.preventDefault();
-				console.log("Recover button clicked");
 				const categoryId = this.getAttribute("data-id");
 				const res = await fetch(`/admin/categoryManagement/recoverCategory/${categoryId}`, {
 					method: 'PATCH',
@@ -106,7 +105,6 @@
 				let data = await res.json()
 
 				if(data.success) {
-					console.log("Category recovered, reloading page");
 					window.location.reload();
 				} else {
 					console.error("Failed to recover category");
@@ -116,7 +114,6 @@
 
 		document.querySelectorAll(".btn-delete").forEach(button => {
 			button.addEventListener("click", async function() {
-				console.log("Delete button clicked");
 				const categoryId = this.getAttribute("data-id");
 				const res = await fetch(`/admin/categoryManagement/permanentDeleteCategory/${categoryId}`, {
 					method: 'DELETE',
@@ -128,7 +125,6 @@
 				let data = await res.json()
 
 				if(data.success) {
-					console.log("Category deleted, reloading page");
 					location.reload();
 				} else {
 					console.error("Failed to delete category");

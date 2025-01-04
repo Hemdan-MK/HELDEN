@@ -24,8 +24,6 @@ const getProductDetail = async (req, res) => {
         if (!product) {
             return res.status(404).send('Product not found');
         }
-        console.log(product);
-
 
         // Render the product detail page and pass the product data to the view
         return res.status(200).render('user/productPage', { product, user: req.session.user, productAll, category, related });
@@ -114,12 +112,9 @@ const stock = async (req, res) => {
     try {
         const productId = req.body.productId;
         const size = req.body.size;
-        console.log('productId : ' + productId);
-        console.log('size : ' + size);
 
         // Fetch stock from your database (example query)
         const product = await Product.findById(productId);
-        console.log(product);
 
         if (product && product.stockManagement && Array.isArray(product.stockManagement)) {
             // Find the stock for the requested size

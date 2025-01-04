@@ -5,9 +5,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Category Panel</title>
-<link rel="stylesheet" href="/admin/admin.css">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin/admin.css">
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -20,33 +22,23 @@
 		gap: 15px;
 	}
 
-	.inp-mid {
-		align-content: center;
-		justify-content: center;
-		width: 100%;
-		height: 100%;
-	}
-
-
 	.roundPhotoInput {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 150px;
-		height: 150px;
+		max-width: 300px;
+		min-height: 300px;
 		border: 5px solid #ffb700;
-		border-radius: 50%;
+		border-radius: 8px;
 		cursor: pointer;
 		overflow: hidden;
 		background-color: #f9f9f9;
 		position: relative;
 	}
-
 	.roundPhotoInput img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-
 		border-radius: 50%;
 	}
 
@@ -54,64 +46,49 @@
 		border-color: #007bff;
 	}
 
-	.modal {
-		display: none;
-		position: fixed;
-		z-index: 1000;
-		left: 0;
-		top: 0;
-		width: 100%;
-		height: 100%;
-		overflow: auto;
-		background-color: rgba(0, 0, 0, 0.5);
-	}
-
-	.modal-content {
-		margin: 15% auto;
-		padding: 20px 0;
-		width: 60%;
-		background: #2b3037;
-		border-radius: 10px;
-		text-align: center;
-		position: relative;
-	}
-
-	.modal-content img {
-		max-width: 100%;
-		max-height: 400px;
-	}
-
-	.close {
-		position: absolute;
-		right: 10px;
-		top: 10px;
-		color: #aaa;
-		font-size: 24px;
-		cursor: pointer;
-	}
-
-	.close:hover {
-		color: red;
-	}
+	
 </style>
 </head>
 
 <body>
-	<div class="container-scroller">
-		<%- include('./layout/sidebar') %>
-
-		<!-- partial -->
+	<div class="sidebar">
+		<div class="sidebar-brand">
+			H E L D E N
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">Dashboard</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">User Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/productManagement">Product Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">Order Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/categoryManagement">Category Management</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">Coupon Management</a>
+			</li>
+			<li class="nav-item mt-5">
+				<a class="nav-link text-warning" href="/admin/logout">Logout</a>
+			</li>
+		</ul>
+	</div>
+	<div class="main-content">
 		<div class="container-fluid page-body-wrapper">
-			<!-- partial:partials/_navbar.html -->
-			<nav class="navbar p-0 fixed-top d-flex flex-row">
-			</nav>
+			
 
 			<!-- /////////////////////////////////////////////////////// -->
 			<div class="row p-3 w-100 h-100">
 				<div class="col-12 grid-margin">
-					<div class="card">
-						<div class="card-body">
-							<h4 class="card-title text-center h3">Add New Category</h4>
+					<div class="card" style="padding: 0px;">
+						<div class="card-body" >
+							<h4 class="card-title text-center h3">Update Category</h4>
 							<hr class="bg-light">
 							<form id="updateCat">
 								<input type="hidden" name="categoryId" value="<%= category._id %>" class="categoryId">
@@ -122,9 +99,9 @@
 								<div class="form-group photoSelectContainer">
 									<div class="roundPhotoInput" id="photoInputContainer">
 										<img id="roundPreview" alt="Preview" src="<%= category.image %>" />
-										<input type="file" id="categoryImage" accept="image/*" class="inp-mid" onchange="openCropModal(event)" />
 									</div>
-									<button type="button" class="delete-button" onclick="removeImagePreview()">Remove Image</button>
+									<input type="file" id="categoryImage" accept="image/*" class="form-control btn bg-secondary w-75 " onchange="openCropModal(event)" />
+									<button type="button" class="btn btn-outline-danger delete-button" onclick="removeImagePreview()">Remove Image</button>
 								</div>
 								<div class="form-group">
 									<label for="categoryDescription">Description</label>

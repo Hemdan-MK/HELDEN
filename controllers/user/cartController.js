@@ -93,15 +93,12 @@ const loadCart = async (req, res) => {
 const removeItem = async (req, res) => {
     try {
         const { itemId } = req.body; // Get itemId from the request body
-        console.log('Item ID : ' + itemId);
 
         // Assuming the cart is stored under the user's session or userId
         const userId = req.session.user.id; // Get userId from session or JWT token
-        console.log('userID :' + userId);
 
         // Find the cart for the user and remove the item
         const cart = await Cart.findOne({ userId });
-        console.log('Cart :' + cart);
 
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found' });
@@ -109,7 +106,6 @@ const removeItem = async (req, res) => {
 
         // Remove the item by its productId
         cart.items = cart.items.filter(item => item.id.toString() !== itemId)
-        console.log('Cart updated :' + cart.items);
 
         // Save the updated cart
         await cart.save();
@@ -265,8 +261,6 @@ const getStock = async (req, res) => {
     try {
         const { itemId } = req.body; // Assuming itemId is the _id of the item in the cart
 
-        console.log("Received itemId:", itemId);
-
         // Find the cart where the item with the given itemId exists in the items array
         const cart = await Cart.findOne({ "items._id": itemId });
 
@@ -297,10 +291,8 @@ const getStock = async (req, res) => {
             });
         }
 
-        console.log(`Stock for size ${cartItem.size}:`, sizeStock.quantity);
-
         // Send the stock information
-        res.status(200).json({ success: true, stock: sizeStock.quantity  });
+        res.status(200).json({ success: true, stock: sizeStock.quantity });
     } catch (error) {
         console.error('Error fetching stock:', error);
         res.status(500).json({ success: false, message: 'Error fetching stock.', error: error.message });
@@ -316,8 +308,16 @@ const orderPlace = async (req, res) => {
         const cart = await Cart.findOne({ userId }).populate('items.productId');
 
         if (!cart || cart.items.length === 0) {
-            console.log('no cart found');
             return res.status(200).json({ success: false, message: 'Your cart is empty. Add some Items to cart' });
+        }
+
+
+        for (let item of cart.items) {
+            const product = item.productId._id;
+            const productStock = await Product.find({_id: product, isDeleted: false});
+            if (!productStock) {
+                res.status(404).json({ success: false, message: 'the product on cart is not found on product schema ' })
+            }
         }
 
         // Format order items from cart
@@ -371,13 +371,6 @@ const orderPlace = async (req, res) => {
 
         // FOR PRODUCT VALIDATION
         req.session.checkProductStatus = true
-        console.log('----------------------------------------------------------------');
-        console.log(req.session)
-        console.log('----------------------------------------------------------------');
-
-
-        console.log('----------------------------------------------------------------');
-        console.log(req.session);
 
         return res.status(200).json({
             success: true,

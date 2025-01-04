@@ -215,7 +215,6 @@
 				const userId = "<%= user.id %>"; // Pass userId dynamically
 				const response = await fetch(`/wallet/${userId}?page=${page}&limit=${limit}`);
 				const wallet = await response.json();
-				console.log(wallet);
 
 				// Handle Wallet Balance
 				const walletBalance = document.getElementById("wallet-balance");

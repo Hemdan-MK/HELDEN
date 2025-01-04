@@ -14,6 +14,18 @@ body {
 
 }
 
+input {
+  background: #1d1d34 !important;
+  color: #f9f9f9 !important;
+  border: 1px solid #414170 !important;
+}
+
+select option {
+  background: #1d1d34 !important;
+  color: #f9f9f9 !important;
+  border: 1px solid #414170 !important;
+}
+
 h2,
 h3 {
   font-weight: 600;
@@ -41,10 +53,17 @@ h3 {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.brand-full {
+  display: block;
+}
+
+.brand-short {
+  display: none;
+}
+
 .nav-item {
   position: relative;
   margin-top: 15px;
-  ;
 }
 
 .nav-link {
@@ -52,6 +71,9 @@ h3 {
   padding: 1rem;
   font-weight: 500;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .nav-link:hover {
@@ -60,10 +82,22 @@ h3 {
   border-radius: 5px;
 }
 
+.nav-link i {
+  margin-right: 10px;
+  font-size: 1.2rem;
+  min-width: 25px;
+  text-align: center;
+}
+
+.nav-link span {
+  white-space: nowrap;
+}
+
 .main-content {
   margin-left: 250px;
   min-height: 100vh;
-  width: calc(100% - 250px); /* Subtract sidebar width */
+  width: calc(100% - 250px);
+  /* Subtract sidebar width */
 }
 
 .top-navbar {
@@ -183,7 +217,34 @@ table tbody tr:hover {
 
 @media (max-width: 768px) {
   .sidebar {
-    margin-left: -250px;
+    width: 60px;
+  }
+
+  .sidebar-brand {
+    font-size: 1rem;
+    padding: 0 5px;
+  }
+  
+  .brand-full {
+    display: none;
+  }
+
+  .brand-short {
+    display: block;
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .nav-link {
+    padding: 0.8rem;
+    justify-content: center;
+  }
+
+  .nav-link i {
+    margin-right: 0;
+    font-size: 1.4rem;
   }
 
   .sidebar.active {
@@ -201,13 +262,13 @@ table tbody tr:hover {
 
 @media (max-width: 768px) {
   .main-content {
-      margin-left: 0;
-      width: 100%;
+    margin-left: 60px;
+    width: calc(100% - 60px);
   }
-  
+
   .main-content.active {
-      margin-left: 250px;
-      width: calc(100% - 250px);
+    margin-left: 250px;
+    width: calc(100% - 250px);
   }
 }
 
@@ -262,7 +323,7 @@ table tbody tr:hover {
   color: var(--text-light);
   font-size: 24px;
 }
- 
+
 .user-info .username {
   margin: 0;
   font-weight: bold;
@@ -308,7 +369,7 @@ table tbody tr:hover {
 
 /* form */
 /* ================================================================ */
-.form-group{
+.form-group {
   margin-top: 1rem;
 }
 
@@ -358,7 +419,7 @@ table tbody tr:hover {
 
 /* ACTIVE */
 /* ================================ */
-.active{
+.active {
   background-color: #ffdd00;
   color: rgb(33, 33, 33);
   font-weight: 900;

@@ -8,7 +8,6 @@ const fs = require('fs')
 const loadProductManagement = async (req, res) => {
     try {
         const products = await Products.find({ isDeleted: false }).populate('category');
-        console.log(products);
 
         if (!products || products.length === 0) {
             return res.status(200).render('admin/productManagement', { msg: 'No products found' });
@@ -22,7 +21,6 @@ const loadProductManagement = async (req, res) => {
 
 const loadUpdateProduct = async (req, res) => {
     const productId = req.params.id;
-    console.log('product updation : ' + productId);
 
     try {
         const product = await Products.findById(productId).populate('category');
@@ -30,10 +28,6 @@ const loadUpdateProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-console.log("================================");
-console.log(product);
-console.log(product.productType);
-console.log("================================");
 
         // Render the update page with the product data
         return res.status(200).render('admin/productUpdate', { product, categories });
@@ -88,8 +82,6 @@ const updateProduct = async (req, res) => {
                 if (product.images[index]) {
                     const oldImagePath = product.images[index];
                     const absoluteOldImagePath = path.join(__dirname, '../../public', oldImagePath);
-
-                    console.log('Old image absolute path:', absoluteOldImagePath);
 
                     if (fs.existsSync(absoluteOldImagePath)) {
                         fs.unlinkSync(absoluteOldImagePath);
@@ -209,7 +201,6 @@ const loadDelProductPage = async (req, res) => {
 
 const recoverProducts = async (req, res) => {
     const { id } = req.params;
-    console.log('Recover req : ' + id);
 
     try {
         await Products.findByIdAndUpdate(id, { isDeleted: false });
@@ -223,7 +214,6 @@ const recoverProducts = async (req, res) => {
 // Function to permanently delete a product
 const permanentDeleteProducts = async (req, res) => {
     const { id } = req.params;
-    console.log('Permenetent delete req : ' + id);
 
     try {
         await Products.findByIdAndDelete(id);

@@ -9,7 +9,6 @@ const loadUserManagement = async (req, res) => {
     try {
         const users = await User.find({});
         if (!users) {
-            console.log('User not found')
             return res.status(200).render('admin/userManagement', { msg: 'No users found' });
         }
         return res.status(200).render('admin/userManagement', { user: users });
@@ -35,7 +34,6 @@ const userBan = async (req, res) => {
         await user.save(); // Save the updated user data
 
         const status = user.isDeleted ? 'banned' : 'unbanned';
-        console.log(`this is the ${status} --> Email : ` + email);
         return res.status(200).json({ message: `User ${status} successfully`, isDeleted: user.isDeleted });
     } catch (error) {
         console.error('Error banning/unbanning user:', error);

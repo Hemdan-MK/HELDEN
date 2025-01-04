@@ -41,10 +41,6 @@ const download = async (req, res) => {
 
         delete req.session.orderId;
         delete req.session.shipping;
-        console.log('-------------------------------------------');
-        console.log(req.session);
-
-
 
     } catch (error) {
         console.error(error);

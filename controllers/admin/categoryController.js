@@ -1,28 +1,22 @@
 const Category = require('../../models/categoryModel');
 const Products = require('../../models/productModel');
 
-// Load all categories (Category Management Page)
 const loadCategoryManagement = async (req, res) => {
     try {
-        // Get page number and limit from query params, default to page 1 and limit 10
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
 
         // Calculate how many items to skip
         const skip = (page - 1) * limit;
 
-        // Get categories with pagination
         const categories = await Category.find({ isDeleted: false })
-            .skip(skip)         // Skip the previous categories based on the page
-            .limit(limit);      // Limit the number of categories per page
+            .skip(skip)
+            .limit(limit);
 
-        // Get total count of categories to calculate total pages
         const totalCategories = await Category.countDocuments({ isDeleted: false });
 
-        // Calculate total pages
         const totalPages = Math.ceil(totalCategories / limit);
 
-        // Get product count for each category
         const categoriesWithCounts = await Promise.all(
             categories.map(async (category) => {
                 const productCount = await Products.countDocuments({ category: category._id });
@@ -33,7 +27,6 @@ const loadCategoryManagement = async (req, res) => {
             })
         );
 
-        // Render the category management page with pagination data
         return res.status(200).render('admin/categoryManagement', {
             admin: req.session.admin,
             categoriesWithCounts,
@@ -50,7 +43,6 @@ const loadCategoryManagement = async (req, res) => {
 
 
 
-// Load the Add Category Page
 const loadAddCategoryPage = async (req, res) => {
     try {
         return res.status(200).render('admin/categoryAdd', { admin: req.session.admin });
@@ -60,7 +52,6 @@ const loadAddCategoryPage = async (req, res) => {
     }
 };
 
-// Add a new category
 const postAddCategoryPage = async (req, res) => {
     try {
         const { categoryName, categoryDescription } = req.body;
@@ -88,7 +79,6 @@ const postAddCategoryPage = async (req, res) => {
     }
 };
 
-// Load Update Category Page
 const loadUpdateCategory = async (req, res) => {
     const categoryId = req.params.id;
     try {
@@ -107,7 +97,6 @@ const loadUpdateCategory = async (req, res) => {
     }
 };
 
-// Update a category
 const updateCategory = async (req, res) => {
     const { categoryId, categoryName, categoryDescription } = req.body;
 
@@ -134,7 +123,6 @@ const updateCategory = async (req, res) => {
     }
 };
 
-// Delete a category (soft delete)
 const deleteCategory = async (req, res) => {
     try {
         const { categoryId } = req.body;
@@ -156,7 +144,6 @@ const deleteCategory = async (req, res) => {
     }
 };
 
-// Load Deleted Categories (Deleted Categories Page)
 const loadDelCategoryPage = async (req, res) => {
     try {
         const deletedCategories = await Category.find({ isDeleted: true });
@@ -170,7 +157,6 @@ const loadDelCategoryPage = async (req, res) => {
     }
 };
 
-// Recover a deleted category
 const recoverCategory = async (req, res) => {
     const { id } = req.params;
     try {
@@ -186,7 +172,6 @@ const recoverCategory = async (req, res) => {
     }
 };
 
-// Permanently Delete a Category
 const permanentDeleteCategory = async (req, res) => {
     const { id } = req.params;
     try {
@@ -209,23 +194,14 @@ const addOffer = async (req, res) => {
             return res.status(400).json({ message: "Category ID and Offer Percentage are required." });
         }
 
-        // Find products in the given category
         const products = await Products.find({ category : categoryId });
 
-        console.log('hi');
-        console.log('products : ');
-        console.log(products);
-
-        // Update the products' offerPrice
         for (const product of products) {
-            console.log(`Processing product: ${product._id}`);
             const newOfferPrice = product.price - (product.price * offerPercentage) / 100;
             if (!product.offerPrice || newOfferPrice < product.offerPrice) {
-                console.log(`Updating offer price for product: ${product._id}`);
                 product.prevOfferPrice = product.offerPrice || null;
                 product.offerPrice = newOfferPrice;
                 await product.save();
-                console.log(`Product saved: ${product._id}`);
             }
         }
 

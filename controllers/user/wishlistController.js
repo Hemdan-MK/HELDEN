@@ -140,8 +140,6 @@ const deleteWish = async (req, res) => {
             });
         }
 
-        console.log("Deleting product from wishlist for user:", userId, "Product ID:", productId);
-
         // Fetch the wishlist for the logged-in user
         const wishlist = await Wishlist.findOne({ userId });
 
@@ -169,7 +167,6 @@ const deleteWish = async (req, res) => {
         // Save the updated wishlist
         await wishlist.save();
 
-        console.log("Product successfully deleted from wishlist.");
         return res.json({
             success: true,
             message: "Product removed from wishlist successfully.",

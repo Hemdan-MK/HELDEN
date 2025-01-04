@@ -8,7 +8,6 @@ const checkUserStatus = async (req, res, next) => {
             const user = await userSchema.findById(req.session.user.id);
             if (!user) {
                 // User does not exist in the database (account deleted)
-                console.log('User account does not exist. Destroying session.');
                 req.session.destroy((err) => {
                     if (err) {
                         console.error('Error destroying session:', err);
@@ -17,7 +16,6 @@ const checkUserStatus = async (req, res, next) => {
                 });
             } else if (user.isDeleted === true ) {
                 // User account is banned
-                console.log('User account is banned. Destroying session.');
                 req.session.destroy((err) => {
                     if (err) {
                         console.error('Error destroying session:', err);

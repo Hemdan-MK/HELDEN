@@ -13,7 +13,6 @@ const loadOffer = async (req, res) => {
 const createOffer = async (req, res) => {
     try {
         const { name, type, productId, categoryId, discountType, discountValue, startDate, endDate, description } = req.body;
-        console.log(req.body);
 
         // Ensure discountValue is parsed correctly
         const discountValueParsed = parseInt(discountValue);  // Parse the discount value as a number
@@ -49,7 +48,6 @@ const createOffer = async (req, res) => {
                     product.prevOfferPrice.set('first',{
                         price: product.offerPrice
                     })
-                    console.log('hihihi');
                     
                 } else {
                     // Add the current offer to prevOfferPrice as the first value
@@ -58,11 +56,7 @@ const createOffer = async (req, res) => {
                         discountValue: discountType === "percentage" ? `${discountValueParsed}%` : `${discountValueParsed}`, // Keep as number here
                         price: (product.price - discountAmount).toFixed(2)
                     });
-                    console.log('hihihi-2');
-
                 }
-
-
 
                 // Set the new offer price
                 product.offerPrice = (product.price - discountAmount).toFixed(2);

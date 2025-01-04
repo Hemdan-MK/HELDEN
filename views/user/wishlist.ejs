@@ -165,7 +165,7 @@
 								icon: 'success',
 								title: 'Product Added!',
 								text: result.message
-							}).then(()=>{
+							}).then(() => {
 								window.location.reload();
 							});
 						} else {
@@ -173,7 +173,7 @@
 								icon: 'warning',
 								title: 'Already in Cart',
 								text: result.message
-							}).then(()=>{
+							}).then(() => {
 								window.location.reload();
 							});
 						}
@@ -223,12 +223,8 @@
 							});
 
 							const result = await response.json();
-							console.log(result);
 
 							if(result.success) {
-								// Remove the deleted product from the DOM
-								// button.closest('.product-item').remove();
-
 								Swal.fire({
 									icon: 'success',
 									title: 'Deleted!',
@@ -295,7 +291,7 @@
 			})
 		});
 	</script>
-	
+
 	<!--===============================================================================================-->
 	<script src="users/js/main.js"></script>
 	<!--===============================================================================================-->

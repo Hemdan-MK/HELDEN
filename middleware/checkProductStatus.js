@@ -30,7 +30,6 @@ const checkProductStatus = async (req, res, next) => {
             next();
         } else {
             // If 'cartProducts' does not exist, skip product check and proceed
-            console.log('No cartProducts provided in the request body. Skipping product validation.');
             next();
         }
     } catch (error) {

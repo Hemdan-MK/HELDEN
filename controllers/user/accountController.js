@@ -50,8 +50,6 @@ const ForgetPassRequest = async (req, res) => {
         // Send OTP email (you should have a sendOtpEmail function)
         await sendEmail(user.email, otp);
 
-        console.log("otp : " + otp);
-
         return res.status(200).json({
             msg: "OTP successfully sent to your email.",
             val: true,
@@ -83,12 +81,8 @@ const ForgetPassverify = async (req, res) => {
 
 const ForgetPassChange = async (req, res) => {
     const { newPassword, email } = req.body;
-    try {
-        console.log(newPassword, email);
-        // You can hash the password here if necessary before updating
-        
+    try {        
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-
 
         await userModel.updateOne({ email }, { password: hashedPassword });
 
@@ -102,7 +96,6 @@ const ForgetPassChange = async (req, res) => {
 const resendOTP = async (req, res) => {
     try {
         const { email } = req.body;
-        console.log("this is the resetOTP : " + email);
 
         // Check if the email exists in the OTP database
         const userExists = await otpModel.findOne({ email });
@@ -119,7 +112,6 @@ const resendOTP = async (req, res) => {
             lowerCaseAlphabets: false,
             specialChars: false,
         });
-        console.log('Resending OTP: ' + otp);
 
         // Update or create OTP record with new expiration time
         await otpModel.findOneAndUpdate(

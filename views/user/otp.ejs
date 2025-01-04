@@ -95,7 +95,6 @@
                             resendLink.textContent = "Resending...";
 
                             try {
-                                console.log("this is email : "+"<%= email%>")
                                 const response = await fetch('/register/resendOtp', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },

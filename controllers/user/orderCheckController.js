@@ -4,6 +4,7 @@ const Cart = require('../../models/cartModel')
 const Coupon = require('../../models/coupenModel')
 const Wallet = require('../../models/walletModel');
 const Products = require('../../models/productModel');
+const Razorpay = require('razorpay');
 
 
 const checkout = async (req, res) => {
@@ -65,7 +66,6 @@ const checkout = async (req, res) => {
 
         // Calculate total amount including shipping
         const totalAmount = subtotal + shipping;
-        console.log("add :  " + order.userId);
 
         const estimatedDeliveryDate = new Date();
         estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5); // Add 5 days
@@ -178,16 +178,10 @@ const done = async (req, res) => {
 
         // update product collection
         for (const item of order.orderItems) {
-            console.log("================================");
-            console.log('item : ');
-            console.log(item);
-            
             const { productId, quantity } = item;
-            
+
             // Find the product
             const product = await Products.findById(productId);
-            console.log(product);
-            console.log("--------------------------------");
 
             if (!product) {
                 return res.status(404).json({ message: `Product with ID ${productId} not found` });
@@ -195,9 +189,7 @@ const done = async (req, res) => {
 
             // Update stock for the product
             const updatedStockManagement = product.stockManagement.map(stockItem => {
-                console.log(typeof stockItem.size);
-                console.log(typeof item.size);
-                
+
                 if (stockItem.size == item.size) { // Assuming order item specifies size
                     if (stockItem.quantity < quantity) {
                         throw new Error(`Insufficient stock for product ${product.name} (Size: ${stockItem.size})`);
@@ -207,10 +199,6 @@ const done = async (req, res) => {
                 return stockItem;
             });
 
-            console.log(updatedStockManagement);
-            console.log("--------------------------------");
-            
-            
             product.stockManagement = updatedStockManagement;
 
             // Save the product
@@ -258,7 +246,6 @@ const coupen = async (req, res) => {
 
 const razerpay = async (req, res) => {
     const { amount } = req.body;
-    const Razorpay = require('razorpay');
 
     const razorpayInstance = new Razorpay({
         key_id: 'rzp_test_W9utN834UAJerT',
@@ -275,7 +262,7 @@ const razerpay = async (req, res) => {
         const response = await razorpayInstance.orders.create(options);
         res.json({
             razorpayKey: "rzp_test_W9utN834UAJerT",
-            orderId: response.id
+            razorpayOrderId: response.id
         });
     } catch (error) {
         console.error(error);
@@ -311,7 +298,6 @@ const cancelOrder = async (req, res) => {
 
             await newWallet.save(); // Save the new wallet to the database
             wallet = newWallet;
-            console.log("New wallet created for user:", order.userId);
         }
         if (order.status === 'Pending' || order.status === 'Shipping') {
             order.status = 'Cancelled';
@@ -347,9 +333,6 @@ const returnOrder = async (req, res) => {
             refundReason: reason
         });
 
-        console.log('Reason : ' + reason);
-
-
         res.status(200).json({ message: "Return request submitted successfully!" });
     } catch (error) {
         console.error("Error updating order status:", error);
@@ -363,6 +346,79 @@ const success = async (req, res) => {
     res.render('user/successPage', { orderId })
 }
 
+const failed = async (req, res) => {
+    try {
+        const { orderId, status } = req.body;
+        console.log(orderId, status);
+
+        // Update the order status in your database
+        await Order.findByIdAndUpdate(orderId, { paymentStatus: status });
+
+        res.status(200).json({ success: true, message: 'Order status updated successfully' });
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        res.status(500).json({ success: false, message: 'Failed to update order status' });
+    }
+}
+
+const retryPayment = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findById(orderId); // Fetch order from database
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        const razorpayInstance = new Razorpay({
+            key_id: 'rzp_test_W9utN834UAJerT',
+            key_secret: 'OFiG9mM7gu0gFkltYvq2iSkl'
+        });
+
+        const options = {
+            amount: order.totalAmount * 100, // Convert to paise
+            currency: "INR",
+            receipt: "order_rcptid_" + Date.now(),
+        };
+
+        // Generate a new Razorpay order ID if necessary
+        const razorpayOrder = await razorpayInstance.orders.create(options);
+
+        res.json({
+            success: true,
+            razorpayKey: process.env.RAZORPAY_KEY,
+            razorpayOrderId: razorpayOrder.id,
+            amount: order.totalAmount,
+        });
+    } catch (error) {
+        console.error("Error fetching order details for retry:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
+
+const confirmRetry = async (req, res) => {
+    const { orderId, razorpayPaymentId } = req.body;
+
+    try {
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        // Update order payment status and Razorpay payment ID
+        order.paymentStatus = "Completed";
+        order.paymentMethod = "Net Banking";
+        order.razorpayPaymentId = razorpayPaymentId; 
+        await order.save();
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error confirming retry payment:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
 
 module.exports = {
     checkout,
@@ -372,5 +428,8 @@ module.exports = {
     success,
     coupen,
     razerpay,
-    returnOrder
+    returnOrder,
+    failed,
+    retryPayment,
+    confirmRetry
 }

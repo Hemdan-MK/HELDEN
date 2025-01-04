@@ -90,7 +90,6 @@ const cancel = async (req, res) => {
 
             await newWallet.save(); // Save the new wallet to the database
             wallet = newWallet;
-            console.log("New wallet created for user:", order.userId);
         }
         if (order.status === 'Pending' || order.status === 'Shipping') {
             order.status = 'Cancelled';
@@ -119,12 +118,9 @@ const accept = async (req, res) => {
         const id = req.params.id;
 
         const order = await Order.findById(id).populate('userId');
-        console.log(order);
 
         order.status = 'Returned';
         const wallet = await Wallet.findOne({ userId: order.userId }).populate('userId');
-
-        console.log('wallet : ' + wallet);
 
         if (wallet) {
             wallet.balance += order.totalAmount;

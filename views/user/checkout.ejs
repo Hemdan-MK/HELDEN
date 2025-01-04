@@ -512,7 +512,7 @@
 							</div>
 							<div class="detail-item d-flex justify-content-between">
 								<span>Discount</span>
-								<span class="text-success">- Rs. <%= offerTotal %></span>
+								<span class="text-success">- Rs. <%= offerTotal.toFixed(1) %></span>
 							</div>
 							<div class="detail-item d-flex justify-content-between">
 								<span>Shipping</span>
@@ -884,14 +884,12 @@
 					const addressId = button.dataset.id;
 
 					// Extract data using data attributes
-					console.log("Address ID:", addressId);
 					const data = {};
 					addressItem.querySelectorAll("[data-key]").forEach((p) => {
 						const key = p.dataset.key;
 						const value = p.textContent.split(": ")[1] || "";
 						data[key] = value;
 					});
-					console.log("Address Data:", data);
 
 					populateModal(data);
 					editingAddressId = addressId;
@@ -1058,7 +1056,7 @@
 		}
 
 
-			document.getElementById('proceedToCheckoutBtn').addEventListener('click', async () => {
+		document.getElementById('proceedToCheckoutBtn').addEventListener('click', async () => {
 			const selectedAddress = document.querySelector('input[name="selectedAddress"]:checked');
 			const paymentMethod = document.querySelector('.payment-btn.active')?.innerText; // Active payment button
 			const userId = document.getElementById('idid').dataset.userid; // User ID from dataset
@@ -1086,10 +1084,6 @@
 
 				};
 
-				console.log('-------------------------------- >>');
-				console.log(bodyData);
-
-
 				if(paymentMethod === "Net Banking") {
 					// Initiate Razorpay Payment
 					const paymentResponse = await fetch('/razorpay/initiate', {
@@ -1105,32 +1099,65 @@
 
 					const {
 						razorpayKey,
-						orderId
+						razorpayOrderId
 					} = await paymentResponse.json();
 
 					const razorpayOptions = {
 						key: razorpayKey,
 						amount: (totalAmount - couponDiscount) * 100,
 						currency: "INR",
-						order_id: orderId,
-						name: "Your Store",
+						order_id: razorpayOrderId,
+						name: "HELDEN International",
 						description: "Purchase Payment",
 						handler: async function(response) {
-							// On successful Razorpay payment
 							bodyData.razorpayPaymentId = response.razorpay_payment_id;
-
 							await completeOrder(bodyData);
 						},
 						prefill: {
 							name: "<%= user.name %>",
 							email: "<%= user.email %>",
-						},
+						}
 					};
 
 					const rzp = new Razorpay(razorpayOptions);
-					rzp.on('payment.failed', ()=>{
-						Swal.fire("Error", "Payment failed. Please try again.", "error");
-					})
+					const order = "<%= order._id %>";
+
+					rzp.on('payment.failed', async function(response) {
+						try {
+							// Update order status to Failed
+							const updateResponse = await fetch('/failed-order', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									orderId: order,
+									status: 'Failed'
+								})
+							});
+
+							if(!updateResponse.ok) {
+								throw new Error('Failed to update order status');
+							}
+
+							// Show failure message and redirect
+							Swal.fire({
+								title: 'Payment Failed',
+								text: 'Payment failed, redirecting to orders page',
+								icon: 'error',
+								showConfirmButton: false,
+								timer: 4000
+							}).then(() => {
+								window.location.href = '/myAccount/orders';
+							});
+						} catch (error) {
+							console.error('Error handling payment failure:', error);
+							Swal.fire('Error', 'Something went wrong. Please try again.', 'error')
+								.then(() => {
+									window.location.href = '/myAccount/orders';
+								});
+						}
+					});
 					rzp.open();
 				} else if(paymentMethod === "Cash on Delivery") {
 					// Complete COD Order

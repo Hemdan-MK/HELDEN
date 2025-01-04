@@ -1,4 +1,3 @@
-const { type } = require('express/lib/response');
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
@@ -8,9 +7,6 @@ const productSchema = new mongoose.Schema({
     offerPrice: { type: Number },
     prevOfferPrice: {
         type: Number,
-        // default: function () {
-        //     return this.offerPrice; // Assign offerPrice as default for prevOfferPrice
-        // }
     },
     images: [{ type: String }], // Store image paths
     tags: [{ type: String }],

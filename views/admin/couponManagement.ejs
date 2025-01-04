@@ -211,7 +211,6 @@
 				fetch(`/admin/couponManagement/${id}`)
 					.then(res => res.json())
 					.then(coupon => {
-						console.log('coupons : ' + coupon);
 						document.getElementById('couponCode').value = coupon.couponCode;
 						document.getElementById('validFrom').value = coupon.validFrom.split('T')[0];
 						document.getElementById('validUpto').value = coupon.validUpto.split('T')[0];

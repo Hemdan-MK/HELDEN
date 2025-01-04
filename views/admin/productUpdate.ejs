@@ -280,7 +280,6 @@
 									<label for="productCategory" class="form-label">Category</label>
 									<select class="form-control" id="productCategory" name="productCategory">
 										<% categories.forEach(category => { %>
-										<% console.log(category._id.equals(product.category._id)) %>
 										<option value="<%= category._id %>" <%= category._id.equals(product.category._id) ? 'selected' : '' %>>
 											<%= category.name %>
 										</option>
@@ -532,7 +531,6 @@
 		function removeImagePreview(index) {
 			const preview = document.getElementById(`roundPreview${index}`);
 			const input = document.getElementById(`image${index}`);
-			console.log(_dirnam);
 
 			preview.src = '/productUploads/default-product.png';
 			input.value = '';
@@ -643,8 +641,6 @@
 					}
 					stockData.forEach((item) => {
 						if(item.quantity < 0) {
-							console.log(item.quantity);
-
 							throw new Error();
 						}
 					});
@@ -711,14 +707,9 @@
 
 			function createStockFields(category) {
 				const productType = categorySelect.value.toLowerCase();
-				console.log("THIS IS MY PRODUCT TYPE-->" + productType);
-
-
-
 
 				// Get appropriate sizes
 				const sizes = sizeConfigs[productType] || [];
-				console.log("THIS IS MY SIZE-->" + sizes);
 
 				// Get current stock data
 				let currentStock = {};

@@ -30,8 +30,6 @@ const loadShop = async (req, res) => {
             isDeleted: false,
             category: { $in: activeCategoryIds },
         }).sort({ _id: -1 });
-        console.log(products);
-
 
         // Render the shop page with the filtered products
         return res.status(200).render('user/shop', { user: req.session.user, products });
@@ -63,7 +61,6 @@ const loadContact = async (req, res) => {
 const loadDash = async (req, res) => {
     try {
         const user = req.session.user
-        console.log(user);
         let userData = await User.findById(user.id)
         return res.status(200).render('user/dashboard', { user: req.session.user, userData });
     } catch (error) {
@@ -135,7 +132,6 @@ const updateProfile = async (req, res) => {
     try {
         const { name, email, phone } = req.body;
 
-        console.log('zi : ' + name)
         // Validate data (you can add more validation logic if necessary)
         if (!email) {
             return res.status(400).send('Email is required');
@@ -231,7 +227,6 @@ const loadLogin = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(req.body);
 
         // Find user by email
         const user = await User.findOne({ email, isDeleted: false });
@@ -279,7 +274,6 @@ const checkuser = async (req, res) => {
             req.session.user.password = hashedPassword;
 
             req.session.user.verified = false;        // veruthe oru brandth
-            console.log(req.session);
 
             // If user found with provided email
 
@@ -288,7 +282,6 @@ const checkuser = async (req, res) => {
                 lowerCaseAlphabets: false,
                 specialChars: false,
             });
-            console.log('this is the otp ---> : ' + otp);
 
             const otpBody = await OTP.create({
                 email, otp, createdAt: Date.now(), expiresAt: new Date(Date.now() + 5 * 60 * 1000)
@@ -311,8 +304,6 @@ const checkuser = async (req, res) => {
 const loadOTP = async (req, res) => {
     try {
         const { email } = req.session.user
-        console.log(req.session.user);
-        console.log(email);
         return res.status(200).render('user/otp', { email, user: req.session.user });
     } catch (error) {
         console.log(error.message);
@@ -326,8 +317,6 @@ const loadOTP = async (req, res) => {
 const resendOTP = async (req, res) => {
     try {
         const { email } = req.body;
-        console.log("this is the resetOTP : " + email);
-
 
         // Check if the email exists in the OTP database
         const userExists = await OTP.findOne({ email });
@@ -344,7 +333,6 @@ const resendOTP = async (req, res) => {
             lowerCaseAlphabets: false,
             specialChars: false,
         });
-        console.log('Resending OTP: ' + otp);
 
         // Update or create OTP record with new expiration time
         await OTP.findOneAndUpdate(
@@ -403,7 +391,6 @@ const verifyOTP = async (req, res) => {
 
         // At this point, OTP is valid; proceed with user registration or activation
         // For example, you could set the user as "verified" or proceed with additional registration steps
-        console.log(req.session.user);
         const userData = req.session.user
         const hashedPassword = await bcrypt.hash(req.session.user.password, 10);
 
@@ -415,8 +402,6 @@ const verifyOTP = async (req, res) => {
             role: userData.role || 'user', // Default to 'user' if not specified
             isValid: true,
         });
-        console.log('newUser : ');
-        console.log(newUser);
 
         const savedUser = await newUser.save();
 

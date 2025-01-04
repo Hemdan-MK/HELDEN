@@ -5,18 +5,11 @@ const countCheck = async (req, res, next) => {
     try {
         if (req.session.user) {
             const cart = await cartModel.findOne({ userId: req.session.user.id });
-            const wishlist = await wishlistModel.findOne({ userId: req.session.user.id });
-            // const notify = await notifyModel.find({ userId: req.session.currentId });
             res.locals.cartCount = cart?.items?.length || 0; 
-            res.locals.wishlistCount = wishlist?.products?.length || 0;
-            // console.log(`Notifications count ${notify.length}`) 
-            // res.locals.notifyCount = notify?.length || 0; 
-            // console.log(`Notifications count2 ${res.locals.notifyCount}`) 
+
             return next();
         } else {
             res.locals.cartCount = 0;
-            res.locals.wishlistCount = 0;
-            // res.locals.notifyCount =  0; 
         }
         return next();
     } catch (err) {

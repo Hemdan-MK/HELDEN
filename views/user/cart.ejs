@@ -260,7 +260,7 @@
 							</div>
 							<div class="detail-item">
 								<span>Discount</span>
-								<span class="text-success">- Rs. <%= offerTotal %></span>
+								<span class="text-success">- Rs. <%= offerTotal.toFixed(1) %></span>
 							</div>
 							<div class="detail-item">
 								<span>Shipping</span>
@@ -363,7 +363,6 @@
 
 				increaseButton.addEventListener('click', async function() {
 					let currentQuantity = parseInt(quantityDisplay.textContent, 10);
-					console.log('itemId FRONT' + itemId);
 
 					// Fetch the stock for the item
 					const response = await fetch(`/cart/stock`, {
@@ -381,12 +380,10 @@
 					// Check if current quantity exceeds 5 or the stock
 					if(currentQuantity < maxAllowedQuantity) {
 						currentQuantity++;
-						console.log('currentQuantity : ' + currentQuantity);
 						quantityDisplay.textContent = currentQuantity;
 						await updateQuantityOnBackend(itemId, currentQuantity);
 						reloadOrderSummary();
 					} else if(currentQuantity >= 5) {
-						console.log('Triggering SweetAlert for max quantity');
 						// SweetAlert2 for maximum quantity reached
 						Swal.fire({
 							icon: 'warning',
@@ -394,7 +391,6 @@
 							text: 'You cannot purchase more than 5 items of this product.',
 						});
 					} else if(currentQuantity >= data.stock) {
-						console.log('Triggering SweetAlert for out of stock');
 						// SweetAlert2 for no more stock available
 						Swal.fire({
 							icon: 'error',
@@ -415,8 +411,6 @@
 						itemId: itemId,
 						quantity: quantity
 					}),
-				}).then(response => response.json()).then(data => {
-					console.log("Quantity updated on backend:", data);
 				}).catch(error => {
 					console.error("Error updating quantity:", error);
 				});
@@ -440,7 +434,6 @@
 						productItem.remove();
 						reloadOrderSummary();
 						window.location.reload();
-						console.log("Item removed from backend:", data);
 					}).catch(error => {
 						console.error("Error removing item:", error);
 					});
@@ -454,7 +447,6 @@
 						throw new Error(`HTTP error! Status: ${response.status}`);
 					}
 					const data = await response.json(); // Await the JSON parsing
-					console.log(data); // Log the actual data to confirm the structure
 					// Destructure the data object
 					const {
 						Total,
@@ -496,7 +488,6 @@
 					}
 
 					const data = await response.json();
-					console.log(data);
 
 					if(data.success) {
 						Swal.fire({

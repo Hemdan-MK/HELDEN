@@ -659,8 +659,6 @@
 					selectedSize = button.getAttribute("data-size");
 					const stockQuantity = parseInt(button.getAttribute("data-stock"));
 
-					console.log("Size selected:", selectedSize, "Stock:", stockQuantity);
-
 					if(stockQuantity > 0) {
 						addToCartButton.style.display = "block";
 						outOfStockButton.style.display = "none";

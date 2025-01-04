@@ -28,9 +28,70 @@ const getDashboard = async (req, res) => {
             { $unwind: "$orderItems" },
             { $group: { _id: "$orderItems.productId", totalSold: { $sum: "$orderItems.quantity" } } },
             { $sort: { totalSold: -1 } },
-            { $limit: 50 }
+            { $limit: 10 }
         ]);
         const topSellingProducts = await Product.populate(topProducts, { path: "_id", select: "name price" });
+
+        // top-selling category
+        const topSellingCategories = await Order.aggregate([
+            { $unwind: "$orderItems" },
+            {
+                $lookup: {
+                    from: "products", // Join with Products collection
+                    localField: "orderItems.productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            { $unwind: "$productDetails" },
+            {
+                $lookup: {
+                    from: "categories", // Join with Categories collection
+                    localField: "productDetails.category",
+                    foreignField: "_id",
+                    as: "categoryDetails"
+                }
+            },
+            { $unwind: "$categoryDetails" },
+            {
+                $group: {
+                    _id: "$categoryDetails._id", // Group by category ID
+                    categoryName: { $first: "$categoryDetails.name" },
+                    totalSold: { $sum: "$orderItems.quantity" }
+                }
+            },
+            { $sort: { totalSold: -1 } },
+            { $limit: 10 }
+        ]);
+
+        // top brands
+        const topSellingBrands = await Order.aggregate([
+            { $unwind: "$orderItems" },
+            {
+                $lookup: {
+                    from: "products", // Join with Products collection
+                    localField: "orderItems.productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            { $unwind: "$productDetails" },
+            {
+                $group: {
+                    _id: "$productDetails.brand", // Group by brand
+                    totalSold: { $sum: "$orderItems.quantity" }
+                }
+            },
+            { $sort: { totalSold: -1 } },
+            { $limit: 10 },
+            {
+                $project: {
+                    brand: "$_id",
+                    totalSold: 1
+                }
+            }
+        ]);
+
 
         // Fetch top category based on sales
         const categorySales = await Order.aggregate([
@@ -65,7 +126,7 @@ const getDashboard = async (req, res) => {
             },
             {
                 $project: {
-                    orderDiscount: { $subtract: ["$totalProductPrice", "$totalAmount"]  }
+                    orderDiscount: { $subtract: ["$totalProductPrice", "$totalAmount"] }
                 }
             },
             {
@@ -106,11 +167,13 @@ const getDashboard = async (req, res) => {
             totalOrders,
             totalRevenue,
             topSellingProducts,
+            topSellingCategories,
             topCategory,
             overallDiscount,
             dailySales,
             weeklySales,
-            monthlySales
+            monthlySales,
+            topSellingBrands
         });
     } catch (error) {
         console.error("Error calculating dashboard stats:", error.message);
@@ -137,7 +200,6 @@ const getLoginPage = (req, res) => {
 const postLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(email, password);
 
         // Find admin user by email and password
         const admin = await User.findOne({ email: email, password: password, role: 'admin' });
