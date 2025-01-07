@@ -96,6 +96,10 @@
 							<label class="form-check-label" for="terms">I agree to the terms & policies</label>
 							<p id="terms-error" class="text-danger"></p>
 						</div>
+						<div class="mb-3 form-check ml-4">
+							<input type="hidden" name="referralCode" value="<%= referralCode || '' %>">
+						</div>
+
 						<button class="btn btn-dark w-100 btnSignup">Signup</button>
 					</form>
 
@@ -144,6 +148,9 @@
 
 
 		document.querySelector('.btnSignup').addEventListener('click', formValidate)
+
+		const urlParams = new URLSearchParams(window.location.search);
+		const referralCode = urlParams.get('ref');
 
 		async function formValidate(e) {
 			e.preventDefault();
@@ -244,7 +251,8 @@
 						name,
 						email,
 						phno,
-						password
+						password,
+						referralCode
 					})
 				});
 

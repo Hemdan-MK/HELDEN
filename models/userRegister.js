@@ -23,7 +23,45 @@ const userSchema = new mongoose.Schema({
     googleId: { type: String, sparse: true, default: null },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
-    isValid: { type: Boolean, default: false }
+    isValid: { type: Boolean, default: false },
+    referralCode: { type: String, unique: true },
+    referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+    referralCount: { type: Number, default: 0 }
 });
 
-module.exports = mongoose.model("users", userSchema);
+async function generateUniqueCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const codeLength = 8;
+    let isUnique = false;
+    let code;
+
+    while (!isUnique) {
+        // Generate a random code
+        code = '';
+        for (let i = 0; i < codeLength; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            code += characters[randomIndex];
+        }
+
+        // Check if code exists using the schema
+        const existingUser = await mongoose.model('users').findOne({ referralCode: code });
+        if (!existingUser) {
+            isUnique = true;
+        }
+    }
+    console.log('referral: ' + code);
+    return code;
+}
+
+// Define the pre-save middleware BEFORE creating the model
+userSchema.pre('save', async function (next) {
+    if (!this.referralCode) {
+        this.referralCode = await generateUniqueCode();
+    }
+    next();
+});
+
+// Create the model AFTER defining the middleware
+const User = mongoose.model("users", userSchema);
+
+module.exports = User;

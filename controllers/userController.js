@@ -5,7 +5,8 @@ const sendEmail = require('../utils/mail');
 const productModel = require('../models/productModel');
 const categoryModel = require('../models/categoryModel');
 const bcrypt = require('bcrypt');
-const Order = require('../models/orderModel')
+const Order = require('../models/orderModel');
+const Wallet = require('../models/walletModel');
 
 const loadMain = async (req, res) => {
     try {
@@ -205,7 +206,11 @@ const logout = async (req, res) => {
 
 const loadRegister = async (req, res) => {
     try {
-        return res.status(200).render('user/register', { user: req.session.user });
+        const referralCode = req.query.ref || '';
+        return res.status(200).render('user/register', {
+            user: req.session.user,
+            referralCode
+        });
     } catch (error) {
         console.error('Error loading register:', error);
         return res.status(500).send('Server Error');
@@ -234,19 +239,22 @@ const login = async (req, res) => {
             return res.render('user/login', { message: 'User not found', user: null, showAlert: true });
         }
 
-        // Compare entered password with stored hashed password
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log(isMatch);
 
         if (!isMatch) {
             return res.render('user/login', { message: 'Incorrect password', user: null, showAlert: true });
         }
 
+        const getReferralCode = await User.findOne({ email }, { referralCode: 1, _id: 0 });
+
         req.session.user = {
             email: user.email,
             name: user.name,
             id: user._id,
+            referralCode: getReferralCode.referralCode
         };
-
+        
         const products = await productModel.find({ isDeleted: false });
         return res.render('user/home', { user: req.session.user, products });
     } catch (error) {
@@ -255,27 +263,30 @@ const login = async (req, res) => {
     }
 };
 
-
 const checkuser = async (req, res) => {
     try {
-        const { name, email, phno, password } = req.body;
+        const { name, email, phno, password, referralCode } = req.body;
 
         // Find user by email
         const checkUserPresent = await User.findOne({ email });
 
-        // If user exists, respond with success: true
+        // If user exists, respond with success: false
         if (checkUserPresent) {
             return res.json({ success: false, message: "User already registered." });
         } else {
             req.session.user = req.body;
 
-            // const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, 10);
-            req.session.user.password = hashedPassword;
+            // Store referral code in session if it exists
+            if (referralCode) {
+                // Verify if referral code exists
+                const referrer = await User.findOne({ referralCode });
+                if (referrer) {
+                    req.session.user.referredBy = referrer._id;
+                }
+            }
 
-            req.session.user.verified = false;        // veruthe oru brandth
-
-            // If user found with provided email
+            req.session.user.password = password;
+            req.session.user.verified = false;
 
             let otp = otpGenerator.generate(6, {
                 upperCaseAlphabets: false,
@@ -284,11 +295,13 @@ const checkuser = async (req, res) => {
             });
 
             const otpBody = await OTP.create({
-                email, otp, createdAt: Date.now(), expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+                email,
+                otp,
+                createdAt: Date.now(),
+                expiresAt: new Date(Date.now() + 5 * 60 * 1000)
             });
             sendEmail(email, otp)
 
-            // If user does not exist, respond with success: false
             return res.json({ success: true, message: "User does not exist." });
         }
     } catch (error) {
@@ -296,9 +309,6 @@ const checkuser = async (req, res) => {
         return res.status(500).json({ success: false, error: error.message });
     }
 };
-
-
-
 
 
 const loadOTP = async (req, res) => {
@@ -365,58 +375,86 @@ const verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
 
-
-
         // Find the OTP record associated with the email
         const otpRecord = await OTP.findOne({ email, otp });
 
-        // If no matching OTP is found, return an error
-        if (!otpRecord) {
+        if (!otpRecord || otpRecord.expiresAt < Date.now()) {
+            if (otpRecord) {
+                await OTP.deleteOne({ email, otp });
+            }
             return res.status(401).json({
                 success: false,
-                message: "Invalid or expired OTP. Please try again.",
+                message: otpRecord ? "OTP has expired. Please request a new one." : "Invalid or expired OTP. Please try again.",
             });
         }
 
-        // Check if the OTP has expired
-        if (otpRecord.expiresAt < Date.now()) {
-            // Delete the expired OTP from the database
-            await OTP.deleteOne({ email, otp });
+        const userData = req.session.user;
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-            return res.status(401).json({
-                success: false,
-                message: "OTP has expired. Please request a new one.",
-            });
-        }
-
-        // At this point, OTP is valid; proceed with user registration or activation
-        // For example, you could set the user as "verified" or proceed with additional registration steps
-        const userData = req.session.user
-        const hashedPassword = await bcrypt.hash(req.session.user.password, 10);
-
+        // Create new user with referral data if exists
         const newUser = new User({
             name: userData.name,
             email: userData.email,
             phone: userData.phno,
-            password: hashedPassword,  // Ideally, hash this password before saving
-            role: userData.role || 'user', // Default to 'user' if not specified
+            password: hashedPassword,
+            role: userData.role || 'user',
             isValid: true,
+            referredBy: userData.referredBy || null  // Add referral data
         });
 
         const savedUser = await newUser.save();
 
-        // req.session.user.verified = true;
+        // Create wallet for new user with signup bonus
+        await new Wallet({
+            userId: savedUser._id,
+            balance: 0, // Initial balance
+            transactions: []
+        }).save();
 
-        // Delete the OTP record after successful verification
+        // Handle referral bonus if user was referred
+        if (userData.referredBy) {
+            // Update referrer's wallet
+            const referrerWallet = await Wallet.findOne({ userId: userData.referredBy });
+            if (referrerWallet) {
+                referrerWallet.balance += 100;
+                referrerWallet.transactions.push({
+                    amount: 100,
+                    type: 'Credit',
+                    description: `Referral bonus for referring ${savedUser.email}`
+                });
+                await referrerWallet.save();
+            }
+
+            // Update new user's wallet with referral bonus
+            const userWallet = await Wallet.findOne({ userId: savedUser._id });
+            if (userWallet) {
+                userWallet.balance += 100;
+                userWallet.transactions.push({
+                    amount: 100,
+                    type: 'Credit',
+                    description: 'Signup bonus from referral'
+                });
+                await userWallet.save();
+            }
+
+            // Increment referrer's referral count
+            await User.findByIdAndUpdate(userData.referredBy, {
+                $inc: { referralCount: 1 }
+            });
+        }
+
+        // Delete OTP after verification
         await OTP.deleteOne({ email, otp });
+
+        const getReferralCode = await User.findOne({ email }, { referralCode: 1, _id: 0 });
 
         req.session.user = {
             name: savedUser.name,
             email: savedUser.email,
             id: savedUser._id,
+            referralCode: getReferralCode.referralCode
         };
 
-        // Redirect to a success page or respond with success message
         return res.status(200).json({
             success: true,
             message: "OTP verified successfully! Your account is now activated.",
@@ -428,6 +466,36 @@ const verifyOTP = async (req, res) => {
 };
 
 
+const loadRefer = async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user.id);
+        const wallet = await Wallet.findOne({ userId: req.session.user.id });
+
+        // Get referred users
+        const referredUsers = await User.find({ referredBy: req.session.user.id })
+            .select('name email createdAt');
+
+        res.render('user/referrals', {
+            user,
+            wallet,
+            referredUsers
+        });
+    } catch (error) {
+        res.status(500).render('error', { error: 'Failed to fetch referral data' });
+    }
+}
+
+
+const generateReferal = async (req, res) => {
+    try {
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+
+        const referralLink = `${baseUrl}/register?ref=${req.session.user.referralCode}`;
+        res.json({ referralLink });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to generate referral link' });
+    }
+}
 
 module.exports = {
     loadMain,
@@ -443,10 +511,12 @@ module.exports = {
     logout,
     loadRegister,
     loadLogin,
+    loadRefer,
     login,
     loadOTP,
     resendOTP,
     verifyOTP,
     checkuser,
-    updateProfile
+    updateProfile,
+    generateReferal
 }

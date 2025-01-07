@@ -1,2 +1,0 @@
---->    in cart, capital letter "Total" is the final total, but used total. 
-        it didnt include shippin charge.

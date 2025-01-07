@@ -20,6 +20,8 @@ const checkBadge = require('../middleware/badgeCount.js');
 
 router.use(checkBadge)
 
+
+
 router.get('/home', userController.loadMain);
 router.get('/shop', userController.loadShop);
 router.get('/about', userController.loadAbout);
@@ -55,6 +57,9 @@ router.get('/logout', userController.logout);
 router.get('/otp', userController.loadLogin);
 router.get('/register/loadOtp', userController.loadOTP);
 
+
+router.get('/myAccount/refer', checkUserStatus, userController.loadRefer);
+router.get('/generate-referral', checkUserStatus, userController.generateReferal);
 
 
 router.post('/shop/filter', filterController.filter);
@@ -92,7 +97,6 @@ router.get('/wishlist', checkUserStatus, wishlistController.loadWishlist);
 router.post('/add-to-wishlist', checkUserStatus, wishlistController.addWishlist);
 router.post('/wish/cart/add', checkUserStatus, wishlistController.wishCart);
 router.delete('/wishlist/delete', checkUserStatus, wishlistController.deleteWish);
-
 
 
 

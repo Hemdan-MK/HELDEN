@@ -16,10 +16,11 @@ const sendEmail = async (email, otp) => {
     from: 'hemdanmkonline@gmail.com',
     to: email,
     subject: 'OTP Verification',
-    text: `Your One-Time Password (OTP) is: ${otp}`
+    text: `Your One-Time Password (OTP) is : ${otp}`
   };
   try {
     await transporter.sendMail(mailOptions);
+    console.log('OTP : ' + otp);
     console.log('OTP Sented: ' + email);
 
   } catch (error) {

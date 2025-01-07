@@ -349,7 +349,6 @@ const success = async (req, res) => {
 const failed = async (req, res) => {
     try {
         const { orderId, status } = req.body;
-        console.log(orderId, status);
 
         // Update the order status in your database
         await Order.findByIdAndUpdate(orderId, { paymentStatus: status });
@@ -411,8 +410,11 @@ const confirmRetry = async (req, res) => {
         // Update order payment status and Razorpay payment ID
         order.paymentStatus = "Completed";
         order.paymentMethod = "Net Banking";
-        order.razorpayPaymentId = razorpayPaymentId; 
+        order.razorpayPaymentId = razorpayPaymentId;
+        order.expiresAt = undefined;
+ 
         await order.save();
+
         res.json({ success: true });
     } catch (error) {
         console.error("Error confirming retry payment:", error);

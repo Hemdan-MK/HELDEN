@@ -1141,14 +1141,16 @@
 							}
 
 							// Show failure message and redirect
-							Swal.fire({
+							await Swal.fire({
 								title: 'Payment Failed',
 								text: 'Payment failed, redirecting to orders page',
 								icon: 'error',
 								showConfirmButton: false,
-								timer: 4000
-							}).then(() => {
-								window.location.href = '/myAccount/orders';
+								timer: 10000,
+								timerProgressBar: true,
+								willClose: () => {
+									window.location.href = '/myAccount/orders';
+								}
 							});
 						} catch (error) {
 							console.error('Error handling payment failure:', error);

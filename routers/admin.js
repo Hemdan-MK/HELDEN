@@ -8,6 +8,7 @@ const userController = require('../controllers/admin/userManagement.js')
 const ordersController = require('../controllers/admin/orderController.js')
 const couponController = require('../controllers/admin/couponController.js')
 const offerController = require('../controllers/admin/offerController.js')
+const referalController = require('../controllers/admin/referalController.js')
 const upload = require('../utils/productMulter.js')
 const upload_2 = require('../utils/categoryMulter.js')
 
@@ -111,5 +112,9 @@ router.get("/offerManagement/get", offerController.getOffers); // Get all offers
 router.get("/offerManagement/getOffer/:id", offerController.specific); // Get all offers
 router.put("/offerManagement/update/:id", offerController.updateOffer); // Update an offer by ID
 router.delete("/offerManagement/delete/:id", offerController.deleteOffer); // Delete an offer by ID
+
+
+
+router.get('/referralManagement',referalController.getReferral)
 
 module.exports = router

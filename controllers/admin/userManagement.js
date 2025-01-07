@@ -7,7 +7,7 @@ const User = require('../../models/userRegister')
 
 const loadUserManagement = async (req, res) => {
     try {
-        const users = await User.find({});
+        const users = await User.find({role:'user'});
         if (!users) {
             return res.status(200).render('admin/userManagement', { msg: 'No users found' });
         }

@@ -13,6 +13,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/admin/admin.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
 	.modal-cropper {
@@ -149,33 +150,61 @@
 
 <body>
 	<div class="sidebar">
-		<div class="sidebar-brand">
-			HELDEN
-		</div>
-		<ul class="nav flex-column mt-3">
-			<li class="nav-item">
-				<a class="nav-link" href="/admin/dashboard">Dashboard</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/admin/userManagement">User Management</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link active" href="/admin/productManagement">Product Management</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/admin/orderManagement">Order Management</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/admin/categoryManagement">Category Management</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/admin/couponManagement">Coupon Management</a>
-			</li>
-			<li class="nav-item mt-5">
-				<a class="nav-link text-warning" href="/admin/logout">Logout</a>
-			</li>
-		</ul>
-	</div>
+        <div class="sidebar-brand">
+            <span class="brand-full">H E L D E N</span>
+            <span class="brand-short">H</span>
+        </div>
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/userManagement">
+                    <i class="fas fa-users"></i>
+                    <span>User Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="/admin/productManagement">
+                    <i class="fas fa-box"></i>
+                    <span>Product Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/orderManagement">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Order Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/categoryManagement">
+                    <i class="fas fa-folder"></i>
+                    <span>Category Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/couponManagement">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Coupon Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="/admin/referralManagement">
+                    <i class="fas fa-gift"></i>
+                    <span>Referal Management</span>
+                </a>
+            </li>
+            <li class="nav-item bottom">
+                <a class="nav-link text-warning" href="/admin/logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
 	<div class="main-content">
 		<!-- partial -->
 		<div class="container-fluid">
@@ -445,89 +474,6 @@
 			}, selectedFile.type, 0.9);
 		}
 
-		// function openCropModal(event, index) {
-		// 	selectedFile = event.target.files[0];
-		// 	selectedInput = event.target;
-		// 	selectedPreview = document.getElementById(`roundPreview${index}`);
-
-		// 	if(selectedFile) {
-		// 		const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-		// 		if(!allowedTypes.includes(selectedFile.type)) {
-		// 			Swal.fire({
-		// 				icon: 'warning',
-		// 				title: 'Invalid File!',
-		// 				text: 'Please select a valid image file (JPEG, PNG, GIF, or WebP).',
-		// 				confirmButtonColor: '#f8b400',
-		// 				confirmButtonText: 'OK'
-		// 			});
-		// 			event.target.value = "";
-		// 			return;
-		// 		}
-
-		// 		const modalImage = document.getElementById('cropModalImage');
-		// 		modalImage.src = URL.createObjectURL(selectedFile);
-
-		// 		cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
-		// 		cropModal.show();
-
-		// 		modalImage.onload = function() {
-		// 			if(cropper) {
-		// 				cropper.destroy();
-		// 			}
-		// 			cropper = new Cropper(modalImage, {
-		// 				aspectRatio: 3 / 4,
-		// 				viewMode: 1,
-		// 				dragMode: 'move',
-		// 				autoCropArea: 1,
-		// 				restore: false,
-		// 				guides: true,
-		// 				center: true,
-		// 				highlight: false,
-		// 				cropBoxMovable: true,
-		// 				cropBoxResizable: true,
-		// 				toggleDragModeOnDblclick: false,
-		// 			});
-		// 			cropper.setCropBoxData({
-		// 				left: 50, // Distance from the left edge
-		// 				top: 50, // Distance from the top edge
-		// 				width: 300, // Width of the crop box
-		// 				height: 150, // Height of the crop box
-		// 			});
-		// 		};
-		// 	}
-		// }
-
-		// function closeCropModal() {
-		// 	if(cropper) {
-		// 		cropper.destroy();
-		// 	}
-		// 	cropModal.hide();
-		// }
-
-		// function applyCrop() {
-		// 	if(!cropper) return;
-
-		// 	cropper.getCroppedCanvas({
-		// 		width: 600,
-		// 		height: 800,
-		// 		fillColor: '#fff',
-		// 		imageSmoothingEnabled: true,
-		// 		imageSmoothingQuality: 'high',
-		// 	}).toBlob((blob) => {
-		// 		const croppedUrl = URL.createObjectURL(blob);
-		// 		selectedPreview.src = croppedUrl;
-
-		// 		const file = new File([blob], selectedFile.name, {
-		// 			type: selectedFile.type
-		// 		});
-		// 		const dataTransfer = new DataTransfer();
-		// 		dataTransfer.items.add(file);
-		// 		selectedInput.files = dataTransfer.files;
-
-		// 		closeCropModal();
-		// 	}, selectedFile.type, 0.9);
-		// }
-
 		function removeImagePreview(index) {
 			const preview = document.getElementById(`roundPreview${index}`);
 			const input = document.getElementById(`image${index}`);
@@ -568,16 +514,13 @@
 			const productWarranty = document.getElementById("productWarranty").value.trim();
 			const productReturnPolicy = document.getElementById("productReturnPolicy").value.trim();
 			const productCategory = document.getElementById("productCategory").value;
-			const productType = document.getElementById("productType").value
+			const productType = document.getElementById("productType").value;
 			const productStockManagement = document.getElementById("productStockManagement").value;
-
 
 			let hasError = false;
 
-
 			function showError(inputId, message) {
 				const inputElement = document.getElementById(inputId);
-
 
 				if(!inputElement) {
 					console.error(`Element with id "${inputId}" not found.`);
@@ -590,7 +533,6 @@
 				hasError = true;
 			}
 
-			// Validate fields
 			if(!productId) {
 				console.error("Missing product ID. This field is required for updates.");
 				hasError = true;
@@ -632,7 +574,6 @@
 				showError("productReturnPolicy", "Return policy must be in the format (e.g., 30 days, 1 month).");
 			}
 
-			// Validate stock management (if applicable)
 			if(productStockManagement) {
 				try {
 					const stockData = JSON.parse(productStockManagement);
@@ -654,31 +595,31 @@
 				return;
 			}
 
-			const formData = new FormData(this); // Collect form data
+			const formData = new FormData(this);
 
 			fetch('/admin/productManagement/update', {
 					method: 'PUT',
 					body: formData
 				})
-				.then(response => response.json()) // Assuming server returns JSON
+				.then(response => response.json())
 				.then(data => {
 					if(data.success) {
 						Swal.fire({
-							icon: 'success', // Green checkmark icon for success
+							icon: 'success',
 							title: 'Success!',
 							text: 'Product updated successfully!',
-							confirmButtonColor: '#28a745', // Green button for success
+							confirmButtonColor: '#28a745',
 							confirmButtonText: 'OK'
 						}).then(() => {
 
-							window.location.href = '/admin/productManagement'; // Redirect to product list page
+							window.location.href = '/admin/productManagement';
 						})
 					} else {
 						Swal.fire({
-							icon: 'error', // Red error icon
+							icon: 'error',
 							title: 'Error!',
 							text: 'Failed to update product. Please try again.',
-							confirmButtonColor: '#d33', // Red button for error
+							confirmButtonColor: '#d33',
 							confirmButtonText: 'OK'
 						});
 					}
@@ -696,7 +637,6 @@
 			const stockContainer = document.getElementById('stockManagementContainer');
 			const stockManagementInput = document.getElementById('productStockManagement');
 
-			// Size configurations
 			const sizeConfigs = {
 				'bottomware': Array.from({
 					length: 9
@@ -704,14 +644,11 @@
 				'topware': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
 			};
 
-
 			function createStockFields(category) {
 				const productType = categorySelect.value.toLowerCase();
 
-				// Get appropriate sizes
 				const sizes = sizeConfigs[productType] || [];
 
-				// Get current stock data
 				let currentStock = {};
 				try {
 					const stockData = JSON.parse(stockManagementInput.value);
@@ -722,7 +659,6 @@
 					console.error('Error parsing stock data:', e);
 				}
 
-				// Create HTML for stock inputs
 				stockContainer.innerHTML = '';
 				sizes.forEach(size => {
 					const quantity = currentStock[size] || 0;
@@ -744,16 +680,13 @@
 					stockContainer.appendChild(col);
 				});
 
-				// Add change listeners to new inputs
 				document.querySelectorAll('.stock-input').forEach(input => {
 					input.addEventListener('change', updateStockManagement);
 				});
 
-				// Update hidden input
 				updateStockManagement();
 			}
 
-			// Function to update hidden stock management input
 			function updateStockManagement() {
 				const stockData = [];
 				document.querySelectorAll('.stock-input').forEach(input => {
@@ -776,7 +709,6 @@
 			// Initialize stock fields with current category
 			createStockFields(categorySelect);
 
-			// Add change listeners to existing stock inputs
 			document.querySelectorAll('.stock-input').forEach(input => {
 				input.addEventListener('change', updateStockManagement);
 			});

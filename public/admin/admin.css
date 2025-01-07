@@ -215,6 +215,12 @@ table tbody tr:hover {
   gap: 10px;
 }
 
+.bottom {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 60px;
@@ -224,7 +230,7 @@ table tbody tr:hover {
     font-size: 1rem;
     padding: 0 5px;
   }
-  
+
   .brand-full {
     display: none;
   }
@@ -423,4 +429,35 @@ table tbody tr:hover {
   background-color: #ffdd00;
   color: rgb(33, 33, 33);
   font-weight: 900;
+}
+
+
+/* Sweet Alert */
+/* ================================ */
+/* Background for the SweetAlert2 popup */
+.swal-purple-popup {
+  background: #20202d !important;
+  color: #ffffff !important;
+}
+
+/* Confirm button styling */
+.swal-purple-popup .swal2-confirm {
+  background-color: #ffb700 !important;
+  border: none !important;
+  color: #20202d !important;
+  font-weight: bold !important;
+}
+
+.swal-purple-popup .swal2-confirm:hover {
+  background-color: #ff9800 !important;
+  color: #ffffff !important;
+}
+
+.swal-purple-popup .swal2-title {
+  font-size: 1.5em !important;
+  font-weight: bold !important;
+}
+
+.swal-purple-popup .swal2-content {
+  font-size: 1.2em !important;
 }

@@ -250,41 +250,50 @@
 					<a href="/myAccount/wallet" class="list-item">
 						<li data-session="wallet">Wallet</li>
 					</a>
+					<a href="/myAccount/refer" class="list-item">
+                        <li data-session="wallet">Referals</li>
+					</a>
 					<a href="/logout" class="list-item">
 						<li data-session="logout">Logout</li>
 					</a>
 				</ul>
 			</div>
-			<!-- // contents to be shown on right -->
 
 			<!-- Order Section -->
 			<div class="conte w-75 h-100 position-relative d-flex flex-column p-4">
 				<!-- Header Section -->
 				<h2 class="text-center mt-3 mb-4">Your Orders</h2>
 
-				<div class="orders" style=" overflow-y: auto;">
-					<% orders.forEach(order => { %>
-					<div class="order-item card mb-4 p-3 shadow-sm">
-						<h4 class="text-primary">Order ID: <%= order._id %></h4>
-						<p>Status: <%= order.status %></p>
-						<p>Total Amount: Rs. <%= order.totalAmount %></p>
-						<div class="d-flex w-100  justify-content-between">
-							<button class="btn btn-info view-order-btn" data-id="<%= order._id %>">View Order</button>
-							<% if (order.status === 'Pending' || order.status === 'Shipping' ) { %>
-							<% if (order.paymentStatus !== 'Failed') { %>
-							<button class="btn btn-outline-danger cancel-order-btn " data-id="<%= order._id %>">Cancel Order</button>
-							<% } else if (order.paymentStatus === 'Failed') { %>
-							<button class="btn btn-outline-danger retry-order-btn " data-id="<%= order._id %>">Retry payment</button>
-							<% } %>
-							<% } %>
-							<% if (order.status === 'Completed') { %>
-							<button class="btn btn-success return-order-btn " data-id="<%= order._id %>">Return Order</button>
-							<% } %>
-							<a href="/download-invoice/<%= order._id %>" class="btn btn-behance">Get PDF Receipt</a>
+				<div class="orders" style="overflow-y: auto;">
+					<% if (orders.length === 0) { %>
+						<div class="alert alert-info" role="alert">
+							No orders available
 						</div>
-					</div>
-					<% }); %>
+					<% } else { %>
+						<% orders.forEach(order => { %>
+						<div class="order-item card mb-4 p-3 shadow-sm">
+							<h4 class="text-primary">Order ID: <%= order._id %></h4>
+							<p>Status: <%= order.status %></p>
+							<p>Total Amount: Rs. <%= order.totalAmount %></p>
+							<div class="d-flex w-100 justify-content-between">
+								<button class="btn btn-info view-order-btn" data-id="<%= order._id %>">View Order</button>
+								<% if (order.status === 'Pending' || order.status === 'Shipping') { %>
+									<% if (order.paymentStatus !== 'Failed') { %>
+										<button class="btn btn-outline-danger cancel-order-btn" data-id="<%= order._id %>">Cancel Order</button>
+									<% } else if (order.paymentStatus === 'Failed') { %>
+										<button class="btn btn-outline-danger retry-order-btn" data-id="<%= order._id %>">Retry Payment</button>
+									<% } %>
+								<% } %>
+								<% if (order.status === 'Completed') { %>
+									<button class="btn btn-success return-order-btn" data-id="<%= order._id %>">Return Order</button>
+								<% } %>
+								<a href="/download-invoice/<%= order._id %>" class="btn btn-behance">Get PDF Receipt</a>
+							</div>
+						</div>
+						<% }); %>
+					<% } %>
 				</div>
+				
 				<!-- Add this right after the orders div -->
 				<div class="pagination-container d-flex justify-content-center mt-4">
 					<nav aria-label="Orders pagination">

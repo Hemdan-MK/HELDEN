@@ -332,13 +332,37 @@ const getSalesData = async (req, res) => {
     }
 }
 
+
 const getCustomSalesData = async (req, res) => {
     try {
-        const { startDate, endDate } = req.query; // Get date range from query parameters
+        const { startDate, endDate } = req.query;
 
-        // Validate dates
+        // Basic validation for required dates
         if (!startDate || !endDate) {
-            return res.status(400).json({ message: "Start and End dates are required" });
+            return res.status(400).json({
+                success: false,
+                message: "Start and End dates are required"
+            });
+        }
+
+        // Convert strings to Date objects for comparison
+        const startDateTime = new Date(startDate);
+        const endDateTime = new Date(endDate);
+
+        // Validate date objects are valid
+        if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid date format provided"
+            });
+        }
+
+        // Check if start date is after end date
+        if (startDateTime > endDateTime) {
+            return res.status(400).json({
+                success: false,
+                message: "Start date cannot be later than end date"
+            });
         }
 
         const customSales = await Order.aggregate([
@@ -346,8 +370,8 @@ const getCustomSalesData = async (req, res) => {
                 $match: {
                     status: { $in: ['Pending', 'Shipping', 'Completed', 'Cancelled'] },
                     createdAt: {
-                        $gte: new Date(startDate),
-                        $lte: new Date(endDate)
+                        $gte: startDateTime,
+                        $lte: endDateTime
                     },
                     expiresAt: { $exists: false }
                 }
@@ -369,13 +393,19 @@ const getCustomSalesData = async (req, res) => {
             }
         ]);
 
-        res.json({ customSales });
+        res.json({
+            success: true,
+            customSales
+        });
     } catch (err) {
         console.error("Error retrieving custom sales data:", err);
-        res.status(500).json({ message: "Error retrieving custom sales data", error: err });
+        res.status(500).json({
+            success: false,
+            message: "Error retrieving custom sales data",
+            error: err.message
+        });
     }
 };
-
 
 
 const pdf = async (req, res) => {
@@ -659,10 +689,24 @@ const modalFilter = async (req, res) => {
         const today = new Date();
 
         // Function to validate and parse dates
-        const parseValidDate = (date) => {
+        function parseValidDate(date, isEndDate = false) {
             const parsedDate = new Date(date);
-            return isNaN(parsedDate) ? null : parsedDate;
-        };
+            console.log('Parsed date:', parsedDate);
+
+            if (isNaN(parsedDate)) {
+                console.log('Invalid date detected');
+                return null;
+            }
+
+            // Set time to start or end of day
+            if (isEndDate) {
+                parsedDate.setHours(23, 59, 59, 999);
+            } else {
+                parsedDate.setHours(0, 0, 0, 0);
+            }
+
+            return parsedDate;
+        }
 
         // Adjust date ranges based on filter type
         if (filterType === "daily") {
@@ -680,16 +724,29 @@ const modalFilter = async (req, res) => {
             const startOfYear = new Date(today.getFullYear(), 0, 1);
             matchStage.createdAt = { $gte: startOfYear };
         } else if (filterType === "custom") {
-            const validStartDate = parseValidDate(startDate);
-            const validEndDate = parseValidDate(endDate);
+            console.log('Custom date range:', { startDate, endDate });
+
+            const validStartDate = parseValidDate(startDate, false);
+            const validEndDate = parseValidDate(endDate, true);
+
+            console.log('Processed dates:', {
+                validStartDate,
+                validEndDate
+            });
 
             if (!validStartDate || !validEndDate) {
-                return res.status(400).json({ message: "Invalid date format" });
+                return res.status(400).json({
+                    message: "Invalid date format",
+                    details: {
+                        startDate: validStartDate ? "valid" : "invalid",
+                        endDate: validEndDate ? "valid" : "invalid"
+                    }
+                });
             }
 
             matchStage.createdAt = {
                 $gte: validStartDate,
-                $lte: validEndDate,
+                $lte: validEndDate
             };
         }
 
@@ -782,10 +839,24 @@ const modalPdf = async (req, res) => {
         const today = new Date();
 
         // Function to validate and parse dates
-        const parseValidDate = (date) => {
+        function parseValidDate(date, isEndDate = false) {
             const parsedDate = new Date(date);
-            return isNaN(parsedDate) ? null : parsedDate;
-        };
+            console.log('Parsed date:', parsedDate);
+
+            if (isNaN(parsedDate)) {
+                console.log('Invalid date detected');
+                return null;
+            }
+
+            // Set time to start or end of day
+            if (isEndDate) {
+                parsedDate.setHours(23, 59, 59, 999);
+            } else {
+                parsedDate.setHours(0, 0, 0, 0);
+            }
+
+            return parsedDate;
+        }
 
         // Handle filters
         if (filterType === "daily") {
@@ -803,16 +874,29 @@ const modalPdf = async (req, res) => {
             const startOfYear = new Date(today.getFullYear(), 0, 1);
             matchStage.createdAt = { $gte: startOfYear };
         } else if (filterType === "custom") {
-            const validStartDate = parseValidDate(startDate);
-            const validEndDate = parseValidDate(endDate);
+            console.log('Custom date range:', { startDate, endDate });
+
+            const validStartDate = parseValidDate(startDate, false);
+            const validEndDate = parseValidDate(endDate, true);
+
+            console.log('Processed dates:', {
+                validStartDate,
+                validEndDate
+            });
 
             if (!validStartDate || !validEndDate) {
-                return res.status(400).json({ message: "Invalid or missing custom dates" });
+                return res.status(400).json({
+                    message: "Invalid date format",
+                    details: {
+                        startDate: validStartDate ? "valid" : "invalid",
+                        endDate: validEndDate ? "valid" : "invalid"
+                    }
+                });
             }
 
             matchStage.createdAt = {
                 $gte: validStartDate,
-                $lte: validEndDate,
+                $lte: validEndDate
             };
         }
 
@@ -891,8 +975,6 @@ const modalPdf = async (req, res) => {
         res.status(500).json({ message: "Failed to generate PDF" });
     }
 };
-
-
 const modalExcel = async (req, res) => {
     try {
         const { filterType, startDate, endDate } = req.query;
@@ -904,11 +986,35 @@ const modalExcel = async (req, res) => {
             },
             expiresAt: { $exists: false }
         };
-        if (filterType === "custom") {
-            matchStage.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
+
+        // Handle filters based on the filterType
+        if (filterType === "daily") {
+            const today = new Date();
+            matchStage.createdAt = {
+                $gte: new Date(today.setHours(0, 0, 0, 0)),
+                $lt: new Date(today.setHours(23, 59, 59, 999)),
+            };
+        } else if (filterType === "weekly") {
+            const today = new Date();
+            const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+            matchStage.createdAt = { $gte: startOfWeek };
+        } else if (filterType === "monthly") {
+            const today = new Date();
+            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            matchStage.createdAt = { $gte: startOfMonth };
+        } else if (filterType === "yearly") {
+            const today = new Date();
+            const startOfYear = new Date(today.getFullYear(), 0, 1);
+            matchStage.createdAt = { $gte: startOfYear };
+        } else if (filterType === "custom") {
+            const validStartDate = new Date(startDate);
+            const validEndDate = new Date(endDate);
+            matchStage.createdAt = { $gte: validStartDate, $lte: validEndDate };
         }
 
         const orders = await Order.find(matchStage).sort({ createdAt: -1 });
+
+        const users = await User.find({ _id: { $in: orders.map(order => order.userId) } });
 
         // Generate Excel Workbook
         const workbook = new ExcelJS.Workbook();
@@ -917,17 +1023,22 @@ const modalExcel = async (req, res) => {
         // Add Header
         worksheet.columns = [
             { header: "Order ID", key: "_id", width: 30 },
-            { header: "User Email", key: "email", width: 30 },
+            { header: "User", key: "user", width: 30 },
+            { header: "Email", key: "email", width: 30 },
             { header: "Total Amount", key: "totalAmount", width: 20 },
+            { header: "Status", key: "status", width: 20 },
             { header: "Date", key: "createdAt", width: 20 },
         ];
 
         // Add Rows
         orders.forEach((order) => {
+            const user = users.find((user) => user._id.toString() === order.userId.toString());
             worksheet.addRow({
                 _id: order._id,
-                email: order.email || "Guest",
+                user: user ? user.name : "Guest", // Fetch user data manually
+                email: user ? user.email : "N/A", // Fetch user data manually
                 totalAmount: `₹${order.totalAmount}`,
+                status: order.status,
                 createdAt: new Date(order.createdAt).toLocaleDateString(),
             });
         });

@@ -141,7 +141,6 @@ const accept = async (req, res) => {
             await newWallet.save();
         }
 
-
         await order.save();
         return res.json({ message: 'Order Returned Successfully' })
     } catch (error) {

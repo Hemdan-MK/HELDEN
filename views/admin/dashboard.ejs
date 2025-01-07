@@ -133,55 +133,61 @@
 
 <body>
 	<div class="sidebar">
-        <div class="sidebar-brand">
-            <span class="brand-full">H E L D E N</span>
-            <span class="brand-short">H</span>
-        </div>
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link active" href="/admin/dashboard">
-                    <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/userManagement">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/productManagement">
-                    <i class="fas fa-box"></i>
-                    <span>Product Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/orderManagement">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Order Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/categoryManagement">
-                    <i class="fas fa-folder"></i>
-                    <span>Category Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/couponManagement">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Coupon Management</span>
-                </a>
-            </li>
-            <li class="nav-item mt-5">
-                <a class="nav-link text-warning" href="/admin/logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+		<div class="sidebar-brand">
+			<span class="brand-full">H E L D E N</span>
+			<span class="brand-short">H</span>
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/dashboard">
+					<i class="fas fa-th-large"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">
+					<i class="fas fa-users"></i>
+					<span>User Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/productManagement">
+					<i class="fas fa-box"></i>
+					<span>Product Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">
+					<i class="fas fa-shopping-cart"></i>
+					<span>Order Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">
+					<i class="fas fa-folder"></i>
+					<span>Category Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">
+					<i class="fas fa-ticket-alt"></i>
+					<span>Coupon Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link " href="/admin/referralManagement">
+					<i class="fas fa-gift"></i>
+					<span>Referal Management</span>
+				</a>
+			</li>
+			<li class="nav-item bottom">
+				<a class="nav-link text-warning" href="/admin/logout">
+					<i class="fas fa-sign-out-alt"></i>
+					<span>Logout</span>
+				</a>
+			</li>
+		</ul>
+	</div>
 	<div class="main-content">
 		<div class="container-fluid" style="height: 100vh; overflow-y: auto;">
 			<h2 class="mb-4 pt-3">Dashboard Overview</h2>
@@ -205,7 +211,7 @@
 				</div>
 			</div>
 
-			
+
 
 
 			<hr>
@@ -266,14 +272,14 @@
 
 			<hr>
 
-            <div class="container-fluid py-4">
+			<div class="container-fluid py-4">
 				<div class="row g-4 justify-content-around">
 					<!-- Top-Selling Products -->
 					<div class="col-12 col-lg-5">
 						<div class="table-container">
 							<h3 class="text-center">Top-Selling Products</h3>
 							<div class="table-responsive">
-								<table >
+								<table>
 									<thead>
 										<tr>
 											<th scope="col">#</th>
@@ -340,7 +346,7 @@
 						<div class="table-container">
 							<h3 class="text-center">Top-Selling Brands</h3>
 							<div class="table-responsive">
-								<table >
+								<table>
 									<thead>
 										<tr>
 											<th scope="col">#</th>
@@ -399,10 +405,10 @@
 								</select>
 							</div>
 							<div class="col-md-4" id="customDateInputs" style="display: none;">
-								<label for="startDate" class="form-label">Start Date</label>
-								<input type="date" id="startDate" class="form-control">
-								<label for="endDate" class="form-label">End Date</label>
-								<input type="date" id="endDate" class="form-control">
+								<label for="startDate2" class="form-label">Start Date</label>
+								<input type="date" id="startDate2" class="form-control">
+								<label for="endDate2" class="form-label">End Date</label>
+								<input type="date" id="endDate2" class="form-control">
 							</div>
 							<div class="col-md-2 d-flex align-items-end">
 								<button type="submit" class="btn btn-outline-warning">Search</button>
@@ -591,17 +597,34 @@
 		document.addEventListener('DOMContentLoaded', fetchSalesData);
 	</script>
 	<script>
-		// Custom Date Range Sales Chart
 		document.getElementById('fetchCustomSales').addEventListener('click', async () => {
 			const startDate = document.getElementById('startDate').value;
 			const endDate = document.getElementById('endDate').value;
 
+			// Validate required fields
 			if(!startDate || !endDate) {
 				Swal.fire({
 					title: 'Error!',
 					text: 'Please select both start and end dates.',
 					icon: 'error',
-					confirmButtonText: 'OK'
+					confirmButtonText: 'OK',
+					customClass: {
+						popup: 'swal-purple-popup', // Use the global class
+					},
+				});
+				return;
+			}
+
+			// Validate date range
+			if(new Date(startDate) > new Date(endDate)) {
+				Swal.fire({
+					title: 'Invalid Date Range',
+					text: 'Start date cannot be later than end date.',
+					icon: 'error',
+					confirmButtonText: 'OK',
+					customClass: {
+						popup: 'swal-purple-popup', // Use the global class
+					},
 				});
 				return;
 			}
@@ -610,23 +633,38 @@
 				const response = await fetch(`/admin/custom-sales-data?startDate=${startDate}&endDate=${endDate}`);
 				const data = await response.json();
 
-				if(data.customSales.length === 0) {
-					alert("No sales data found for the selected date range.");
+				if(!data.success) {
+					Swal.fire({
+						title: 'Error!',
+						text: data.message || 'Failed to fetch sales data',
+						icon: 'error',
+						confirmButtonText: 'OK',
+						customClass: {
+							popup: 'swal-purple-popup', // Use the global class
+						},
+					});
 					return;
 				}
 
+				if(data.customSales.length === 0) {
+					Swal.fire({
+						title: 'No Data',
+						text: 'No sales data found for the selected date range.',
+						icon: 'info',
+						confirmButtonText: 'OK'
+					});
+					return;
+				}
+
+				// Rest of your chart creation code...
 				const customLabels = data.customSales.map(item => item._id);
 				const customSales = data.customSales.map(item => item.sales);
 
 				if(window.customSalesChart instanceof Chart) {
 					window.customSalesChart.destroy();
 				}
-				// Get canvas context
+
 				const customSalesCtx = document.getElementById('customSalesChart').getContext('2d');
-
-
-
-				// Create a new chart instance
 				window.customSalesChart = new Chart(customSalesCtx, {
 					type: 'line',
 					data: {
@@ -662,6 +700,12 @@
 				});
 			} catch (error) {
 				console.error("Error fetching custom sales data:", error);
+				Swal.fire({
+					title: 'Error!',
+					text: 'Failed to fetch sales data. Please try again.',
+					icon: 'error',
+					confirmButtonText: 'OK'
+				});
 			}
 		});
 	</script>
@@ -744,8 +788,45 @@
 			event.preventDefault();
 
 			const filterType = document.getElementById("filterType").value;
-			const startDate = document.getElementById("startDate").value;
-			const endDate = document.getElementById("endDate").value;
+			const startDate = document.getElementById("startDate2").value;
+			const endDate = document.getElementById("endDate2").value;
+
+
+			if(filterType === "custom") {
+				if(!startDate || !endDate) {
+					Swal.fire({
+						title: "Missing Dates",
+						text: "Both start date and end date are required.",
+						icon: "warning",
+						confirmButtonText: "OK"
+					});
+					return;
+				}
+
+				const start = new Date(startDate);
+				const end = new Date(endDate);
+
+				if(isNaN(start) || isNaN(end)) {
+					Swal.fire({
+						title: "Invalid Date Format",
+						text: "Please enter a valid date.",
+						icon: "error",
+						confirmButtonText: "OK"
+					});
+					return;
+				}
+
+				if(start > end) {
+					Swal.fire({
+						title: "Invalid Date Range",
+						text: "Start date cannot be later than end date.",
+						icon: "error",
+						confirmButtonText: "OK"
+					});
+					return;
+				}
+			}
+
 
 			try {
 				const response = await fetch(`/admin/modal/filter?page=${page}`, {
@@ -761,6 +842,8 @@
 				});
 
 				const data = await response.json();
+				console.log(data);
+
 				populateSalesReport(data.orders);
 				updateStats(data.totalSales, data.totalRevenue);
 				updatePagination(data.totalPages, page);
@@ -809,8 +892,8 @@
 		// Download Filtered Report
 		function downloadReport(type) {
 			const filterType = document.getElementById("filterType").value;
-			const startDate = document.getElementById("startDate").value;
-			const endDate = document.getElementById("endDate").value;
+			const startDate = document.getElementById("startDate2").value;
+			const endDate = document.getElementById("endDate2").value;
 
 			window.location.href = `/admin/modal/${type}?filterType=${filterType}&startDate=${startDate}&endDate=${endDate}`;
 		}
