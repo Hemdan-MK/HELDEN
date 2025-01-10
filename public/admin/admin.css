@@ -378,6 +378,9 @@ table tbody tr:hover {
 .form-group {
   margin-top: 1rem;
 }
+.custom-input::placeholder {
+  color: white;
+}
 
 
 

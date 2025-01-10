@@ -96,7 +96,7 @@
                                 <tr>
                                     <td><%= user.name %></td>
                                     <td><%= user.email %></td>
-                                    <td><%= user.referralCode %></td>
+                                    <td><%= user.referralCode ? user.referralCode : 'N/A' %></td>
                                     <td><%= user.referralCount %></td>
                                     <td>₹<%= user.walletBalance %></td>
                                     <td>

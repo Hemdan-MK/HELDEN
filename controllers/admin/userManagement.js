@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- 
+
 //  U S E R   M A N A G E M E N T
 // ----------------------------------------------------------------
 
@@ -7,15 +7,40 @@ const User = require('../../models/userRegister')
 
 const loadUserManagement = async (req, res) => {
     try {
-        const users = await User.find({role:'user'});
-        if (!users) {
+        // Get page and limit from query parameters, with defaults
+        const page = parseInt(req.query.page) || 1; // Default to page 1
+        const limit = parseInt(req.query.limit) || 10; // Default to 10 users per page
+
+        // Calculate the starting index
+        const startIndex = (page - 1) * limit;
+
+        // Get the total count of users
+        const totalUsers = await User.countDocuments({ role: 'user' });
+
+        // Retrieve users for the current page
+        const users = await User.find({ role: 'user' })
+            .skip(startIndex)
+            .limit(limit);
+
+        if (users.length === 0) {
             return res.status(200).render('admin/userManagement', { msg: 'No users found' });
         }
-        return res.status(200).render('admin/userManagement', { user: users });
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalUsers / limit);
+
+        // Render the user management page with pagination info
+        return res.status(200).render('admin/userManagement', {
+            user: users,
+            currentPage: page,
+            totalPages: totalPages,
+            limit
+        });
     } catch (error) {
         console.error('Error loading users: ', error);
-        return res.status(500).json({ message: 'Internal Server Error' });    }
-}
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
 
 
 
@@ -67,8 +92,59 @@ const viewUserDetails = async (req, res) => {
 }
 
 
-module.exports ={
+const searchUsers = async (req, res) => {
+    try {
+        const searchQuery = req.query.query || '';
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+
+        // Create a search filter that matches either name or email
+        const searchFilter = {
+            role: 'user',
+            $or: [
+                { name: { $regex: searchQuery, $options: 'i' } },
+                { email: { $regex: searchQuery, $options: 'i' } }
+            ]
+        };
+
+        // Get total count of matching users
+        const totalUsers = await User.countDocuments(searchFilter);
+
+        // Get matching users for current page
+        const users = await User.find(searchFilter)
+            .skip(startIndex)
+            .limit(limit);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalUsers / limit);
+
+        if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+            // If it's an AJAX request, send JSON response
+            return res.json({
+                users,
+                currentPage: page,
+                totalPages,
+                totalUsers
+            });
+        } else {
+            // If it's a regular request, render the page
+            return res.render('admin/userManagement', {
+                user: users,
+                currentPage: page,
+                totalPages,
+                limit
+            });
+        }
+    } catch (error) {
+        console.error('Error searching users:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+module.exports = {
     loadUserManagement,
     userBan,
-    viewUserDetails
+    viewUserDetails,
+    searchUsers
 }

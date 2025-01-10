@@ -22,61 +22,61 @@
 
 <body>
 	<div class="sidebar">
-        <div class="sidebar-brand">
-            <span class="brand-full">H E L D E N</span>
-            <span class="brand-short">H</span>
-        </div>
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/dashboard">
-                    <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/userManagement">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/productManagement">
-                    <i class="fas fa-box"></i>
-                    <span>Product Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/orderManagement">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Order Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/admin/categoryManagement">
-                    <i class="fas fa-folder"></i>
-                    <span>Category Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/couponManagement">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Coupon Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="/admin/referralManagement">
-                    <i class="fas fa-gift"></i>
-                    <span>Referal Management</span>
-                </a>
-            </li>
-            <li class="nav-item bottom">
-                <a class="nav-link text-warning" href="/admin/logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+		<div class="sidebar-brand">
+			<span class="brand-full">H E L D E N</span>
+			<span class="brand-short">H</span>
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">
+					<i class="fas fa-th-large"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">
+					<i class="fas fa-users"></i>
+					<span>User Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/productManagement">
+					<i class="fas fa-box"></i>
+					<span>Product Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">
+					<i class="fas fa-shopping-cart"></i>
+					<span>Order Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/categoryManagement">
+					<i class="fas fa-folder"></i>
+					<span>Category Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">
+					<i class="fas fa-ticket-alt"></i>
+					<span>Coupon Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link " href="/admin/referralManagement">
+					<i class="fas fa-gift"></i>
+					<span>Referal Management</span>
+				</a>
+			</li>
+			<li class="nav-item bottom">
+				<a class="nav-link text-warning" href="/admin/logout">
+					<i class="fas fa-sign-out-alt"></i>
+					<span>Logout</span>
+				</a>
+			</li>
+		</ul>
+	</div>
 	<div class="main-content">
 		<!-- Page Content -->
 		<div class="container-fluid" style="width: 100%; height: 100vh;">
@@ -84,8 +84,7 @@
 			<h2 class="mb-4 pt-3">Category Management</h2>
 
 			<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
-				<input type="text" class="form-control" placeholder="Search users">
-				<button style=" margin-left: 10px;" class="btn btn-primary">Search</button>
+				<input type="text" class="form-control" placeholder="Search categories by name...">
 			</form>
 
 			<div class="table-responsive">
@@ -203,47 +202,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
-		// SOFT DELETE PRODUCT
-		document.querySelectorAll('.btn-delete').forEach(button => {
-			button.addEventListener('click', function(e) {
-				const categoryId = e.target.getAttribute('data-id');
-
-				fetch(`/admin/categoryManagement/unlink`, {
-						method: 'PUT',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							categoryId: categoryId
-						})
-					})
-					.then(response => response.json())
-					.then(data => {
-						if(data.success) {
-							window.location.reload();
-						} else {
-							Swal.fire({
-								icon: 'error',
-								title: 'Oops...',
-								text: 'Could not delete the category!',
-								confirmButtonColor: '#d33',
-								confirmButtonText: 'OK'
-							});
-						}
-					})
-					.catch(error => {
-						console.error('Error:', error);
-						Swal.fire({
-							icon: 'error', // Adds a red error icon
-							title: 'Error!',
-							text: 'An error occurred while deleting the category.',
-							confirmButtonColor: '#d33', // Red button for confirmation
-							confirmButtonText: 'OK'
-						});
-					});
-			});
-		});
-
 		// ADDING CATEGORY
 		document.getElementById('btn-add-cat').addEventListener('click', () => {
 			window.location.href = '/admin/categoryManagement/add';
@@ -355,52 +313,209 @@
 	</script>
 
 	<script>
-		// REMOVE OFFER
-		document.querySelectorAll('.btn-offer-delete').forEach(button => {
-			button.addEventListener('click', async (event) => {
-				const categoryId = event.target.getAttribute('data-id'); // Get the category ID
+		const searchInput = document.querySelector('.search input');
+		let timeoutId;
 
-				try {
-					// Send the data to the backend to remove the offer
-					const response = await fetch('/admin/categoryManagement/offers/delete', {
-						method: 'DELETE',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({
-							categoryId
-						}),
-					});
+		// Function to attach event listeners to dynamic elements
+		function attachEventListeners() {
+			// Attach delete button listeners
+			document.querySelectorAll('.btn-delete').forEach(button => {
+				button.addEventListener('click', function(e) {
+					const categoryId = e.target.getAttribute('data-id');
 
-					if(response.ok) {
-						Swal.fire({
-							icon: 'success',
-							title: 'Offer Removed',
-							text: 'The offer has been successfully removed.',
-							confirmButtonText: 'OK'
-						}).then(() => {
-							window.location.reload();
+					fetch(`/admin/categoryManagement/unlink`, {
+							method: 'PUT',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								categoryId: categoryId
+							})
+						})
+						.then(response => response.json())
+						.then(data => {
+							if(data.success) {
+								window.location.reload();
+							} else {
+								Swal.fire({
+									icon: 'error',
+									title: 'Oops...',
+									text: 'Could not delete the category!',
+									confirmButtonText: 'OK'
+								});
+							}
+						})
+						.catch(error => {
+							console.error('Error:', error);
+							Swal.fire({
+								icon: 'error',
+								title: 'Error!',
+								text: 'An error occurred while deleting the category.',
+								confirmButtonText: 'OK'
+							});
+						});
+				});
+			});
+
+			// Attach offer button listeners
+			document.querySelectorAll('.btn-offer').forEach(button => {
+				button.addEventListener('click', (event) => {
+					const categoryId = event.target.getAttribute('data-id');
+					categoryIdInput.value = categoryId;
+					offerModal.style.display = 'flex';
+				});
+			});
+
+			// Attach offer delete button listeners
+			document.querySelectorAll('.btn-offer-delete').forEach(button => {
+				button.addEventListener('click', async (event) => {
+					const categoryId = event.target.getAttribute('data-id');
+
+					try {
+						const response = await fetch('/admin/categoryManagement/offers/delete', {
+							method: 'DELETE',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({
+								categoryId
+							}),
 						});
 
-					} else {
-						const error = await response.json();
+						if(response.ok) {
+							Swal.fire({
+								icon: 'success',
+								title: 'Offer Removed',
+								text: 'The offer has been successfully removed.',
+								confirmButtonText: 'OK'
+							}).then(() => {
+								window.location.reload();
+							});
+						} else {
+							const error = await response.json();
+							Swal.fire({
+								icon: 'error',
+								title: 'Error',
+								text: `Error removing offer: ${error.message}`,
+								confirmButtonText: 'OK'
+							});
+						}
+					} catch (error) {
 						Swal.fire({
 							icon: 'error',
 							title: 'Error',
-							text: `Error removing offer: ${error.message}`,
+							text: 'There was an issue with the offer removal.',
 							confirmButtonText: 'OK'
 						});
 					}
-				} catch (error) {
-					Swal.fire({
-						icon: 'error',
-						title: 'Error',
-						text: 'There was an issue with the offer removal.',
-						confirmButtonText: 'OK'
-					});
-				}
+				});
 			});
+		}
+
+		function createPaginationControls(pagination) {
+			const paginationContainer = document.querySelector('.pagination');
+			paginationContainer.innerHTML = '';
+
+			// Previous button
+			if(pagination.currentPage > 1) {
+				const prevLi = document.createElement('li');
+				prevLi.className = 'page-item';
+				prevLi.innerHTML = `
+            <a class="page-link" href="#" data-page="${pagination.currentPage - 1}">
+                <span>&laquo; Previous</span>
+            </a>
+        `;
+				paginationContainer.appendChild(prevLi);
+			}
+
+			// Page numbers
+			for(let i = 1; i <= pagination.totalPages; i++) {
+				const li = document.createElement('li');
+				li.className = `page-item ${i === pagination.currentPage ? 'active' : ''}`;
+				li.innerHTML = `
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+        `;
+				paginationContainer.appendChild(li);
+			}
+
+			// Next button
+			if(pagination.currentPage < pagination.totalPages) {
+				const nextLi = document.createElement('li');
+				nextLi.className = 'page-item';
+				nextLi.innerHTML = `
+            <a class="page-link" href="#" data-page="${pagination.currentPage + 1}">
+                <span>Next &raquo;</span>
+            </a>
+        `;
+				paginationContainer.appendChild(nextLi);
+			}
+
+			// Add click handlers for pagination
+			paginationContainer.querySelectorAll('.page-link').forEach(link => {
+				link.addEventListener('click', (e) => {
+					e.preventDefault();
+					const page = e.target.closest('.page-link').dataset.page;
+					performSearch(searchInput.value.trim(), page);
+				});
+			});
+		}
+
+		async function performSearch(searchTerm, page = 1) {
+			try {
+				const response = await fetch(`/admin/categoryManagement/search?term=${encodeURIComponent(searchTerm)}&page=${page}`);
+				const data = await response.json();
+
+				const tbody = document.querySelector('tbody');
+				tbody.innerHTML = '';
+
+				data.categories.forEach((category, index) => {
+					const row = `
+                <tr id="category-${category._id}">
+                    <td>${((page - 1) * 5) + index + 1}</td>
+                    <td>${category.name}</td>
+                    <td><img src="${category.image}" class="img-thumbnail" style="width: 60px; height: 60px;"></td>
+                    <td>${category.productCount}</td>
+                    <td>${new Date(category.createdAt).toLocaleDateString()}</td>
+                    <td>${new Date(category.updatedAt).toLocaleDateString()}</td>
+                    <td><a href="/admin/categoryManagement/update/${category._id}" class="btn btn-outline-warning btn-sm">Update</a></td>
+                    <td><button data-id="${category._id}" class="btn btn-outline-success btn-sm btn-delete">Unlink</button></td>
+                    <td>
+                        ${!category.offerApplied 
+                            ? `<button data-id="${category._id}" class="btn btn-outline-primary btn-sm btn-offer">Add Offer</button>`
+                            : `<button data-id="${category._id}" class="btn btn-outline-danger btn-sm btn-offer-delete">Remove Offer</button>`
+                        }
+                    </td>
+                </tr>
+            `;
+					tbody.innerHTML += row;
+				});
+
+				// Update pagination controls
+				createPaginationControls(data.pagination);
+
+				// Reattach event listeners for the newly added elements
+				attachEventListeners();
+
+			} catch (error) {
+				console.error('Error:', error);
+				Swal.fire({
+					icon: 'error',
+					title: 'Search Error',
+					text: 'An error occurred while searching categories.',
+					confirmButtonText: 'OK'
+				});
+			}
+		}
+
+		searchInput.addEventListener('input', (e) => {
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => {
+				performSearch(e.target.value.trim());
+			}, 300);
 		});
+
+		// Initial attachment of event listeners for the page load
+		attachEventListeners();
 	</script>
 
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

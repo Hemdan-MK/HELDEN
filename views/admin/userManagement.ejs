@@ -58,61 +58,61 @@
 
 <body>
 	<div class="sidebar">
-        <div class="sidebar-brand">
-            <span class="brand-full">H E L D E N</span>
-            <span class="brand-short">H</span>
-        </div>
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/dashboard">
-                    <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/admin/userManagement">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="/admin/productManagement">
-                    <i class="fas fa-box"></i>
-                    <span>Product Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/orderManagement">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Order Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/categoryManagement">
-                    <i class="fas fa-folder"></i>
-                    <span>Category Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/couponManagement">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Coupon Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="/admin/referralManagement">
-                    <i class="fas fa-gift"></i>
-                    <span>Referal Management</span>
-                </a>
-            </li>
-            <li class="nav-item bottom">
-                <a class="nav-link text-warning" href="/admin/logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+		<div class="sidebar-brand">
+			<span class="brand-full">H E L D E N</span>
+			<span class="brand-short">H</span>
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">
+					<i class="fas fa-th-large"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/userManagement">
+					<i class="fas fa-users"></i>
+					<span>User Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link " href="/admin/productManagement">
+					<i class="fas fa-box"></i>
+					<span>Product Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">
+					<i class="fas fa-shopping-cart"></i>
+					<span>Order Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">
+					<i class="fas fa-folder"></i>
+					<span>Category Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">
+					<i class="fas fa-ticket-alt"></i>
+					<span>Coupon Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link " href="/admin/referralManagement">
+					<i class="fas fa-gift"></i>
+					<span>Referal Management</span>
+				</a>
+			</li>
+			<li class="nav-item bottom">
+				<a class="nav-link text-warning" href="/admin/logout">
+					<i class="fas fa-sign-out-alt"></i>
+					<span>Logout</span>
+				</a>
+			</li>
+		</ul>
+	</div>
 	<!-- Sidebar -->
 	<!-- Main Content -->
 	<div class="main-content">
@@ -123,8 +123,7 @@
 
 			<!-- Search Bar -->
 			<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
-				<input type="text" class="form-control" placeholder="Search users">
-				<button style=" margin-left: 10px;" class="btn btn-primary">Search</button>
+				<input type="text" class="form-control custom-input" placeholder="Search users">
 			</form>
 
 			<!-- Table -->
@@ -163,6 +162,31 @@
 					</tbody>
 				</table>
 			</div>
+			<div class="pagination-container my-4">
+				<ul class="pagination pagination-dark justify-content-center">
+					<% if (currentPage > 1) { %>
+					<li class="page-item">
+						<a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>">
+							<span>&laquo; Previous</span>
+						</a>
+					</li>
+					<% } %>
+
+					<% for (let i = 1; i <= totalPages; i++) { %>
+					<li class="page-item <%= currentPage === i ? 'active' : '' %>">
+						<a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+					</li>
+					<% } %>
+
+					<% if (currentPage < totalPages) { %>
+					<li class="page-item">
+						<a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>">
+							<span>Next &raquo;</span>
+						</a>
+					</li>
+					<% } %>
+				</ul>
+			</div>
 		</div>
 	</div>
 	<div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel" aria-hidden="true">
@@ -173,7 +197,7 @@
 					<h5 class="modal-title" id="userDetailModalLabel">User Details</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
-	
+
 				<!-- Modal Body -->
 				<div class="modal-body">
 					<div class="user-icon-section d-flex align-items-center">
@@ -189,7 +213,7 @@
 					<p><strong>Join Date:</strong> <span id="modalJoinDate"></span></p>
 					<p><strong>Status:</strong> <span id="modalStatus"></span></p>
 				</div>
-	
+
 				<!-- Modal Footer -->
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -197,7 +221,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 
 
 
@@ -268,14 +292,12 @@
 
 					const userDetails = await response.json();
 
-					// Populate modal content
 					document.getElementById('modalUsername').textContent = userDetails.username;
 					document.getElementById('modalEmail').textContent = userDetails.email;
 					document.getElementById('modalRole').textContent = userDetails.role;
 					document.getElementById('modalJoinDate').textContent = userDetails.joinDate;
 					document.getElementById('modalStatus').textContent = userDetails.isDeleted ? 'Banned' : 'Active';
 
-					// Show modal
 					const userDetailModal = new bootstrap.Modal(document.getElementById('userDetailModal'));
 					userDetailModal.show();
 
@@ -283,6 +305,141 @@
 					console.error('Error fetching user details:', error);
 					alert('Failed to retrieve user details');
 				}
+			});
+		});
+	</script>
+
+	<script>
+		// Searaching
+		function debounce(func, wait) {
+			let timeout;
+			return function executedFunction(...args) {
+				const later = () => {
+					clearTimeout(timeout);
+					func(...args);
+				};
+				clearTimeout(timeout);
+				timeout = setTimeout(later, wait);
+			};
+		}
+
+		function updateTable(users) {
+			const tbody = document.querySelector('tbody');
+			tbody.innerHTML = '';
+
+			users.forEach(user => {
+				const createdAt = new Date(user.createdAt);
+				const formattedDate = `${createdAt.getDate()}:${createdAt.getMonth() + 1}:${createdAt.getFullYear()}`;
+
+				const row = `
+            <tr>
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+                <td>${user.role}</td>
+                <td>${formattedDate}</td>
+                <td>
+                    <button data-id="${user.email}" class="btn btn-outline-danger btn-ban">
+                        ${user.isDeleted ? 'Unban' : 'Ban'}
+                    </button>
+                </td>
+                <td>
+                    <button data-id="${user.email}" class="btn btn-outline-primary btn-view">View</button>
+                </td>
+            </tr>
+        `;
+				tbody.innerHTML += row;
+			});
+
+			// Reattach event listeners
+			attachEventListeners();
+		}
+
+		// Function to update pagination
+		function updatePagination(currentPage, totalPages, limit) {
+			const paginationContainer = document.querySelector('.pagination');
+			let paginationHTML = '';
+
+			if(currentPage > 1) {
+				paginationHTML += `
+            <li class="page-item">
+                <a class="page-link" href="?page=${currentPage - 1}&limit=${limit}">
+                    <span>&laquo; Previous</span>
+                </a>
+            </li>
+        `;
+			}
+
+			for(let i = 1; i <= totalPages; i++) {
+				paginationHTML += `
+            <li class="page-item ${currentPage === i ? 'active' : ''}">
+                <a class="page-link" href="?page=${i}&limit=${limit}">${i}</a>
+            </li>
+        `;
+			}
+
+			if(currentPage < totalPages) {
+				paginationHTML += `
+            <li class="page-item">
+                <a class="page-link" href="?page=${currentPage + 1}&limit=${limit}">
+                    <span>Next &raquo;</span>
+                </a>
+            </li>
+        `;
+			}
+
+			paginationContainer.innerHTML = paginationHTML;
+		}
+
+		const performSearch = debounce(async (query) => {
+			try {
+				const response = await fetch(`/admin/userManagement/search?query=${query}`, {
+					method: 'GET',
+					headers: {
+						'Accept': 'application/json'
+					}
+				});
+
+				if(!response.ok) {
+					throw new Error('Search failed');
+				}
+
+				const data = await response.json();
+				updateTable(data.users);
+				updatePagination(data.currentPage, data.totalPages, 10);
+
+			} catch (error) {
+				console.error('Error performing search:', error);
+				Swal.fire({
+					icon: 'error',
+					title: 'Search Error',
+					text: 'Failed to perform search. Please try again.',
+				});
+			}
+		}, 300);
+
+		function attachEventListeners() {
+			document.querySelectorAll('.btn-ban').forEach(button => {
+				button.addEventListener('click', async function() {
+				});
+			});
+
+			document.querySelectorAll('.btn-view').forEach(button => {
+				button.addEventListener('click', async function() {
+				});
+			});
+		}
+
+		document.addEventListener('DOMContentLoaded', function() {
+			const searchInput = document.querySelector('.search input');
+			const searchForm = document.querySelector('.search');
+
+			searchInput.addEventListener('input', (e) => {
+				performSearch(e.target.value);
+			});
+
+			searchForm.addEventListener('submit', (e) => {
+				e.preventDefault();
+				performSearch(searchInput.value);
 			});
 		});
 	</script>

@@ -43,10 +43,12 @@ router.get('/logout', adminController.logoutAdmin); // POST: Handle Logout
 router.get('/userManagement', userController.loadUserManagement)
 router.put('/userManagement/ban', userController.userBan)
 router.get('/userManagement/view', userController.viewUserDetails);
+router.get('/userManagement/search', userController.searchUsers);
 
 
-// Category management routes (issue with soft delete)
+// Category management routes
 router.get('/categoryManagement', categoryController.loadCategoryManagement);
+router.get('/categoryManagement/search', categoryController.searchCategories);
 router.get('/categoryManagement/update/:id', categoryController.loadUpdateCategory);
 router.put('/categoryManagement/update', upload_2.single('categoryImage'), categoryController.updateCategory);
 router.put('/categoryManagement/unlink', categoryController.deleteCategory);
@@ -61,6 +63,7 @@ router.delete("/categoryManagement/offers/delete", categoryController.removeOffe
 
 // Product management routes
 router.get('/productManagement', productController.loadProductManagement);
+router.get('/productManagement/search', productController.searchProducts);
 router.get('/productManagement/update/:id', productController.loadUpdateProduct);
 router.put('/productManagement/update',
     upload.fields([

@@ -1,4 +1,5 @@
-const Order = require('../../models/orderModel')
+const Order = require('../../models/orderModel');
+const productModel = require('../../models/productModel');
 const User = require('../../models/userRegister')
 const Wallet = require('../../models/walletModel')
 
@@ -91,21 +92,49 @@ const cancel = async (req, res) => {
             await newWallet.save(); // Save the new wallet to the database
             wallet = newWallet;
         }
+
         if (order.status === 'Pending' || order.status === 'Shipping') {
+            // Update stock for each product in the order
+            for (const item of order.orderItems) {
+                const product = await productModel.findById(item.productId);
+                if (product) {
+                    // Find the stock entry for the specific size
+                    const stockEntry = product.stockManagement.find(
+                        stock => stock.size === item.size
+                    );
+
+                    if (stockEntry) {
+                        // Increase the quantity by the ordered amount
+                        stockEntry.quantity += item.quantity;
+                        await product.save();
+                    }
+                }
+            }
+
+            // Update order status
             order.status = 'Cancelled';
+
+            // Handle refund if payment was completed through Net Banking
             if (order.paymentMethod === 'Net Banking' && order.paymentStatus === 'Completed') {
                 wallet.balance += order.totalAmount;
                 wallet.transactions.push({
                     amount: order.totalAmount,
                     type: 'Credit',
-                    description: 'Returning Order ' + order.id
+                    description: 'Returning Order ' + order.orderId
                 });
                 await wallet.save();
             }
+
             await order.save();
-            res.json({ message: 'Order cancelled successfully' });
+            res.json({
+                message: 'Order cancelled successfully and stock updated',
+                orderId: order.orderId
+            });
         } else {
-            res.status(400).json({ message: 'Order cannot be cancelled' });
+            res.status(400).json({
+                message: 'Order cannot be cancelled',
+                currentStatus: order.status
+            });
         }
     } catch (err) {
         res.status(500).json({ message: 'Error cancelling the order' });

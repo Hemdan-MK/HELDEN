@@ -212,8 +212,8 @@ const loadOrderSummary = async (req, res) => {
                 name: product.name,
                 size: item.size,
                 quantity: item.quantity,
-                price: product.offerPrice,
-                total: itemTotal,
+                price: product.offerPrice.toFixed(2),
+                total: itemTotal.toFixed(2),
                 availableStock: sizeStock.quantity,
             });
         }
@@ -231,6 +231,7 @@ const loadOrderSummary = async (req, res) => {
         }
 
         const Total = subtotal + shipping;
+        Total.toFixed(2)
 
 
         // Return order summary data as JSON for dynamic frontend updates

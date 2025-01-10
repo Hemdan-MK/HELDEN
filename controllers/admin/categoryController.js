@@ -194,7 +194,7 @@ const addOffer = async (req, res) => {
             return res.status(400).json({ message: "Category ID and Offer Percentage are required." });
         }
 
-        const products = await Products.find({ category : categoryId });
+        const products = await Products.find({ category: categoryId });
 
         for (const product of products) {
             const newOfferPrice = product.price - (product.price * offerPercentage) / 100;
@@ -235,7 +235,7 @@ const removeOffer = async (req, res) => {
         }
 
         // Find products in the category
-        const products = await Products.find({ category : categoryId });
+        const products = await Products.find({ category: categoryId });
 
         // Update each product's offerPrice and clear prevOfferPrice
 
@@ -258,6 +258,73 @@ const removeOffer = async (req, res) => {
     }
 };
 
+const searchCategories = async (req, res) => {
+    try {
+        const searchTerm = req.query.term;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
+        let query = {};
+
+        if (searchTerm) {
+            query = {
+                name: { $regex: searchTerm, $options: 'i' },
+                isDeleted: false
+            };
+        } else {
+            query = { isDeleted: false };
+        }
+
+        // Get total count for pagination
+        const totalCount = await Category.countDocuments(query);
+        const totalPages = Math.ceil(totalCount / limit);
+
+        const categories = await Category.aggregate([
+            { $match: query },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: 'category',
+                    as: 'products'
+                }
+            },
+            {
+                $addFields: {
+                    productCount: { $size: '$products' },
+                    offerApplied: { $toBool: '$offer' }
+                }
+            },
+            {
+                $project: {
+                    products: 0
+                }
+            },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
+
+        res.json({
+            success: true,
+            categories: categories,
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalCount,
+                itemsPerPage: limit
+            }
+        });
+
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error occurred while searching categories',
+            error: error.message
+        });
+    }
+};
 
 module.exports = {
     loadCategoryManagement,
@@ -270,5 +337,6 @@ module.exports = {
     recoverCategory,
     permanentDeleteCategory,
     addOffer,
-    removeOffer
+    removeOffer,
+    searchCategories
 };

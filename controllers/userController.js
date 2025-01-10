@@ -41,7 +41,7 @@ const loadShop = async (req, res) => {
 };
 
 const loadAbout = async (req, res) => {
-    try {
+    try {        
         return res.status(200).render('user/about', { user: req.session.user })
     } catch (error) {
         console.error('error : ', error);
@@ -88,7 +88,7 @@ const loadOrders = async (req, res) => {
 
         // Get paginated orders
         const orders = await Order.find({
-            userId,
+            userId, 
         })
             .populate('orderItems.productId')
             .sort({ createdAt: -1 })
@@ -240,7 +240,6 @@ const login = async (req, res) => {
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log(isMatch);
 
         if (!isMatch) {
             return res.render('user/login', { message: 'Incorrect password', user: null, showAlert: true });

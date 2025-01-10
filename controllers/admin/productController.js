@@ -5,14 +5,51 @@ const Products = require('../../models/productModel');
 const Category = require('../../models/categoryModel');
 const path = require('path')
 const fs = require('fs')
+
+
 const loadProductManagement = async (req, res) => {
     try {
-        const products = await Products.find({ isDeleted: false }).populate('category');
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
+
+        // Create search query
+        const searchQuery = {
+            isDeleted: false,
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                // Add more fields to search if needed
+            ]
+        };
+
+        // Count total documents for pagination
+        const totalProducts = await Products.countDocuments(searchQuery);
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        // Get products with pagination
+        const products = await Products.find(searchQuery)
+            .populate('category')
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 });
 
         if (!products || products.length === 0) {
-            return res.status(200).render('admin/productManagement', { msg: 'No products found' });
+            return res.status(200).render('admin/productManagement', {
+                msg: 'No products found',
+                products: [],
+                currentPage: page,
+                totalPages: totalPages,
+                search: search
+            });
         }
-        return res.status(200).render('admin/productManagement', { products });
+
+        return res.status(200).render('admin/productManagement', {
+            products,
+            currentPage: page,
+            totalPages: totalPages,
+            search: search
+        });
+
     } catch (error) {
         console.log('Error in product management:', error);
         return res.status(500).json({ message: 'Internal Server Error' });
@@ -38,7 +75,7 @@ const loadUpdateProduct = async (req, res) => {
 };
 
 const updateProduct = async (req, res) => {
-    
+
     const {
         productId,
         productName,
@@ -224,6 +261,37 @@ const permanentDeleteProducts = async (req, res) => {
     }
 };
 
+const searchProducts = async (req, res) => {
+    try {
+        const searchQuery = req.query.search || '';
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const query = {
+            isDeleted: false,
+            name: { $regex: searchQuery, $options: 'i' }
+        };
+
+        const products = await Products.find(query)
+            .populate('category')
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        const total = await Products.countDocuments(query);
+
+        res.json({
+            success: true,
+            data: products,
+            total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit)
+        });
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
 module.exports = {
     loadProductManagement,
     loadUpdateProduct,
@@ -233,5 +301,6 @@ module.exports = {
     postAddProductsPage,
     loadDelProductPage,
     recoverProducts,
-    permanentDeleteProducts
+    permanentDeleteProducts,
+    searchProducts
 };

@@ -251,7 +251,7 @@
 						<li data-session="wallet">Wallet</li>
 					</a>
 					<a href="/myAccount/refer" class="list-item">
-                        <li data-session="wallet">Referals</li>
+						<li data-session="wallet">Referals</li>
 					</a>
 					<a href="/logout" class="list-item">
 						<li data-session="logout">Logout</li>
@@ -266,34 +266,34 @@
 
 				<div class="orders" style="overflow-y: auto;">
 					<% if (orders.length === 0) { %>
-						<div class="alert alert-info" role="alert">
-							No orders available
-						</div>
+					<div class="alert alert-info" role="alert">
+						No orders available
+					</div>
 					<% } else { %>
-						<% orders.forEach(order => { %>
-						<div class="order-item card mb-4 p-3 shadow-sm">
-							<h4 class="text-primary">Order ID: <%= order._id %></h4>
-							<p>Status: <%= order.status %></p>
-							<p>Total Amount: Rs. <%= order.totalAmount %></p>
-							<div class="d-flex w-100 justify-content-between">
-								<button class="btn btn-info view-order-btn" data-id="<%= order._id %>">View Order</button>
-								<% if (order.status === 'Pending' || order.status === 'Shipping') { %>
-									<% if (order.paymentStatus !== 'Failed') { %>
-										<button class="btn btn-outline-danger cancel-order-btn" data-id="<%= order._id %>">Cancel Order</button>
-									<% } else if (order.paymentStatus === 'Failed') { %>
-										<button class="btn btn-outline-danger retry-order-btn" data-id="<%= order._id %>">Retry Payment</button>
-									<% } %>
-								<% } %>
-								<% if (order.status === 'Completed') { %>
-									<button class="btn btn-success return-order-btn" data-id="<%= order._id %>">Return Order</button>
-								<% } %>
-								<a href="/download-invoice/<%= order._id %>" class="btn btn-behance">Get PDF Receipt</a>
-							</div>
+					<% orders.forEach(order => { %>
+					<div class="order-item card mb-4 p-3 shadow-sm">
+						<h4 class="text-primary">Order ID: <%= order.orderId %></h4>
+						<p>Status: <%= order.status %></p>
+						<p>Total Amount: Rs. <%= order.totalAmount %></p>
+						<div class="d-flex w-100 justify-content-between">
+							<button class="btn btn-info view-order-btn" data-id="<%= order._id %>">View Order</button>
+							<% if (order.status === 'Pending' || order.status === 'Shipping') { %>
+							<% if (order.paymentStatus !== 'Failed') { %>
+							<button class="btn btn-outline-danger cancel-order-btn" data-id="<%= order._id %>">Cancel Order</button>
+							<% } else if (order.paymentStatus === 'Failed') { %>
+							<button class="btn btn-outline-danger retry-order-btn" data-id="<%= order._id %>">Retry Payment</button>
+							<% } %>
+							<% } %>
+							<% if (order.status === 'Completed') { %>
+							<button class="btn btn-success return-order-btn" data-id="<%= order._id %>">Return Order</button>
+							<% } %>
+							<a href="/download-invoice/<%= order._id %>" class="btn btn-behance">Get PDF Receipt</a>
 						</div>
-						<% }); %>
+					</div>
+					<% }); %>
 					<% } %>
 				</div>
-				
+
 				<!-- Add this right after the orders div -->
 				<div class="pagination-container d-flex justify-content-center mt-4">
 					<nav aria-label="Orders pagination">
@@ -359,11 +359,11 @@
 	</div>
 
 	<!-- Return Order Modal -->
-	<div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+	<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="returnOrderModalLabel">Return Order Request</h5>
+					<h5 class="modal-title" id="orderModalLabel">Return Order Request</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
@@ -389,7 +389,7 @@
 				const order = await response.json();
 
 				// Populate modal with order details
-				let orderDetailsHTML = `<p><strong>Order ID:</strong> ${order._id}</p>
+				let orderDetailsHTML = `<p><strong>Order ID:</strong> ${order.orderId}</p>
     <p><strong>Status:</strong> ${order.status}</p>
     <p><strong>Total Amount:</strong> Rs. ${order.totalAmount}</p>
     <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
@@ -423,54 +423,87 @@
 		});
 
 		// Cancel Order
+		// Cancel Order
 		document.querySelectorAll('.cancel-order-btn').forEach(button => {
 			button.addEventListener('click', async (e) => {
 				const orderId = e.target.dataset.id;
 
-				// Display a confirmation dialog before proceeding
+				// Display a confirmation dialog with input field for reason
 				const result = await Swal.fire({
-					title: 'Are you sure?',
-					text: 'Do you really want to cancel this order?',
+					title: 'Cancel Order',
+					html: `
+                <div class="form-group">
+                    <label for="cancelReason" class="mb-2">Please provide a reason for cancellation:</label>
+                    <textarea id="cancelReason" class="form-control" rows="3" placeholder="Enter your reason here"></textarea>
+                </div>
+            `,
 					icon: 'warning',
-					showCancelButton: true, // Show the cancel button
-					confirmButtonColor: '#3085d6', // Blue color for confirm
-					cancelButtonColor: '#d33', // Red color for cancel
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
 					confirmButtonText: 'Yes, cancel it!',
-					cancelButtonText: 'No, keep it'
+					cancelButtonText: 'No, keep it',
+					preConfirm: () => {
+						const reason = document.getElementById('cancelReason').value;
+						if(!reason.trim()) {
+							Swal.showValidationMessage('Please provide a reason for cancellation');
+						}
+						return reason;
+					}
 				});
 
-				// If user confirms, proceed with canceling the order
+				// If user confirms and provides a reason, proceed with canceling the order
 				if(result.isConfirmed) {
-					const response = await fetch(`/order/cancel/${orderId}`, {
-						method: 'POST'
-					});
-					const data = await response.json();
+					const cancelReason = result.value;
 
-					if(data.message === 'Order cancelled successfully') {
-						Swal.fire({
-							icon: 'success', // Green checkmark icon for success
-							title: 'Cancelled!',
-							text: 'Order cancelled',
-							confirmButtonColor: '#28a745', // Green button for success
-							confirmButtonText: 'OK'
+					try {
+						const response = await fetch(`/order/cancel/${orderId}`, {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								reason: cancelReason
+							})
 						});
-						location.reload(); // Reload the page to update order status
-					} else {
-						Swal.fire({
-							icon: 'error', // Red error icon
+
+						const data = await response.json();
+
+						if(data.message === 'Order cancelled successfully') {
+							await Swal.fire({
+								icon: 'success',
+								title: 'Cancelled!',
+								text: 'Order cancelled successfully',
+								confirmButtonColor: '#28a745',
+								confirmButtonText: 'OK'
+							});
+							location.reload(); // Reload the page to update order status
+						} else {
+							await Swal.fire({
+								icon: 'error',
+								title: 'Error!',
+								text: 'Cannot cancel order',
+								confirmButtonColor: '#d33',
+								confirmButtonText: 'OK'
+							});
+						}
+					} catch (error) {
+						console.error('Error canceling order:', error);
+						await Swal.fire({
+							icon: 'error',
 							title: 'Error!',
-							text: 'Cannot cancel order',
-							confirmButtonColor: '#d33', // Red button for error
+							text: 'An error occurred while canceling the order',
+							confirmButtonColor: '#d33',
 							confirmButtonText: 'OK'
 						});
 					}
 				} else {
-					// If the user cancels the action, show this message
-					Swal.fire({
+					// If the user cancels the action
+					await Swal.fire({
 						icon: 'info',
 						title: 'Cancelled',
 						text: 'The order was not cancelled.',
-						confirmButtonColor: '#17a2b8', // Info blue button
+						confirmButtonColor: '#17a2b8',
 						confirmButtonText: 'OK'
 					});
 				}
@@ -485,7 +518,7 @@
 		document.querySelectorAll('.return-order-btn').forEach(button => {
 			button.addEventListener('click', () => {
 				currentOrderId = button.getAttribute('data-id'); // Store the order ID
-				const returnOrderModal = new bootstrap.Modal(document.getElementById('returnOrderModal'));
+				const returnOrderModal = new bootstrap.Modal(document.getElementById('orderModal'));
 				returnOrderModal.show(); // Open the modal
 			});
 		});
@@ -520,7 +553,7 @@
 					});
 
 					// Close the modal and disable the button
-					const modal = bootstrap.Modal.getInstance(document.getElementById('returnOrderModal'));
+					const modal = bootstrap.Modal.getInstance(document.getElementById('orderModal'));
 					modal.hide();
 					document.querySelector(`[data-id="${currentOrderId}"]`).textContent = "Requested";
 					document.querySelector(`[data-id="${currentOrderId}"]`).disabled = true;

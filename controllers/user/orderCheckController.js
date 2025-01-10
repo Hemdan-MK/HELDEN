@@ -286,34 +286,80 @@ const viewOrder = async (req, res) => {
 const cancelOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const order = await Order.findById(orderId);
-        const wallet = await Wallet.findOne({ userId: order.userId });
+        const { reason } = req.body;
 
+        if (!reason || reason.trim() === '') {
+            return res.status(400).json({ message: 'Cancellation reason is required' });
+        }
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        const wallet = await Wallet.findOne({ userId: order.userId });
         if (!wallet) {
             const newWallet = new Wallet({
                 userId: order.userId,
-                balance: 0, // Initialize with a default balance
-                transactions: [], // Initialize with an empty transactions array
+                balance: 0,
+                transactions: [],
             });
 
-            await newWallet.save(); // Save the new wallet to the database
+            await newWallet.save();
             wallet = newWallet;
         }
         if (order.status === 'Pending' || order.status === 'Shipping') {
+            // Update stock for each product in the order
+            try {
+                for (const item of order.orderItems) {
+                    const product = await Product.findById(item.productId);
+                    if (!product) {
+                        console.error(`Product not found: ${item.productId}`);
+                        continue;
+                    }
+
+                    // Find the stock entry for the specific size
+                    const stockItem = product.stockManagement.find(
+                        stock => stock.size === item.size
+                    );
+
+                    if (stockItem) {
+                        stockItem.quantity += item.quantity;
+                        await product.save();
+                    } else {
+                        console.error(`Size ${item.size} not found for product ${item.productId}`);
+                    }
+                }
+            } catch (stockError) {
+                console.error('Error updating stock:', stockError);
+                return res.status(500).json({ message: 'Error updating product stock' });
+            }
+
+            // Update order status and reason
             order.status = 'Cancelled';
+            order.reason = reason;
+
+            // Handle refund for online payments
             if (order.paymentMethod === 'Net Banking' && order.paymentStatus === 'Completed') {
                 wallet.balance += order.totalAmount;
                 wallet.transactions.push({
                     amount: order.totalAmount,
                     type: 'Credit',
-                    description: 'Returning Order ' + order.id
+                    description: 'Returning Order ' + order.orderId // Changed from order.id to order.orderId
                 });
                 await wallet.save();
             }
+
             await order.save();
-            res.json({ message: 'Order cancelled successfully' });
+            res.json({
+                message: 'Order cancelled successfully and stock updated',
+                orderId: order.orderId
+            });
         } else {
-            res.status(400).json({ message: 'Order cannot be cancelled' });
+            res.status(400).json({
+                message: 'Order cannot be cancelled',
+                currentStatus: order.status
+            });
         }
     } catch (error) {
         console.error(error);
@@ -330,7 +376,7 @@ const returnOrder = async (req, res) => {
         // Update the order status to "Requested" and save the return reason
         await Order.findByIdAndUpdate(id, {
             status: 'Requested',
-            refundReason: reason
+            reason: reason
         });
 
         res.status(200).json({ message: "Return request submitted successfully!" });
@@ -412,7 +458,7 @@ const confirmRetry = async (req, res) => {
         order.paymentMethod = "Net Banking";
         order.razorpayPaymentId = razorpayPaymentId;
         order.expiresAt = undefined;
- 
+
         await order.save();
 
         res.json({ success: true });

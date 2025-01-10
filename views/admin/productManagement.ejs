@@ -20,66 +20,71 @@
 
 <body>
 	<div class="sidebar">
-        <div class="sidebar-brand">
-            <span class="brand-full">H E L D E N</span>
-            <span class="brand-short">H</span>
-        </div>
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/dashboard">
-                    <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/userManagement">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/admin/productManagement">
-                    <i class="fas fa-box"></i>
-                    <span>Product Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/orderManagement">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Order Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/categoryManagement">
-                    <i class="fas fa-folder"></i>
-                    <span>Category Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/couponManagement">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Coupon Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="/admin/referralManagement">
-                    <i class="fas fa-gift"></i>
-                    <span>Referal Management</span>
-                </a>
-            </li>
-            <li class="nav-item bottom">
-                <a class="nav-link text-warning" href="/admin/logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+		<div class="sidebar-brand">
+			<span class="brand-full">H E L D E N</span>
+			<span class="brand-short">H</span>
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">
+					<i class="fas fa-th-large"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">
+					<i class="fas fa-users"></i>
+					<span>User Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/productManagement">
+					<i class="fas fa-box"></i>
+					<span>Product Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">
+					<i class="fas fa-shopping-cart"></i>
+					<span>Order Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">
+					<i class="fas fa-folder"></i>
+					<span>Category Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">
+					<i class="fas fa-ticket-alt"></i>
+					<span>Coupon Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link " href="/admin/referralManagement">
+					<i class="fas fa-gift"></i>
+					<span>Referal Management</span>
+				</a>
+			</li>
+			<li class="nav-item bottom">
+				<a class="nav-link text-warning" href="/admin/logout">
+					<i class="fas fa-sign-out-alt"></i>
+					<span>Logout</span>
+				</a>
+			</li>
+		</ul>
+	</div>
 	<div class="main-content container-fluid">
 		<h2 class="mb-4 pt-3">Product Management</h2>
-		<form class="nav-link mt-2 mt-md-0 d-lg-flex search">
-			<input type="text" class="form-control" placeholder="Search users">
-			<button style=" margin-left: 10px;" class="btn btn-primary">Search</button>
+		<form class="nav-link mt-2 mt-md-0 d-lg-flex search" id="searchForm">
+			<input 
+				type="text" 
+				class="form-control" 
+				id="searchInput" 
+				placeholder="Search products"
+				autocomplete="off"
+			>
 		</form>
 		<div class="table-responsive">
 			<table class="table-hover">
@@ -95,7 +100,8 @@
 						<th>Actions</th>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody id="productTableBody">
+					<% if (products.length > 0) { %>
 					<% products.forEach((product, index) => { %>
 					<tr id="product-<%= product._id %>">
 						<td><%= index + 1 %></td>
@@ -123,8 +129,40 @@
 						</td>
 					</tr>
 					<% }); %>
+					<% } else { %>
+					<tr>
+						<td colspan="8" class="text-center">No products available</td>
+					</tr>
+					<% } %>
 				</tbody>
 			</table>
+		</div>
+		<div class="pagination-container mt-4 d-flex justify-content-center">
+			<nav aria-label="Product pagination">
+				<ul class="pagination pagination-dark justify-content-center">
+					<% if (currentPage > 1) { %>
+					<li class="page-item">
+						<a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>" aria-label="Previous">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+					<% } %>
+
+					<% for(let i = 1; i <= totalPages; i++) { %>
+					<li class="page-item <%= currentPage === i ? 'active' : '' %>">
+						<a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+					</li>
+					<% } %>
+
+					<% if (currentPage < totalPages) { %>
+					<li class="page-item">
+						<a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>" aria-label="Next">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+					<% } %>
+				</ul>
+			</nav>
 		</div>
 
 		<div class="action-buttons">
@@ -140,48 +178,6 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 	<script>
-		// SOFT DELETE PRODUCT
-		document.querySelectorAll('.btn-delete').forEach(button => {
-			button.addEventListener('click', function(e) {
-				const productId = e.target.getAttribute('data-id');
-
-				Swal.fire({
-					title: 'Are you sure?',
-					text: "You won't be able to undo this action!",
-					icon: 'warning',
-					showCancelButton: true,
-					confirmButtonColor: '#3085d6',
-					cancelButtonColor: '#d33',
-					confirmButtonText: 'Yes, delete it!'
-				}).then((result) => {
-					if(result.isConfirmed) {
-						fetch(`/admin/productManagement/unlink`, {
-								method: 'PUT',
-								headers: {
-									'Content-Type': 'application/json'
-								},
-								body: JSON.stringify({
-									productId
-								})
-							})
-							.then(response => response.json())
-							.then(data => {
-								if(data.success) {
-									Swal.fire('Deleted!', 'Product has been deleted.', 'success');
-									window.location.reload();
-								} else {
-									Swal.fire('Error!', 'Could not delete the product.', 'error');
-								}
-							})
-							.catch(error => {
-								console.error('Error:', error);
-								Swal.fire('Error!', 'An unexpected error occurred.', 'error');
-							});
-					}
-				});
-			});
-		});
-
 		// ADDING PRODUCT
 		document.getElementById('btn-add-prod').addEventListener('click', () => {
 			window.location.href = '/admin/productManagement/add';
@@ -192,6 +188,118 @@
 			window.location.href = '/admin/productManagement/deleted';
 		});
 	</script>
+	<script>
+		const searchInput = document.getElementById('searchInput');
+		const productTableBody = document.getElementById('productTableBody');
+		let debounceTimer;
+
+		// Debounce function
+		const debounce = (callback, delay = 300) => {
+			return (...args) => {
+				clearTimeout(debounceTimer);
+				debounceTimer = setTimeout(() => callback(...args), delay);
+			};
+		};
+
+		// Function to update table with search results
+		const updateTable = (products) => {
+			productTableBody.innerHTML = products.map((product, index) => `
+				<tr id="product-${product._id}">
+					<td>${index + 1}</td>
+					<td>${product.name}</td>
+					<td>${product.category ? product.category.name : '<span class="text-muted">NO</span>'}</td>
+					<td>$${product.price}</td>
+					<td>${
+						Array.isArray(product.stockManagement) && product.stockManagement.length > 0
+						? product.stockManagement.reduce((total, stock) => total + stock.quantity, 0)
+						: '<span class="text-muted">No Stock</span>'
+					}</td>
+					<td>${new Date(product.createdAt).toLocaleDateString()}</td>
+					<td>${new Date(product.updatedAt).toLocaleDateString()}</td>
+					<td>
+						<a href="/admin/productManagement/update/${product._id}" class="btn btn-outline-primary btn-sm">Update</a>
+						<button data-id="${product._id}" class="btn btn-outline-danger btn-sm btn-delete">Delete</button>
+					</td>
+				</tr>
+			`).join('');
+
+			// Reattach delete event listeners
+			attachDeleteListeners();
+		};
+
+		// Function to perform the search
+		const performSearch = async (searchTerm) => {
+			try {
+				const response = await fetch(`/admin/productManagement/search?search=${searchTerm}&page=1&limit=10`);
+				const result = await response.json();
+
+				if(result.success) {
+					updateTable(result.data);
+				}
+			} catch (error) {
+				console.error('Search failed:', error);
+			}
+		};
+
+		// Debounced search function
+		const debouncedSearch = debounce((searchTerm) => {
+			performSearch(searchTerm);
+		}, 300);
+
+		// Add input event listener
+		searchInput.addEventListener('input', (e) => {
+			const searchTerm = e.target.value.trim();
+			debouncedSearch(searchTerm);
+		});
+
+		// Function to reattach delete event listeners
+		function attachDeleteListeners() {
+			document.querySelectorAll('.btn-delete').forEach(button => {
+				button.addEventListener('click', function(e) {
+					const productId = e.target.getAttribute('data-id');
+
+					Swal.fire({
+						title: 'Are you sure?',
+						text: "You won't be able to undo this action!",
+						icon: 'warning',
+						showCancelButton: true,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Yes, delete it!'
+					}).then((result) => {
+						if(result.isConfirmed) {
+							fetch(`/admin/productManagement/unlink`, {
+									method: 'PUT',
+									headers: {
+										'Content-Type': 'application/json'
+									},
+									body: JSON.stringify({
+										productId
+									})
+								})
+								.then(response => response.json())
+								.then(data => {
+									if(data.success) {
+										Swal.fire('Deleted!', 'Product has been deleted.', 'success');
+										window.location.reload();
+									} else {
+										Swal.fire('Error!', 'Could not delete the product.', 'error');
+									}
+								})
+								.catch(error => {
+									console.error('Error:', error);
+									Swal.fire('Error!', 'An unexpected error occurred.', 'error');
+								});
+						}
+					});
+				});
+			});
+		}
+
+		// Initial attachment of delete listeners
+		attachDeleteListeners();
+	</script>
+
 </body>
 
 </html>

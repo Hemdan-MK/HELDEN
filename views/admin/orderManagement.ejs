@@ -17,61 +17,61 @@
 
 <body>
 	<div class="sidebar">
-        <div class="sidebar-brand">
-            <span class="brand-full">H E L D E N</span>
-            <span class="brand-short">H</span>
-        </div>
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/dashboard">
-                    <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/userManagement">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/productManagement">
-                    <i class="fas fa-box"></i>
-                    <span>Product Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/admin/orderManagement">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Order Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/categoryManagement">
-                    <i class="fas fa-folder"></i>
-                    <span>Category Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/couponManagement">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Coupon Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="/admin/referralManagement">
-                    <i class="fas fa-gift"></i>
-                    <span>Referal Management</span>
-                </a>
-            </li>
-            <li class="nav-item bottom">
-                <a class="nav-link text-warning" href="/admin/logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+		<div class="sidebar-brand">
+			<span class="brand-full">H E L D E N</span>
+			<span class="brand-short">H</span>
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">
+					<i class="fas fa-th-large"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">
+					<i class="fas fa-users"></i>
+					<span>User Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/productManagement">
+					<i class="fas fa-box"></i>
+					<span>Product Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/orderManagement">
+					<i class="fas fa-shopping-cart"></i>
+					<span>Order Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">
+					<i class="fas fa-folder"></i>
+					<span>Category Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/couponManagement">
+					<i class="fas fa-ticket-alt"></i>
+					<span>Coupon Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link " href="/admin/referralManagement">
+					<i class="fas fa-gift"></i>
+					<span>Referal Management</span>
+				</a>
+			</li>
+			<li class="nav-item bottom">
+				<a class="nav-link text-warning" href="/admin/logout">
+					<i class="fas fa-sign-out-alt"></i>
+					<span>Logout</span>
+				</a>
+			</li>
+		</ul>
+	</div>
 	<div class="main-content">
 		<div class="container-fluid" style="width: 100%;height: 100vh;">
 			<!-- Main Content -->
@@ -96,7 +96,7 @@
 						<% orders.forEach((order, index) => { %>
 						<tr>
 							<td><%= index + 1 %></td>
-							<td><%= order._id %></td>
+							<td><%= order.orderId %></td>
 							<td><%= order.userId.name %></td>
 							<td><%= new Date(order.createdAt).toLocaleDateString() %></td>
 							<td>₹ <%= order.totalAmount.toFixed(2) %></td>
@@ -225,7 +225,7 @@
 				.then(order => {
 
 					// Populate the order details in the modal
-					document.getElementById('orderNo').value = order._id;
+					document.getElementById('orderNo').value = order.orderId;
 					document.getElementById('userName').value = order.userId.name;
 
 					// Build order items HTML to show product details along with images
@@ -251,13 +251,19 @@
 
 					// Set the order items HTML to an element (not a text input)
 					document.getElementById('orderItemsContainer').innerHTML = orderItemsHtml;
+
 					if(order.status !== 'Requested') {
 						document.getElementById('ret').style.display = 'none';
+					}
+					if(order.status === 'Cancelled'){
+						document.getElementById('ret').style.display = 'block';
+						document.getElementById('rejectBtn').style.display = 'none';
+						document.getElementById('acceptBtn').style.display = 'none';
 					}
 					document.getElementById('shippingStatus').value = order.status;
 					document.getElementById('paymentStatus').value = order.paymentStatus;
 					document.getElementById('totalAmount').value = order.totalAmount;
-					document.getElementById('reason').value = order.refundReason;
+					document.getElementById('reason').value = order.reason;
 
 					// Check if the order status is "Returned" or "Completed"
 					if(order.status === 'Returned' || order.status === 'Completed' || order.status === 'Cancelled' || order.status === 'Rejected' || order.status === 'Requested') {
@@ -271,6 +277,7 @@
 						document.getElementById('updateStatusBtn').disabled = false; // Enable the update button
 					}
 
+			
 
 
 					// Show the modal

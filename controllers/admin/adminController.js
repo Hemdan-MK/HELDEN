@@ -518,7 +518,7 @@ const pdf = async (req, res) => {
 
             // Add row data
             drawTableRow(doc, startX, startY, columnWidths, rowHeight, [
-                order._id.toString(),
+                order.orderId,
                 order.userId?.name || "Guest",
                 order.userId?.email || "N/A",
                 `₹${order.totalAmount}`,
@@ -626,33 +626,17 @@ const excel = async (req, res) => {
         worksheet.columns = [
             { header: "Order ID", key: "id", width: 30 },
             { header: "User", key: "user", width: 20 },
-            { header: "Email", key: "email", width: 25 },
+            { header: "Email", key: "email", width: 40 },
             { header: "Total Amount", key: "total", width: 15 },
             { header: "Status", key: "status", width: 15 },
-            { header: "Items", key: "items", width: 50 }
+            { header: "Items", key: "items", width: 100 }
         ];
 
-        // Add summary data at the top of the worksheet
-        worksheet.addRow({
-            id: "Total Sales Count",
-            user: totalSalesCount,
-            email: "Total Order Amount",
-            total: `₹${totalOrderAmount}`,
-            status: "Total Discount",
-            items: `₹${totalDiscount}`
-        });
-        worksheet.addRow({
-            id: "Total Revenue",
-            user: `₹${totalRevenue}`,
-            email: "",
-            total: "",
-            status: "",
-            items: ""
-        });
+
 
         orders.forEach(order => {
             worksheet.addRow({
-                id: order._id.toString(),
+                id: order.orderId,
                 user: order.userId?.name || "Guest",
                 email: order.userId?.email || "",
                 total: order.totalAmount,
@@ -661,6 +645,48 @@ const excel = async (req, res) => {
                     .map(item => `${item.productId?.name || "Product"} (x${item.quantity})`)
                     .join(", ")
             });
+        });
+
+        worksheet.addRow({
+            id: "",
+            user: "",
+            email: "",
+            total: ``,
+            status: "",
+            items: ``
+        });
+
+        worksheet.addRow({
+            id: "Total Sales Count",
+            user: totalSalesCount,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
+        });
+        worksheet.addRow({
+            id: "Total Order Amount",
+            user: `₹${totalOrderAmount}`,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
+        });
+        worksheet.addRow({
+            id: "Total Discount",
+            user: `₹${totalDiscount}`,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
+        });
+        worksheet.addRow({
+            id: "Total Revenue : ",
+            user: `₹${totalRevenue}`,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
         });
 
         const filename = `sales_report_${Date.now()}.xlsx`;
@@ -691,7 +717,6 @@ const modalFilter = async (req, res) => {
         // Function to validate and parse dates
         function parseValidDate(date, isEndDate = false) {
             const parsedDate = new Date(date);
-            console.log('Parsed date:', parsedDate);
 
             if (isNaN(parsedDate)) {
                 console.log('Invalid date detected');
@@ -780,7 +805,7 @@ const modalFilter = async (req, res) => {
             { $unwind: '$userDetails' }, // Unwind the 'userDetails' array (because $lookup returns an array)
             {
                 $project: {
-                    _id: 1,
+                    orderId: 1,
                     userName: '$userDetails.name',
                     email: '$userDetails.email',
                     totalAmount: 1,
@@ -900,13 +925,65 @@ const modalPdf = async (req, res) => {
             };
         }
 
+        // Calculate summary statistics using aggregation
+        const [overallDiscount, revenueResult, orders] = await Promise.all([
+            // Calculate total discount
+            Order.aggregate([
+                {
+                    $match: matchStage
+                },
+                { $unwind: "$orderItems" },
+                {
+                    $project: {
+                        totalAmount: 1,
+                        productTotal: { $multiply: ["$orderItems.price", "$orderItems.quantity"] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        totalProductPrice: { $sum: "$productTotal" },
+                        totalAmount: { $first: "$totalAmount" }
+                    }
+                },
+                {
+                    $project: {
+                        orderDiscount: { $subtract: ["$totalProductPrice", "$totalAmount"] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalDiscount: { $sum: "$orderDiscount" }
+                    }
+                }
+            ]),
+            // Calculate total revenue from completed orders
+            Order.aggregate([
+                {
+                    $match: {
+                        ...matchStage,
+                        status: 'Completed'
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: { $sum: "$totalAmount" }
+                    }
+                }
+            ]),
+            // Fetch filtered orders with population
+            Order.find(matchStage)
+                .populate("userId", "name email")
+                .populate("orderItems.productId")
+        ]);
 
-        // Fetch filtered orders
-        const orders = await Order.find(matchStage)
-            .populate("userId", "name email")
-            .populate("orderItems.productId");
-
-
+        // Extract summary statistics
+        const totalDiscount = overallDiscount.length > 0 ? overallDiscount[0].totalDiscount : 0;
+        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+        const totalSalesCount = orders.length;
+        const totalOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
 
         // Generate PDF Document
         const doc = new PDFDocument({ margin: 30 });
@@ -922,11 +999,18 @@ const modalPdf = async (req, res) => {
         doc.fontSize(18).text("Sales Report", { align: "center" });
         doc.moveDown();
 
+        // Add Summary Section
+        doc.fontSize(12).text(`Total Sales Count    : ${totalSalesCount}`, { align: "right" });
+        doc.text(`Total Order Amount    : ₹${totalOrderAmount}`, { align: "right" });
+        doc.text(`Total Discount        : ₹${totalDiscount}`, { align: "right" });
+        doc.text(`Total Revenue         : ₹${totalRevenue}`, { align: "right" });
+        doc.moveDown();
+
         // Table Setup
         const startX = 50;
         let startY = 130;
         const rowHeight = 25;
-        const columnWidths = [100, 100, 150, 100, 80]; // Column widths
+        const columnWidths = [100, 100, 150, 100, 80];
 
         // Table Header
         doc.font("Helvetica-Bold").fontSize(10);
@@ -958,8 +1042,8 @@ const modalPdf = async (req, res) => {
             }
 
             drawTableRow(doc, startX, startY, columnWidths, rowHeight, [
-                order._id.toString(),
-                order.userId.name || "Guest",
+                order.orderId,
+                order.userId?.name || "Guest",
                 order.userId?.email || "N/A",
                 `₹${order.totalAmount}`,
                 order.status
@@ -975,11 +1059,11 @@ const modalPdf = async (req, res) => {
         res.status(500).json({ message: "Failed to generate PDF" });
     }
 };
+
 const modalExcel = async (req, res) => {
     try {
         const { filterType, startDate, endDate } = req.query;
 
-        // Reuse the same logic for filtering sales
         let matchStage = {
             status: {
                 $in: ['Pending', 'Shipping', 'Completed', 'Cancelled']
@@ -987,23 +1071,21 @@ const modalExcel = async (req, res) => {
             expiresAt: { $exists: false }
         };
 
+        const today = new Date();
+
         // Handle filters based on the filterType
         if (filterType === "daily") {
-            const today = new Date();
             matchStage.createdAt = {
                 $gte: new Date(today.setHours(0, 0, 0, 0)),
                 $lt: new Date(today.setHours(23, 59, 59, 999)),
             };
         } else if (filterType === "weekly") {
-            const today = new Date();
             const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
             matchStage.createdAt = { $gte: startOfWeek };
         } else if (filterType === "monthly") {
-            const today = new Date();
             const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
             matchStage.createdAt = { $gte: startOfMonth };
         } else if (filterType === "yearly") {
-            const today = new Date();
             const startOfYear = new Date(today.getFullYear(), 0, 1);
             matchStage.createdAt = { $gte: startOfYear };
         } else if (filterType === "custom") {
@@ -1012,56 +1094,167 @@ const modalExcel = async (req, res) => {
             matchStage.createdAt = { $gte: validStartDate, $lte: validEndDate };
         }
 
-        const orders = await Order.find(matchStage).sort({ createdAt: -1 });
+        // Fetch all required data in parallel
+        const [orders, overallDiscount, revenueResult] = await Promise.all([
+            Order.find(matchStage)
+                .populate("userId")
+                .populate("orderItems.productId")
+                .sort({ createdAt: -1 }),
+            
+            // Calculate total discount
+            Order.aggregate([
+                {
+                    $match: matchStage
+                },
+                { $unwind: "$orderItems" },
+                {
+                    $project: {
+                        totalAmount: 1,
+                        productTotal: { $multiply: ["$orderItems.price", "$orderItems.quantity"] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        totalProductPrice: { $sum: "$productTotal" },
+                        totalAmount: { $first: "$totalAmount" }
+                    }
+                },
+                {
+                    $project: {
+                        orderDiscount: { $subtract: ["$totalProductPrice", "$totalAmount"] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalDiscount: { $sum: "$orderDiscount" }
+                    }
+                }
+            ]),
 
-        const users = await User.find({ _id: { $in: orders.map(order => order.userId) } });
+            // Calculate total revenue from completed orders
+            Order.aggregate([
+                {
+                    $match: {
+                        ...matchStage,
+                        status: 'Completed'
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: { $sum: "$totalAmount" }
+                    }
+                }
+            ])
+        ]);
+
+        // Calculate summary statistics
+        const totalDiscount = overallDiscount.length > 0 ? overallDiscount[0].totalDiscount : 0;
+        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+        const totalSalesCount = orders.length;
+        const totalOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
 
         // Generate Excel Workbook
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Sales Report");
 
-        // Add Header
+        // Set up columns
         worksheet.columns = [
-            { header: "Order ID", key: "_id", width: 30 },
-            { header: "User", key: "user", width: 30 },
-            { header: "Email", key: "email", width: 30 },
-            { header: "Total Amount", key: "totalAmount", width: 20 },
-            { header: "Status", key: "status", width: 20 },
-            { header: "Date", key: "createdAt", width: 20 },
+            { header: "Order ID", key: "id", width: 30 },
+            { header: "User", key: "user", width: 20 },
+            { header: "Email", key: "email", width: 40 },
+            { header: "Total Amount", key: "total", width: 15 },
+            { header: "Status", key: "status", width: 15 },
+            { header: "Items", key: "items", width: 100 },
+            { header: "Date", key: "date", width: 20 }
         ];
 
-        // Add Rows
-        orders.forEach((order) => {
-            const user = users.find((user) => user._id.toString() === order.userId.toString());
+        // Add order rows
+        orders.forEach(order => {
             worksheet.addRow({
-                _id: order._id,
-                user: user ? user.name : "Guest", // Fetch user data manually
-                email: user ? user.email : "N/A", // Fetch user data manually
-                totalAmount: `₹${order.totalAmount}`,
+                id: order.orderId,
+                user: order.userId?.name || "Guest",
+                email: order.userId?.email || "N/A",
+                total: `₹${order.totalAmount}`,
                 status: order.status,
-                createdAt: new Date(order.createdAt).toLocaleDateString(),
+                items: order.orderItems
+                    .map(item => `${item.productId?.name || "Product"} (x${item.quantity})`)
+                    .join(", "),
+                date: new Date(order.createdAt).toLocaleDateString()
             });
         });
 
+        // Add blank row for spacing
+        worksheet.addRow({});
+
+        // Add summary statistics
+        worksheet.addRow({
+            id: "Total Sales Count",
+            user: totalSalesCount,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
+        });
+        worksheet.addRow({
+            id: "Total Order Amount",
+            user: `₹${totalOrderAmount}`,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
+        });
+        worksheet.addRow({
+            id: "Total Discount",
+            user: `₹${totalDiscount}`,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
+        });
+        worksheet.addRow({
+            id: "Total Revenue",
+            user: `₹${totalRevenue}`,
+            email: "",
+            total: "",
+            status: "",
+            items: ""
+        });
+
+        // Style summary rows
+        const summaryRows = worksheet.lastRow.number - 3;
+        for (let i = 0; i < 4; i++) {
+            const row = worksheet.getRow(summaryRows + i);
+            row.font = { bold: true };
+            row.getCell(1).font = { bold: true };
+        }
+
         // Send File
+        const filename = `sales_report_${Date.now()}.xlsx`;
         res.setHeader(
             "Content-Disposition",
-            "attachment; filename=sales_report.xlsx"
+            `attachment; filename=${filename}`
         );
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {
         console.error("Error generating Excel:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({ error: "Failed to generate Excel file" });
     }
 };
 
-
 module.exports = {
-    getDashboard,         // GET: /admin/dashboard
-    getLoginPage,         // GET: /admin/login
-    postLogin,            // POST: /admin/login
-    logoutAdmin,          // POST: /admin/logout
+    getDashboard,
+    getLoginPage,
+    postLogin,
+    logoutAdmin,
     getSalesData,
     getCustomSalesData,
     pdf,

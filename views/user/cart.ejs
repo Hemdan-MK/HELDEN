@@ -257,7 +257,7 @@
 							</div>
 							<div class="detail-item">
 								<span>Discount</span>
-								<span class="text-success">- Rs. <%= offerTotal.toFixed(1) %></span>
+								<span class="text-success">- Rs. <%= offerTotal.toFixed(2) %></span>
 							</div>
 							<div class="detail-item">
 								<span>Shipping</span>
@@ -271,7 +271,7 @@
 						<div class="total-section">
 							<div class="total-item">
 								<span class="total-title">TOTAL</span>
-								<span class="total-amount">Rs. <%= Total %></span>
+								<span class="total-amount">Rs. <%= Total.toFixed(2) %></span>
 							</div>
 							<div class="delivery-info">
 								<span>Estimated Delivery by</span>
@@ -455,9 +455,8 @@
 					} = data.orderSummary;
 					// const html = await response.text();
 					// document.querySelector('.order-summary').innerHTML = html;
-					// Update the text content dynamically
 					document.querySelector('.detail-item span:nth-child(2)').textContent = `Rs. ${mrp}`;
-					document.querySelector('.detail-item:nth-child(2) span:nth-child(2)').textContent = `- Rs. ${offerTotal}`;
+					document.querySelector('.detail-item:nth-child(2) span:nth-child(2)').textContent = `- Rs. ${offerTotal.toFixed(2)}`;
 					if(shipping === 0) {
 						const freeTextElement = document.querySelector('.detail-item:nth-child(3) span:nth-child(2)');
 						freeTextElement.textContent = 'Free';
@@ -465,7 +464,7 @@
 					} else {
 						document.querySelector('.detail-item:nth-child(3) span:nth-child(2)').textContent = ` Rs. ${shipping}`;
 					}
-					document.querySelector('.total-amount').textContent = `Rs. ${Total}`;
+					document.querySelector('.total-amount').textContent = `Rs. ${Total.toFixed(2)}`;
 				} catch (error) {
 					console.error("Error reloading order summary:", error);
 				}

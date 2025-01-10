@@ -859,7 +859,7 @@
 			orders.forEach((order) => {
 				tbody.innerHTML += `
             <tr style=''>
-                <td>${order._id}</td>
+                <td>${order.orderId}</td>
                 <td>${order.userName || "Guest"}</td>
                 <td>${order.email || "N/A"}</td>
                 <td>₹${order.totalAmount}</td>
