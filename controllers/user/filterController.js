@@ -72,10 +72,9 @@ const filter = async (req, res) => {
 
         query.isDeleted = false;
 
-        // Fetch products
         const products = await Product.find(query).sort(sort).populate('category');
 
-        res.json({ products: products }); // Return empty array if no products found
+        res.json({ products: products }); 
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ error: 'An error occurred while fetching products.' });
@@ -84,31 +83,28 @@ const filter = async (req, res) => {
 
 
 
-
-
-// if (category && category !== "*") {
-//     const foundCategory = await Category.findOne({ name: category });
-
-//     if (!foundCategory) {
-//         return res.status(400).json({ error: 'Category not found' });
-//     }
-
-//     // Add the category ObjectId to the query
-//     query.category = foundCategory._id;
-// }
-
-
-// POST route for searching products
 const search = async (req, res) => {
     try {
         const searchTerm = req.body.search;
+        const excludeOutOfStock = req.body.excludeOutOfStock;
 
-        // Fetch products that match the search term (case-insensitive)
-        const products = await Product.find({
-            name: { $regex: searchTerm, $options: "i" } // "i" for case-insensitive
-        });
 
-        // Respond with filtered products
+        let query = {
+            name: { $regex: searchTerm, $options: "i" },
+            isDeleted: false
+        };
+
+        if (excludeOutOfStock) {
+            query['stockManagement'] = {
+                $elemMatch: {
+                    quantity: { $gt: 0 }
+                }
+            };
+        }
+
+        const products = await Product.find(query);
+
+        
         res.json({ products });
     } catch (error) {
         console.error("Search error:", error);

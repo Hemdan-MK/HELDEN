@@ -5,6 +5,7 @@ const Coupon = require('../../models/coupenModel')
 const Wallet = require('../../models/walletModel');
 const Products = require('../../models/productModel');
 const Razorpay = require('razorpay');
+const { instance } = require('../../utils/razorPay');
 
 
 const checkout = async (req, res) => {
@@ -244,13 +245,8 @@ const coupen = async (req, res) => {
     }
 }
 
-const razerpay = async (req, res) => {
+const razorpay = async (req, res) => {
     const { amount } = req.body;
-
-    const razorpayInstance = new Razorpay({
-        key_id: 'rzp_test_W9utN834UAJerT',
-        key_secret: 'OFiG9mM7gu0gFkltYvq2iSkl'
-    });
 
     const options = {
         amount: amount * 100, // Convert to paise
@@ -259,9 +255,9 @@ const razerpay = async (req, res) => {
     };
 
     try {
-        const response = await razorpayInstance.orders.create(options);
+        const response = await instance.orders.create(options);
         res.json({
-            razorpayKey: "rzp_test_W9utN834UAJerT",
+            razorpayKey: process.env.RAZORPAY_KEY,
             razorpayOrderId: response.id
         });
     } catch (error) {
@@ -410,16 +406,11 @@ const retryPayment = async (req, res) => {
     const { orderId } = req.params;
 
     try {
-        const order = await Order.findById(orderId); // Fetch order from database
+        const order = await Order.findById(orderId);
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
-
-        const razorpayInstance = new Razorpay({
-            key_id: 'rzp_test_W9utN834UAJerT',
-            key_secret: 'OFiG9mM7gu0gFkltYvq2iSkl'
-        });
 
         const options = {
             amount: order.totalAmount * 100, // Convert to paise
@@ -427,8 +418,7 @@ const retryPayment = async (req, res) => {
             receipt: "order_rcptid_" + Date.now(),
         };
 
-        // Generate a new Razorpay order ID if necessary
-        const razorpayOrder = await razorpayInstance.orders.create(options);
+        const razorpayOrder = await instance.orders.create(options);
 
         res.json({
             success: true,
@@ -475,7 +465,7 @@ module.exports = {
     cancelOrder,
     success,
     coupen,
-    razerpay,
+    razorpay,
     returnOrder,
     failed,
     retryPayment,

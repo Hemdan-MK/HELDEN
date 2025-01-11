@@ -10,8 +10,49 @@ const Wallet = require('../models/walletModel');
 
 const loadMain = async (req, res) => {
     try {
-        const products = await productModel.find({ isDeleted: false }).sort({ _id: -1 });
-        return res.status(200).render('user/home', { user: req.session.user, products })
+        const products = await productModel.find({
+            isDeleted: false,
+            "stockManagement.quantity": { $gt: 0 }, 
+        }).sort({ _id: -1 });
+
+        const offerProducts = await productModel.aggregate([
+            // Match products that are not deleted
+            {
+                $match: {
+                    isDeleted: false,
+                },
+            },
+            {
+                $addFields: {
+                    totalStock: {
+                        $sum: "$stockManagement.quantity"
+                    },
+                },
+            },
+            {
+                $match: {
+                    totalStock: { $gt: 0 },
+                },
+            },
+            {
+                $addFields: {
+                    discountPercentage: {
+                        $multiply: [
+                            { $divide: [{ $subtract: ["$price", "$offerPrice"] }, "$price"] },
+                            100
+                        ]
+                    },
+                },
+            },
+            {
+                $sort: { discountPercentage: -1 },
+            },
+            {
+                $limit: 8,
+            },
+        ]);
+
+        return res.status(200).render('user/home', { user: req.session.user, products, offerProducts })
     } catch (error) {
         console.error('error : ', error);
         return res.status(500).json({ success: false, error: error.message });
@@ -41,7 +82,7 @@ const loadShop = async (req, res) => {
 };
 
 const loadAbout = async (req, res) => {
-    try {        
+    try {
         return res.status(200).render('user/about', { user: req.session.user })
     } catch (error) {
         console.error('error : ', error);
@@ -88,7 +129,7 @@ const loadOrders = async (req, res) => {
 
         // Get paginated orders
         const orders = await Order.find({
-            userId, 
+            userId,
         })
             .populate('orderItems.productId')
             .sort({ createdAt: -1 })
@@ -253,9 +294,10 @@ const login = async (req, res) => {
             id: user._id,
             referralCode: getReferralCode.referralCode
         };
-        
+
         const products = await productModel.find({ isDeleted: false });
-        return res.render('user/home', { user: req.session.user, products });
+        // return res.render('user/home', { user: req.session.user, products });
+        return res.redirect('/home');
     } catch (error) {
         console.error('login error:', error);
         return res.status(500).json({ success: false, error: error.message });

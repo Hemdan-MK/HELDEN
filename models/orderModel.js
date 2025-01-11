@@ -81,8 +81,9 @@ const orderSchema = new mongoose.Schema({
         index: { expireAfterSeconds: 0 } // TTL index: document expires at this time
     }
 })
+
+
 function generateOrderId() {
-    // Generate a random 6-digit number
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 

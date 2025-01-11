@@ -119,32 +119,32 @@
 						T-Shirts
 					</button>
 
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Jeans">
-						Jeans
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Jackets & Coats">
+						Jackets & Coats
 					</button>
 
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Pants & Trousers">
-						Pants & Trousers
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Trousers">
+						Trousers
+					</button>
+
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Jeans">
+						Jeans
 					</button>
 
 					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Shorts">
 						Shorts
 					</button>
 
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Outerwear">
-						Outerwear
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Belts & Braces">
+						Belts & Braces
 					</button>
 
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Innerwear">
-						Innerwear
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Sunglasses">
+						Sunglasses
 					</button>
 
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Footwear">
-						Footwear
-					</button>
-
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Accessories">
-						Accessories
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter="Wallets & Bags">
+						Wallets & Bags
 					</button>
 				</div>
 
@@ -475,6 +475,10 @@
 		document.addEventListener("DOMContentLoaded", function() {
 			const searchInput = document.querySelector("input[name='search-product']");
 			const productContainer = document.querySelector(".isotope-grid");
+			const excludeOutOfStockButton = document.getElementById('excludeOutOfStock');
+			const includeOutOfStockButton = document.getElementById('includeOutOfStock');
+
+			let excludeOutOfStock = true;
 
 			// Function to fetch search results
 			function fetchSearchResults(searchTerm) {
@@ -484,7 +488,8 @@
 							'Content-Type': 'application/json'
 						},
 						body: JSON.stringify({
-							search: searchTerm
+							search: searchTerm,
+							excludeOutOfStock: excludeOutOfStock
 						})
 					})
 					.then(response => response.json())
@@ -538,6 +543,22 @@
 			searchInput.addEventListener("input", function() {
 				const searchTerm = searchInput.value.trim();
 				fetchSearchResults(searchTerm); // Call function to fetch search results
+			});
+
+			excludeOutOfStockButton.addEventListener('click', function(e) {
+				e.preventDefault();
+				excludeOutOfStock = true;
+				excludeOutOfStockButton.classList.add('filter-link-active');
+				includeOutOfStockButton.classList.remove('filter-link-active');
+				fetchSearchResults(searchInput.value.trim());
+			});
+
+			includeOutOfStockButton.addEventListener('click', function(e) {
+				e.preventDefault();
+				excludeOutOfStock = false;
+				includeOutOfStockButton.classList.add('filter-link-active');
+				excludeOutOfStockButton.classList.remove('filter-link-active');
+				fetchSearchResults(searchInput.value.trim());
 			});
 		});
 	</script>

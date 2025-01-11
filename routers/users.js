@@ -17,12 +17,10 @@ const checkProductStatus = require('../middleware/checkProductStatus.js')
 const checkBadge = require('../middleware/badgeCount.js');
 
 
-
 router.use(checkBadge)
 
 
-
-router.get('/home', userController.loadMain);
+router.get(/^\/(home)?$/, userController.loadMain);
 router.get('/shop', userController.loadShop);
 router.get('/about', userController.loadAbout);
 router.get('/contact', userController.loadContact);
@@ -83,7 +81,7 @@ router.post('/order/return/:id', checkUserStatus, checkoutController.returnOrder
 
 router.get('/checkout', checkUserStatus, checkoutController.checkout);
 router.post('/checkout/done', checkUserStatus,checkProductStatus, checkoutController.done);
-router.post('/razorpay/initiate', checkUserStatus, checkoutController.razerpay);
+router.post('/razorpay/initiate', checkUserStatus, checkoutController.razorpay);
 router.post('/coupon/validate', checkUserStatus, checkoutController.coupen);
 router.get('/successPage',checkUserStatus,checkoutController.success);
 router.post('/failed-order',checkUserStatus,checkoutController.failed);

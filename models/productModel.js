@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     prevOfferPrice: {
         type: Number,
     },
-    images: [{ type: String }], // Store image paths
+    images: [{ type: String }],
     tags: [{ type: String }],
     productType: { type: String, required: true },
     stockManagement: [
