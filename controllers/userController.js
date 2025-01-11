@@ -12,7 +12,7 @@ const loadMain = async (req, res) => {
     try {
         const products = await productModel.find({
             isDeleted: false,
-            "stockManagement.quantity": { $gt: 0 }, 
+            "stockManagement.quantity": { $gt: 0 },
         }).sort({ _id: -1 });
 
         const offerProducts = await productModel.aggregate([
@@ -50,9 +50,9 @@ const loadMain = async (req, res) => {
             {
                 $limit: 8,
             },
-        ]);
+        ]) || [];
 
-        return res.status(200).render('user/home', { user: req.session.user, products, offerProducts })
+        return res.status(200).render('user/home', { user: req.session.user, products: products || [], offerProducts })
     } catch (error) {
         console.error('error : ', error);
         return res.status(500).json({ success: false, error: error.message });
