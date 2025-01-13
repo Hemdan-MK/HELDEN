@@ -282,6 +282,8 @@ const viewOrder = async (req, res) => {
 const cancelOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
+        console.log(orderId);
+        
         const { reason } = req.body;
 
         if (!reason || reason.trim() === '') {
@@ -308,7 +310,7 @@ const cancelOrder = async (req, res) => {
             // Update stock for each product in the order
             try {
                 for (const item of order.orderItems) {
-                    const product = await Product.findById(item.productId);
+                    const product = await Products.findById(item.productId);
                     if (!product) {
                         console.error(`Product not found: ${item.productId}`);
                         continue;
@@ -341,7 +343,7 @@ const cancelOrder = async (req, res) => {
                 wallet.transactions.push({
                     amount: order.totalAmount,
                     type: 'Credit',
-                    description: 'Returning Order ' + order.orderId // Changed from order.id to order.orderId
+                    description: 'Cancelled Order ' + order.orderId // Changed from order.id to order.orderId
                 });
                 await wallet.save();
             }
@@ -349,12 +351,14 @@ const cancelOrder = async (req, res) => {
             await order.save();
             res.json({
                 message: 'Order cancelled successfully and stock updated',
-                orderId: order.orderId
+                orderId: order.orderId,
+                success: true,
             });
         } else {
             res.status(400).json({
                 message: 'Order cannot be cancelled',
-                currentStatus: order.status
+                currentStatus: order.status,
+                success: false,
             });
         }
     } catch (error) {

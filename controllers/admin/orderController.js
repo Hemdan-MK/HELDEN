@@ -58,16 +58,55 @@ const getOrder = async (req, res) => {
 const statusupdate = async (req, res) => {
     try {
         const { shippingStatus, paymentStatus } = req.body;
-        const order = await Order.findOne({ orderId: req.params.id });
-
-        if (order) {
-            order.status = shippingStatus;
-            order.paymentStatus = paymentStatus;
-            await order.save();
-            res.json({ message: 'Order status updated successfully' });
-        } else {
+        const order = await Order.findOne({ orderId: req.params.id });       
+        
+        if (!order) {
             res.status(404).json({ message: 'Order not found' });
         }
+
+        if (shippingStatus === 'Cancelled') {
+            
+            if (order.paymentStatus === "Completed" && order.paymentMethod === "Net Banking") {
+                // Add the order amount to the user's wallet balance
+
+                const wallet = await Wallet.findOne({ userId: order.userId });
+                if (!wallet) {
+                    const newWallet = new Wallet({
+                        userId: order.userId,
+                        balance: 0, // Initialize with a default balance
+                        transactions: [], // Initialize with an empty transactions array
+                    });
+
+                    newWallet.balance = order.totalAmount;
+                    newWallet.transactions.push({
+                        amount: order.totalAmount,
+                        type: 'Credit',
+                        description: 'Order cancelled by admin' + order.orderId
+                    });
+
+                    await newWallet.save(); // Save the new wallet to the database
+
+                } else {
+                    
+                    wallet.balance += order.totalAmount;
+                    wallet.transactions.push({
+                        amount: order.totalAmount,
+                        type: 'Credit',
+                        description: 'Order cancelled by admin' + order.orderId
+                    });
+
+                    await wallet.save(); // Save the updated wallet to the database
+                }
+
+
+            }
+        }
+        order.status = shippingStatus;
+        order.paymentStatus = paymentStatus;
+
+        await order.save();
+        res.json({ message: 'Order status updated successfully' });
+
     } catch (err) {
         res.status(500).json({ message: 'Error updating order status' });
     }
@@ -76,7 +115,8 @@ const statusupdate = async (req, res) => {
 // Cancel order
 const cancel = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id);
+
+        const order = await Order.findOne({ orderId: req.params.id });
 
         const wallet = await Wallet.findOne({ userId: order.userId });
 
@@ -118,7 +158,7 @@ const cancel = async (req, res) => {
                 wallet.transactions.push({
                     amount: order.totalAmount,
                     type: 'Credit',
-                    description: 'Returning Order ' + order.orderId
+                    description: 'Cancelled Order ' + order.orderId
                 });
                 await wallet.save();
             }
@@ -144,7 +184,7 @@ const accept = async (req, res) => {
     try {
         const id = req.params.id;
 
-        const order = await Order.findOne({orderId : id}).populate('userId');
+        const order = await Order.findOne({ orderId: id }).populate('userId');
 
         order.status = 'Returned';
         const wallet = await Wallet.findOne({ userId: order.userId._id }).populate('userId');
@@ -180,7 +220,7 @@ const reject = async (req, res) => {
     try {
         const id = req.params.id;
 
-        const order = await Order.findOne({orderId: id});
+        const order = await Order.findOne({ orderId: id });
 
         order.status = 'Rejected';
         await order.save();

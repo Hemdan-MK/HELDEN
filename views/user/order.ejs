@@ -450,7 +450,7 @@
 
 						const data = await response.json();
 
-						if(data.message === 'Order cancelled successfully') {
+						if(data.success) {
 							await Swal.fire({
 								icon: 'success',
 								title: 'Cancelled!',
@@ -494,7 +494,6 @@
 		// return the order
 		// ----------------------------------------------------------------
 
-		// First, let's fix the modal HTML structure by giving it a unique ID
 		const returnModalHtml = `
 <div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
   <div class="modal-dialog">
