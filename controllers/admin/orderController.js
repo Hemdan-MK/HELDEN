@@ -180,7 +180,7 @@ const reject = async (req, res) => {
     try {
         const id = req.params.id;
 
-        const order = await Order.find({orderId: id});
+        const order = await Order.findOne({orderId: id});
 
         order.status = 'Rejected';
         await order.save();
