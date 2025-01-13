@@ -51,7 +51,6 @@ const loadMain = async (req, res) => {
             },
         ]) || [];
 
-        console.log(offerProducts)
 
         return res.status(200).render('user/home', { user: req.session.user, products: products || [], offerProducts })
     } catch (error) {

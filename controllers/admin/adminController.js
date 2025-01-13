@@ -2,9 +2,10 @@ const User = require('../../models/userRegister');
 const Order = require('../../models/orderModel');
 const Product = require('../../models/productModel');
 const Category = require('../../models/categoryModel');
-const res = require('express/lib/response');
 const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
+const bcrypt = require('bcrypt');
+
 
 
 const getDashboard = async (req, res) => {
@@ -196,22 +197,34 @@ const getLoginPage = (req, res) => {
     }
 };
 
-// Handle Admin Login
 const postLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Find admin user by email and password
-        const admin = await User.findOne({ email: email, password: password, role: 'admin' });
-        if (admin) {
-            req.session.admin = { id: admin._id, email: admin.email }; // Store only necessary info in session
-            return res.redirect('/admin/dashboard');
+        // Find admin user by email
+        const admin = await User.findOne({ email: email, role: 'admin' });
+
+        // If admin doesn't exist, send error response
+        if (!admin) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        // Compare the provided password with the stored hashed password
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        
+        if (isPasswordValid) {
+            // Store only necessary info in session
+            req.session.admin = { id: admin._id, email: admin.email };
+
+            // Send success response
+            return res.json({ success: true, message: 'Login successful' });
         } else {
-            return res.status(401).render('admin/login', { message: 'Invalid credentials' });
+            // If password is incorrect
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
     } catch (error) {
         console.error('Error during admin login:', error);
-        return res.status(500).send('Server error');
+        return res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -719,7 +732,6 @@ const modalFilter = async (req, res) => {
             const parsedDate = new Date(date);
 
             if (isNaN(parsedDate)) {
-                console.log('Invalid date detected');
                 return null;
             }
 
@@ -749,15 +761,9 @@ const modalFilter = async (req, res) => {
             const startOfYear = new Date(today.getFullYear(), 0, 1);
             matchStage.createdAt = { $gte: startOfYear };
         } else if (filterType === "custom") {
-            console.log('Custom date range:', { startDate, endDate });
 
             const validStartDate = parseValidDate(startDate, false);
             const validEndDate = parseValidDate(endDate, true);
-
-            console.log('Processed dates:', {
-                validStartDate,
-                validEndDate
-            });
 
             if (!validStartDate || !validEndDate) {
                 return res.status(400).json({
@@ -866,10 +872,8 @@ const modalPdf = async (req, res) => {
         // Function to validate and parse dates
         function parseValidDate(date, isEndDate = false) {
             const parsedDate = new Date(date);
-            console.log('Parsed date:', parsedDate);
 
             if (isNaN(parsedDate)) {
-                console.log('Invalid date detected');
                 return null;
             }
 
@@ -899,15 +903,9 @@ const modalPdf = async (req, res) => {
             const startOfYear = new Date(today.getFullYear(), 0, 1);
             matchStage.createdAt = { $gte: startOfYear };
         } else if (filterType === "custom") {
-            console.log('Custom date range:', { startDate, endDate });
 
             const validStartDate = parseValidDate(startDate, false);
             const validEndDate = parseValidDate(endDate, true);
-
-            console.log('Processed dates:', {
-                validStartDate,
-                validEndDate
-            });
 
             if (!validStartDate || !validEndDate) {
                 return res.status(400).json({

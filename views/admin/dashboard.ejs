@@ -842,7 +842,6 @@
 				});
 
 				const data = await response.json();
-				console.log(data);
 
 				populateSalesReport(data.orders);
 				updateStats(data.totalSales, data.totalRevenue);

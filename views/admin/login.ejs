@@ -9,10 +9,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 
+<!-- SweetAlert2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.10/dist/sweetalert2.min.css" rel="stylesheet">
+
 <style>
 	body {
     background: linear-gradient(180deg, #121212 10%, #242537 100%);
-    background-size: cover  c;		/* Darker gradient background */
+    background-size: cover; /* Darker gradient background */
 		min-height: 100vh;
 		display: flex;
 		align-items: center;
@@ -114,23 +117,23 @@
 </head>
 
 <body>
-	<div class="d-flex container-fluid  justify-content-center">
+	<div class="d-flex container-fluid justify-content-center">
 		<div class="row justify-content-center">
 			<div class="col-12">
 				<div class="login-card">
 					<h2 class="login-title">Admin Login</h2>
-					<form action="/admin/login" method="post">
+					<form id="loginForm" action="/admin/login" method="post">
 						<div class="mb-3">
 							<label class="form-label">
 								Username or Email <span class="required-star">*</span>
 							</label>
-							<input name="email" type="text" class="form-control" placeholder="Enter your username or email" required>
+							<input name="email" id="email" type="text" class="form-control" placeholder="Enter your username or email" required>
 						</div>
 						<div class="mb-3">
 							<label class="form-label">
 								Password <span class="required-star">*</span>
 							</label>
-							<input name="password" type="password" class="form-control" placeholder="Enter your password" required>
+							<input name="password" id="password" type="password" class="form-control" placeholder="Enter your password" required>
 						</div>
 						<div class="d-grid gap-2">
 							<button type="submit" class="btn btn-outline-danger login-btn">
@@ -145,6 +148,71 @@
 
 	<!-- Bootstrap 5 JS Bundle -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+	<!-- SweetAlert2 JS -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.10/dist/sweetalert2.min.js"></script>
+
+	<script>
+		document.getElementById("loginForm").addEventListener("submit", function(event) {
+			event.preventDefault();
+
+			// Get form data
+			const email = document.getElementById("email").value;
+			const password = document.getElementById("password").value;
+
+			// Basic validation
+			if (!email || !password) {
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops...',
+					text: 'Both fields are required!',
+				});
+				return;
+			}
+
+			// Prepare the data to send
+			const data = {
+				email: email,
+				password: password
+			};
+
+			// Send form data using fetch
+			fetch('/admin/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					// Success message
+					Swal.fire({
+						icon: 'success',
+						title: 'Login successful',
+						text: 'Redirecting...',
+					}).then(() => {
+						window.location.href = '/admin/dashboard';
+					});
+				} else {
+					// Error message
+					Swal.fire({
+						icon: 'error',
+						title: 'Login failed',
+						text: data.message || 'Invalid credentials!',
+					});
+				}
+			})
+			.catch(error => {
+				// Handle any errors during fetch
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'Something went wrong. Please try again.',
+				});
+			});
+		});
+	</script>
 </body>
 
 </html>
