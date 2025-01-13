@@ -1,31 +1,23 @@
 const categoryModel = require('../../models/categoryModel');
-const Cart = require('../../models/cartModel');  // Assuming you have a Cart model
-const Product = require('../../models/productModel');  // Assuming you have a Product model
-const mongoose = require("mongoose");
-const { success } = require('./orderCheckController');
+const Cart = require('../../models/cartModel');
+const Product = require('../../models/productModel');
 
 
 const getProductDetail = async (req, res) => {
     try {
-        // Get product ID from route parameters
         const productId = req.params.id;
 
-        // Fetch product from the database
         const product = await Product.findById(productId);
         const productAll = await Product.find({ isDeleted: false });
         const category = await categoryModel.findById(product.category)
-        // const related1 = await productModel.find({ tags: product.tags })
         const related = await Product.find({
-            tags: { $in: product.tags },  // Match products with any tag from the current product's tags
-            _id: { $ne: product._id }    // Exclude the current product
+            tags: { $in: product.tags },
         });
 
-        // Check if the product exists
         if (!product) {
             return res.status(404).send('Product not found');
         }
 
-        // Render the product detail page and pass the product data to the view
         return res.status(200).render('user/productPage', { product, user: req.session.user, productAll, category, related });
     } catch (error) {
         console.error('Error fetching product:', error);
@@ -38,7 +30,7 @@ const getProductDetail = async (req, res) => {
 // Add product to cart
 const addToCart = async (req, res) => {
     const { productId, size, quantity } = req.body;
-    const userId = req.session.user.id; // Assume user is authenticated
+    const userId = req.session.user.id;
 
     try {
 
@@ -47,14 +39,12 @@ const addToCart = async (req, res) => {
             return res.status(404).json({ success: false, message: "Product not found" });
         }
 
-        // Check if the size exists in stockManagement
         const sizeStock = product.stockManagement.find(stock => stock.size === size);
 
         if (!sizeStock) {
             return res.status(400).json({ success: false, message: "Invalid size selected" });
         }
 
-        // Check if the requested quantity is available
         if (sizeStock.quantity < quantity) {
             return res.status(400).json({
                 success: false,
@@ -73,9 +63,7 @@ const addToCart = async (req, res) => {
         );
 
         if (existingProductIndex !== -1) {
-            // Update the quantity in the cart
             cart.items[existingProductIndex].quantity += parseInt(quantity);
-            // Ensure the quantity doesn't exceed available stock
             if (cart.items[existingProductIndex].quantity > sizeStock.quantity) {
                 return res.status(400).json({
                     success: false,
@@ -90,7 +78,6 @@ const addToCart = async (req, res) => {
                 })
             }
         } else {
-            // Add the new product with the selected size to the cart
             cart.items.push({
                 productId,
                 size,
@@ -113,11 +100,10 @@ const stock = async (req, res) => {
         const productId = req.body.productId;
         const size = req.body.size;
 
-        // Fetch stock from your database (example query)
         const product = await Product.findById(productId);
 
         if (product && product.stockManagement && Array.isArray(product.stockManagement)) {
-            // Find the stock for the requested size
+
             const stockForSize = product.stockManagement.find(item => item.size === size);
 
             if (stockForSize) {
@@ -134,7 +120,7 @@ const stock = async (req, res) => {
                 });
             }
         }
-        // Default stock response
+
         return res.status(404).json({
             success: false,
             stock: 0,

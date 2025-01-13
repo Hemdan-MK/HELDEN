@@ -15,61 +15,61 @@
 
 <body>
 	<div class="sidebar">
-        <div class="sidebar-brand">
-            <span class="brand-full">H E L D E N</span>
-            <span class="brand-short">H</span>
-        </div>
-        <ul class="nav flex-column mt-3">
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/dashboard">
-                    <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/userManagement">
-                    <i class="fas fa-users"></i>
-                    <span>User Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/productManagement">
-                    <i class="fas fa-box"></i>
-                    <span>Product Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/orderManagement">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Order Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/categoryManagement">
-                    <i class="fas fa-folder"></i>
-                    <span>Category Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="/admin/couponManagement">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Coupon Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="/admin/referralManagement">
-                    <i class="fas fa-gift"></i>
-                    <span>Referal Management</span>
-                </a>
-            </li>
-            <li class="nav-item bottom">
-                <a class="nav-link text-warning" href="/admin/logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+		<div class="sidebar-brand">
+			<span class="brand-full">H E L D E N</span>
+			<span class="brand-short">H</span>
+		</div>
+		<ul class="nav flex-column mt-3">
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/dashboard">
+					<i class="fas fa-th-large"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/userManagement">
+					<i class="fas fa-users"></i>
+					<span>User Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/productManagement">
+					<i class="fas fa-box"></i>
+					<span>Product Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/orderManagement">
+					<i class="fas fa-shopping-cart"></i>
+					<span>Order Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/admin/categoryManagement">
+					<i class="fas fa-folder"></i>
+					<span>Category Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/admin/couponManagement">
+					<i class="fas fa-ticket-alt"></i>
+					<span>Coupon Management</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link " href="/admin/referralManagement">
+					<i class="fas fa-gift"></i>
+					<span>Referal Management</span>
+				</a>
+			</li>
+			<li class="nav-item bottom">
+				<a class="nav-link text-warning" href="/admin/logout">
+					<i class="fas fa-sign-out-alt"></i>
+					<span>Logout</span>
+				</a>
+			</li>
+		</ul>
+	</div>
 	<div class="main-content">
 		<!-- Sidebar -->
 
@@ -203,23 +203,30 @@
 			const coupons = await res.json();
 			const tableBody = document.getElementById('couponTableBody');
 			tableBody.innerHTML = '';
-			coupons.forEach(coupon => {
-				tableBody.innerHTML += `
-                    <tr>
-                        <td >${coupon.couponCode}</td>
-                        <td >${new Date(coupon.validFrom).toLocaleDateString()}</td>
-                        <td >${new Date(coupon.validUpto).toLocaleDateString()}</td>
-                        <td >${coupon.discountPercentage}</td>
-                        <td >${coupon.minPrice}</td>
-                        <td >${coupon.maxDiscount}</td>
-                        <td >${coupon.couponCount}</td>
-                        <td >${coupon.status ? 'Active' : 'Inactive'}</td>
-                        <td >
-                            <button class="btn  btn-sm btn-warning" onclick="openModal('${coupon._id}')">Edit</button>
-                            <button class="btn btn-outline-danger btn-sm" onclick="deleteCoupon('${coupon._id}')">Delete</button>
-                        </td>
-                    </tr>`;
-			});
+			if(coupons.length > 0) {
+				coupons.forEach(coupon => {
+					tableBody.innerHTML += `
+                <tr>
+                    <td>${coupon.couponCode}</td>
+                    <td>${new Date(coupon.validFrom).toLocaleDateString()}</td>
+                    <td>${new Date(coupon.validUpto).toLocaleDateString()}</td>
+                    <td>${coupon.discountPercentage}</td>
+                    <td>${coupon.minPrice}</td>
+                    <td>${coupon.maxDiscount}</td>
+                    <td>${coupon.couponCount}</td>
+                    <td>${coupon.status ? 'Active' : 'Inactive'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="openModal('${coupon._id}')">Edit</button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteCoupon('${coupon._id}')">Delete</button>
+                    </td>
+                </tr>`;
+				});
+			} else {
+				tableBody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center">No coupons available</td>
+            </tr>`;
+			}
 		}
 
 		// Add Event Listener for Add Coupon Button

@@ -277,7 +277,7 @@
 									<div class="col-md-6">
 										<div class="form-group">
 											<label for="productTags" class="form-label">Tags</label>
-											<input type="text" class="form-control" id="productTags" name="productTags" placeholder="Comma separated" value="<%= product.tags %>">
+											<input type="text" class="form-control" id="productTags" name="productTags" placeholder="Comma separated" value="<%= product.tags.join(', ') %>">
 										</div>
 									</div>
 									<div class="col-md-6">

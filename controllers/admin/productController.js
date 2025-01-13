@@ -102,7 +102,7 @@ const updateProduct = async (req, res) => {
         product.description = productDescription;
         product.price = productPrice;
         product.offerPrice = productOfferPrice;
-        product.tags = productTags;
+        product.tags = productTags ? productTags.split(",").map(tag => tag.trim()) : [];
         product.brand = productBrand;
         product.warranty = productWarranty;
         product.returnPolicy = productReturnPolicy;
@@ -207,7 +207,7 @@ const postAddProductsPage = async (req, res) => {
             images: imagePaths,
             productType: productType,
             stockManagement: JSON.parse(productStockManagement),
-            tags: productTags.split(','),
+            tags: productTags ? productTags.split(",").map(tag => tag.trim()) : [],
             brand: productBrand,
             warranty: productWarranty,
             returnPolicy: productReturnPolicy,

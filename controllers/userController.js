@@ -16,7 +16,6 @@ const loadMain = async (req, res) => {
         }).sort({ _id: -1 });
 
         const offerProducts = await productModel.aggregate([
-            // Match products that are not deleted
             {
                 $match: {
                     isDeleted: false,
@@ -51,6 +50,8 @@ const loadMain = async (req, res) => {
                 $limit: 8,
             },
         ]) || [];
+
+        console.log(offerProducts)
 
         return res.status(200).render('user/home', { user: req.session.user, products: products || [], offerProducts })
     } catch (error) {

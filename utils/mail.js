@@ -11,7 +11,7 @@ let transporter = nodemailer.createTransport({
 
 const sendEmail = async (email, otp) => {
   let mailOptions = {
-    from: 'hemdanmkonline@gmail.com',
+    from: process.env.MAIL_USER,
     to: email,
     subject: 'OTP Verification',
     text: `Your One-Time Password (OTP) is : ${otp}`

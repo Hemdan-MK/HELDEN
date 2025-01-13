@@ -5,7 +5,7 @@
 <!-- Required meta tags -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Category Panel</title>
+<title>Category Management</title>
 <!-- Bootstrap CSS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -103,7 +103,8 @@
 						</tr>
 					</thead>
 					<tbody>
-						<% categoriesWithCounts.forEach((category, index)=> { %>
+						<% if (categoriesWithCounts.length > 0) { %>
+						<% categoriesWithCounts.forEach((category, index) => { %>
 						<tr id="category-<%= category._id %>">
 							<td>
 								<%= index + 1 %>
@@ -111,8 +112,7 @@
 							<td>
 								<%= category.name %>
 							</td>
-							<td><img src="<%= category.image %>" class="img-thumbnail" style="width: 60px; height: 60px;">
-							</td>
+							<td><img src="<%= category.image %>" class="img-thumbnail" style="width: 60px; height: 60px;"></td>
 							<td>
 								<%= category.productCount %>
 							</td>
@@ -126,7 +126,7 @@
 							<td>
 								<button data-id="<%= category._id %>" class="btn btn-outline-success btn-sm btn-delete">Unlink</button>
 							</td>
-							<% if(!category.offerApplied) {%>
+							<% if (!category.offerApplied) { %>
 							<td>
 								<button data-id="<%= category._id %>" class="btn btn-outline-primary btn-sm btn-offer">Add Offer</button>
 							</td>
@@ -137,6 +137,11 @@
 							<% } %>
 						</tr>
 						<% }); %>
+						<% } else { %>
+						<tr>
+							<td colspan="9" class="text-center">No categories available</td>
+						</tr>
+						<% } %>
 					</tbody>
 				</table>
 			</div>

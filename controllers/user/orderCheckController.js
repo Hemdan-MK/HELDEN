@@ -384,8 +384,15 @@ const returnOrder = async (req, res) => {
 
 
 const success = async (req, res) => {
-    const orderId = req.session.orderId;
-    res.render('user/successPage', { orderId })
+    try {
+        const orderId = req.session.orderId;
+        const order = await Order.findById(orderId);
+        
+        res.render('user/successPage', { order , user : req.session.user})
+    } catch (error) {
+        console.error("Error order success :", error);
+        res.status(500).json({ message: "Failed to load  success page" });
+    }
 }
 
 const failed = async (req, res) => {

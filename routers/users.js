@@ -83,7 +83,7 @@ router.get('/checkout', checkUserStatus, checkoutController.checkout);
 router.post('/checkout/done', checkUserStatus,checkProductStatus, checkoutController.done);
 router.post('/razorpay/initiate', checkUserStatus, checkoutController.razorpay);
 router.post('/coupon/validate', checkUserStatus, checkoutController.coupen);
-router.get('/successPage',checkUserStatus,checkoutController.success);
+router.get('/successPage',checkoutController.success);
 router.post('/failed-order',checkUserStatus,checkoutController.failed);
 router.get('/retry-payment/:orderId',checkUserStatus,checkoutController.retryPayment);
 router.post('/confirm-retry',checkUserStatus,checkoutController.confirmRetry);

@@ -8,7 +8,6 @@ const session = require('express-session');
 const nocache = require('nocache');
 const passport = require('./config/passport');
 const cors = require('cors');
-const checkUserStatus = require('./middleware/userStatus'); 
 
 const app = express()
 
