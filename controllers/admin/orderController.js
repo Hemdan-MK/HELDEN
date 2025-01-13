@@ -59,12 +59,10 @@ const statusupdate = async (req, res) => {
     try {
         const { shippingStatus, paymentStatus } = req.body;
         const order = await Order.findById(req.params.id);
-
+        
         if (order) {
             order.status = shippingStatus;
-            if (order.paymentMethod !== 'COD') {
-                order.paymentStatus = paymentStatus;
-            }
+            order.paymentStatus = paymentStatus;
             await order.save();
             res.json({ message: 'Order status updated successfully' });
         } else {
