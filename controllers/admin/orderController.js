@@ -144,17 +144,17 @@ const accept = async (req, res) => {
     try {
         const id = req.params.id;
 
-        const order = await Order.findById(id).populate('userId');
+        const order = await Order.findOne({orderId : id}).populate('userId');
 
         order.status = 'Returned';
-        const wallet = await Wallet.findOne({ userId: order.userId }).populate('userId');
+        const wallet = await Wallet.findOne({ userId: order.userId._id }).populate('userId');
 
         if (wallet) {
             wallet.balance += order.totalAmount;
             wallet.transactions.push({
                 amount: order.totalAmount,
                 type: 'Credit',
-                description: 'Returning Order ' + order.id
+                description: 'Returning Order ' + order.orderId
             });
             await wallet.save();
         } else {
@@ -163,7 +163,7 @@ const accept = async (req, res) => {
             newWallet.transactions.push({
                 amount: order.totalAmount,
                 type: 'Credit',
-                description: 'Returning Order ' + order.id
+                description: 'Returning Order ' + order.orderId
             });
             await newWallet.save();
         }
@@ -180,7 +180,7 @@ const reject = async (req, res) => {
     try {
         const id = req.params.id;
 
-        const order = await Order.findById(id);
+        const order = await Order.find({orderId: id});
 
         order.status = 'Rejected';
         await order.save();

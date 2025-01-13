@@ -358,26 +358,7 @@
 		</div>
 	</div>
 
-	<!-- Return Order Modal -->
-	<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="orderModalLabel">Return Order Request</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<form id="returnOrderForm">
-						<div class="mb-3">
-							<label for="returnReason" class="form-label">Reason for Return</label>
-							<textarea id="returnReason" class="form-control" rows="3" placeholder="State your reason here..." required></textarea>
-						</div>
-						<button type="submit" class="btn btn-success">Submit Request</button>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
+	
 	<!-- Footer -->
 	<%- include('./layout/footer') %>
 	<script>
@@ -513,25 +494,53 @@
 		// return the order
 		// ----------------------------------------------------------------
 
-		let currentOrderId = null; // To store the current order ID
+		// First, let's fix the modal HTML structure by giving it a unique ID
+		const returnModalHtml = `
+<div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="returnOrderModalLabel">Return Order Request</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="returnOrderForm">
+          <div class="mb-3">
+            <label for="returnReason" class="form-label">Reason for Return</label>
+            <textarea id="returnReason" class="form-control" rows="3" placeholder="State your reason here..." required></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Submit Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>`;
 
+		// Add modal to the document
+		document.body.insertAdjacentHTML('beforeend', returnModalHtml);
+
+		// Initialize return order functionality
+		let currentOrderId = null;
+		const returnOrderModal = new bootstrap.Modal(document.getElementById('returnOrderModal'));
+
+		// Add event listeners to return order buttons
 		document.querySelectorAll('.return-order-btn').forEach(button => {
 			button.addEventListener('click', () => {
-				currentOrderId = button.getAttribute('data-id'); // Store the order ID
-				const returnOrderModal = new bootstrap.Modal(document.getElementById('orderModal'));
-				returnOrderModal.show(); // Open the modal
+				currentOrderId = button.getAttribute('data-id');
+				returnOrderModal.show();
 			});
 		});
 
-		// Handle form submission inside the modal
+		// Handle form submission
 		document.getElementById('returnOrderForm').addEventListener('submit', async (e) => {
 			e.preventDefault();
 
-			const returnReason = document.getElementById('returnReason').value; // Get reason input
-
+			const returnReason = document.getElementById('returnReason').value;
 
 			try {
-				// Send a request to the server to process the return request
 				const response = await fetch(`/order/return/${currentOrderId}`, {
 					method: 'POST',
 					headers: {
@@ -539,41 +548,52 @@
 					},
 					body: JSON.stringify({
 						reason: returnReason
-					}) // Send reason to server
+					})
 				});
 
-				const result = await response.json(); // Parse the response
+				const result = await response.json();
 
 				if(response.ok) {
-					Swal.fire({
+					// Hide modal first
+					returnOrderModal.hide();
+
+					// Show success message
+					await Swal.fire({
 						title: 'Success!',
 						text: 'Your return request has been submitted!',
 						icon: 'success',
 						confirmButtonText: 'OK'
 					});
 
-					// Close the modal and disable the button
-					const modal = bootstrap.Modal.getInstance(document.getElementById('orderModal'));
-					modal.hide();
-					document.querySelector(`[data-id="${currentOrderId}"]`).textContent = "Requested";
-					document.querySelector(`[data-id="${currentOrderId}"]`).disabled = true;
+					// Update button state
+					const button = document.querySelector(`[data-id="${currentOrderId}"]`);
+					if(button) {
+						button.textContent = "Return Requested";
+						button.disabled = true;
+						button.classList.remove('btn-success');
+						button.classList.add('btn-secondary');
+					}
+
+					// Clear the form
+					document.getElementById('returnOrderForm').reset();
 				} else {
-					Swal.fire({
-						title: 'Failed!',
-						text: `Failed to submit return request: ${result.message}`,
-						icon: 'error',
-						confirmButtonText: 'Try Again'
-					});
+					throw new Error(result.message || 'Failed to submit return request');
 				}
 			} catch (error) {
 				console.error("Error submitting return request:", error);
 				Swal.fire({
 					title: 'Error!',
-					text: "Something went wrong. Please try again later.",
+					text: error.message || "Something went wrong. Please try again later.",
 					icon: 'error',
 					confirmButtonText: 'Close'
 				});
 			}
+		});
+
+		// Clean up when modal is hidden
+		document.getElementById('returnOrderModal').addEventListener('hidden.bs.modal', function() {
+			document.getElementById('returnOrderForm').reset();
+			currentOrderId = null;
 		});
 	</script>
 
