@@ -297,7 +297,11 @@ const searchCategories = async (req, res) => {
             },
             {
                 $project: {
-                    products: 0
+                    name: 1,
+                    image: 1,  // Include image field
+                    productCount: 1,
+                    offerApplied: 1,
+                    updatedAt: 1
                 }
             },
             { $skip: skip },

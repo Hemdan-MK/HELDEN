@@ -176,8 +176,8 @@
 							</div>
 
 							<!-- Quantity and Add to Cart Button -->
-							<div class="flex-w flex-r-m p-b-10">
-								<div class="d-block size-204 flex-w flex-m respon6-next">
+							<div>
+								<div class="d-block size-204 flex-w flex-m respon6-next w-100">
 									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
 										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-minus"></i>
@@ -215,6 +215,14 @@
 								<div class="">
 									<div class="p-lr-28 p-lr-15-sm">
 
+										<div class="flex-w flex-t p-b-7">
+											<span class="stext-102 cl3 size-205">
+												Brand
+											</span>
+											<span class="stext-102 cl6 size-206">
+												<%= product.brand %>
+											</span>
+										</div>
 										<div class="flex-w flex-t p-b-7">
 											<span class="stext-102 cl3 size-205">
 												Warranty
@@ -391,7 +399,7 @@
 										<%= product.name %>
 									</a>
 									<span class="stext-105 cl3">
-										Rs. <%= product.price %>
+										Rs. <%= product.offerPrice %>
 									</span>
 								</div>
 							</div>
@@ -856,10 +864,7 @@
 				button.addEventListener('click', function(e) {
 					e.preventDefault();
 
-
-
 					const productId = '<%= product._id  %>'
-					// const nameProduct = productContainer.querySelector('.js-name-detail') ? productContainer.querySelector('.js-name-detail').textContent : 'Unknown Product';
 					const nameProduct = '<%= product.name  %>'
 
 
@@ -868,7 +873,7 @@
 						return;
 					}
 
-					swal(nameProduct, "is being added to your wishlist...", "info");
+					//swal(nameProduct, "is being added to your wishlist...", "info");
 
 					fetch('/add-to-wishlist', {
 							method: 'POST',
@@ -881,7 +886,20 @@
 						})
 						.then(response => response.json())
 						.then(data => {
-							if(data.success) {
+							if(data.notLoggedIn) {
+								Swal.fire({
+									title: "Please Log In",
+									text: "Please log in to add items to your wishlist.",
+									icon: "info",
+									showCancelButton: true,
+									confirmButtonText: "Log In",
+									cancelButtonText: "Cancel"
+								}).then((result) => {
+									if(result.isConfirmed) {
+										window.location.href = "/login";
+									}
+								});
+							} else if(data.success) {
 								swal(nameProduct, "has been added to your wishlist!", "success");
 
 								button.classList.add('js-addedwish-detail');

@@ -12,6 +12,7 @@ const getProductDetail = async (req, res) => {
         const category = await categoryModel.findById(product.category)
         const related = await Product.find({
             tags: { $in: product.tags },
+            _id: { $ne: product._id },
         });
 
         if (!product) {

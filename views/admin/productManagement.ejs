@@ -137,6 +137,7 @@
 				</tbody>
 			</table>
 		</div>
+		<% if (totalPages > 1) { %>
 		<div class="pagination-container mt-4 d-flex justify-content-center">
 			<nav aria-label="Product pagination">
 				<ul class="pagination pagination-dark justify-content-center">
@@ -164,6 +165,7 @@
 				</ul>
 			</nav>
 		</div>
+		<% } %>
 
 		<div class="action-buttons">
 			<button class="btn btn-success btn-custom" id="btn-add-prod">
@@ -206,15 +208,19 @@
 			productTableBody.innerHTML = products.map((product, index) => `
 				<tr id="product-${product._id}">
 					<td>${index + 1}</td>
+					<td>
+                            <img src="${product.images[0]}" 
+                                class="img-thumbnail" 
+                                style="width: 60px; height: 60px; object-fit: cover;">
+                    </td>
 					<td>${product.name}</td>
 					<td>${product.category ? product.category.name : '<span class="text-muted">NO</span>'}</td>
-					<td>$${product.price}</td>
+					<td>₹ ${product.price}</td>
 					<td>${
 						Array.isArray(product.stockManagement) && product.stockManagement.length > 0
 						? product.stockManagement.reduce((total, stock) => total + stock.quantity, 0)
 						: '<span class="text-muted">No Stock</span>'
 					}</td>
-					<td>${new Date(product.createdAt).toLocaleDateString()}</td>
 					<td>${new Date(product.updatedAt).toLocaleDateString()}</td>
 					<td>
 						<a href="/admin/productManagement/update/${product._id}" class="btn btn-outline-primary btn-sm">Update</a>

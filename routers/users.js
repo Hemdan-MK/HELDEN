@@ -129,7 +129,7 @@ router.post('/confirm-retry',checkUserStatus,checkoutController.confirmRetry);
 
 
 router.get('/wishlist', checkUserStatus, wishlistController.loadWishlist);
-router.post('/add-to-wishlist', checkUserStatus, wishlistController.addWishlist);
+router.post('/add-to-wishlist', wishlistController.addWishlist);
 router.post('/wish/cart/add', checkUserStatus, wishlistController.wishCart);
 router.delete('/wishlist/delete', checkUserStatus, wishlistController.deleteWish);
 

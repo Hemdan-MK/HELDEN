@@ -95,7 +95,6 @@
 							<th>Name</th>
 							<th>Picture</th>
 							<th>Product Count</th>
-							<th>Created Date</th>
 							<th>Updated Date</th>
 							<th>Update</th>
 							<th>Status</th>
@@ -115,9 +114,6 @@
 							<td><img src="<%= category.image %>" class="img-thumbnail" style="width: 60px; height: 60px;"></td>
 							<td>
 								<%= category.productCount %>
-							</td>
-							<td>
-								<%= new Date(category.createdAt).toLocaleDateString() %>
 							</td>
 							<td>
 								<%= new Date(category.updatedAt).toLocaleDateString() %>
@@ -476,21 +472,38 @@
 				data.categories.forEach((category, index) => {
 					const row = `
                 <tr id="category-${category._id}">
-                    <td>${((page - 1) * 5) + index + 1}</td>
-                    <td>${category.name}</td>
-                    <td><img src="${category.image}" class="img-thumbnail" style="width: 60px; height: 60px;"></td>
-                    <td>${category.productCount}</td>
-                    <td>${new Date(category.createdAt).toLocaleDateString()}</td>
-                    <td>${new Date(category.updatedAt).toLocaleDateString()}</td>
-                    <td><a href="/admin/categoryManagement/update/${category._id}" class="btn btn-outline-warning btn-sm">Update</a></td>
-                    <td><button data-id="${category._id}" class="btn btn-outline-success btn-sm btn-delete">Unlink</button></td>
-                    <td>
-                        ${!category.offerApplied 
-                            ? `<button data-id="${category._id}" class="btn btn-outline-primary btn-sm btn-offer">Add Offer</button>`
-                            : `<button data-id="${category._id}" class="btn btn-outline-danger btn-sm btn-offer-delete">Remove Offer</button>`
-                        }
-                    </td>
-                </tr>
+                        <td>${((page - 1) * 5) + index + 1}</td>
+                        <td>${category.name}</td>
+                        <td>
+                            <img src="${category.image}" 
+                                class="img-thumbnail" 
+                                style="width: 60px; height: 60px; object-fit: cover;">
+                        </td>
+                        <td>${category.productCount}</td>
+                        <td>${new Date(category.updatedAt).toLocaleDateString()}</td>
+                        <td>
+                            <a href="/admin/categoryManagement/update/${category._id}" 
+                               class="btn btn-outline-warning btn-sm">Update</a>
+                        </td>
+                        <td>
+                            <button data-id="${category._id}" 
+                                    class="btn btn-outline-success btn-sm btn-delete">
+                                Unlink
+                            </button>
+                        </td>
+                        <td>
+                            ${!category.offerApplied 
+                                ? `<button data-id="${category._id}" 
+                                         class="btn btn-outline-primary btn-sm btn-offer">
+                                     Add Offer
+                                   </button>`
+                                : `<button data-id="${category._id}" 
+                                         class="btn btn-outline-danger btn-sm btn-offer-delete">
+                                     Remove Offer
+                                   </button>`
+                            }
+                        </td>
+                    </tr>
             `;
 					tbody.innerHTML += row;
 				});

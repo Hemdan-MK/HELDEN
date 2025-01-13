@@ -1,29 +1,40 @@
-const Order = require("../../models/orderModel"); // Import your order model
-const User = require("../../models/userRegister");   // Import your user model
-const Product = require("../../models/productModel"); // Import your product model
+const Order = require("../../models/orderModel");
+const User = require("../../models/userRegister");
+const Product = require("../../models/productModel");
 const Address = require('../../models/addressModel');
-
 const PDFDocument = require("pdfkit");
-const fs = require("fs");
 
-// Route to generate the PDF receipt
+// Shared color scheme and styling
+const STYLES = {
+    colors: {
+        primary: '#003366',    // Dark Blue
+        secondary: '#666666',  // Dark Gray
+        accent: '#FF6B6B',     // Coral
+        background: '#F8F9FA', // Light Gray
+        text: '#333333'        // Dark Gray for text
+    },
+    fonts: {
+        header: 24,
+        subheader: 16,
+        normal: 12,
+        small: 10
+    }
+};
+
+// Main download controller (previously 'download')
 const download = async (req, res) => {
     try {
-        // Pass orderId to identify the order
-        let orderId = req.session.orderId
+        let orderId = req.session.orderId;
+        const shipping = req.session.shipping;
 
-        const shipping = req.session.shipping
-
-        // Fetch order details
         const order = await Order.findById(orderId)
-            .populate("userId") // Get user details
-            .populate("orderItems.productId"); // Get product details
+            .populate("userId")
+            .populate("orderItems.productId");
 
         if (!order) {
             return res.status(404).send("Order not found");
         }
 
-        // Create PDF document
         const doc = new PDFDocument({ margin: 50 });
         const fileName = `invoice_${orderId}.pdf`;
         res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
@@ -31,12 +42,10 @@ const download = async (req, res) => {
         doc.pipe(res);
 
         const mrp = req.session.mrp;
-        const discount = order.totalAmount - mrp
+        const discount = order.totalAmount - mrp;
 
-        // Generate PDF invoice
-        generateBeautifulInvoice(doc, order, shipping, discount);
+        generateInvoice(doc, order, shipping, discount);
 
-        // Finalize the PDF
         doc.end();
 
         delete req.session.orderId;
@@ -48,200 +57,179 @@ const download = async (req, res) => {
     }
 };
 
-// Function to generate a beautiful invoice with tables
-function generateBeautifulInvoice(doc, order, shipping, discount) {
-    // Header Section
-    doc
-        .fontSize(20)
-        .fillColor("#444444")
-        .text("Invoice", { align: "center" })
-        .moveDown();
+// Front download controller
+const frontDownload = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        
+        const order = await Order.findById(orderId)
+            .populate("userId")
+            .populate("orderItems.productId");
 
-    doc
-        .fontSize(12)
-        .fillColor("#000000")
-        .text(`Order ID: ${order._id}`)
-        .text(`Order Date: ${order.createdAt.toDateString()}`)
-        .text(`Payment Method: ${order.paymentMethod}`)
-        .text(`Order Status: ${order.status}`)
-        .moveDown();
+        if (!order) {
+            return res.status(404).send("Order not found");
+        }
 
-    // Customer Information
-    doc
-        .fontSize(14)
-        .fillColor("#444444")
-        .text("Customer Details", { underline: true })
-        .moveDown(0.5);
+        const doc = new PDFDocument({ margin: 50 });
+        const fileName = `invoice_${orderId}.pdf`;
+        res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+        res.setHeader("Content-Type", "application/pdf");
+        doc.pipe(res);
 
-    doc
-        .fontSize(12)
-        .fillColor("#000000")
-        .text(`Name: ${order.userId.name}`)
-        .text(`Email: ${order.userId.email}`)
-        .text(`Address: ${getFullAddress(order.userId.address)}`)
-        .moveDown();
+        // Use default shipping and discount if not provided
+        const shipping = 100;
+        const discount = calculateDiscount(order);
 
-    // Product Table Header
-    doc
-        .fontSize(14)
-        .fillColor("#444444")
-        .text("Order Items", { underline: true })
-        .moveDown(0.5);
+        generateInvoice(doc, order, shipping, discount);
 
-    generateProductTable(doc, order.orderItems, shipping);
+        doc.end();
 
-    // Total Amount
-    doc
-        .moveDown(2)
-        .fontSize(14)
-        .fillColor("#000000")
-        .text(`Shipping cost : ₹${shipping}`, { align: "right" })
-        .text(`Discount      : ₹${discount}`, { align: "right" })
-        .text(`Total Amount  : ₹${order.totalAmount}`, { align: "right", bold: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error generating invoice PDF");
+    }
+};
+
+// Unified invoice generation function
+function generateInvoice(doc, order, shipping, discount) {
+    const { colors, fonts } = STYLES;
+
+    // Header Section with Logo Space
+    doc.rect(50, 50, 500, 100)
+       .fill(colors.primary);
+
+    doc.fontSize(fonts.header)
+       .fillColor('white')
+       .text('INVOICE', 275, 80, { align: 'center' })
+       .fontSize(fonts.normal)
+       .text(`Date: ${order.createdAt.toLocaleDateString()}`, 275, 110, { align: 'center' });
+
+    // Order Information
+    doc.fontSize(fonts.normal)
+       .fillColor(colors.text)
+       .text(`Order ID: ${order._id}`, 50, 170)
+       .text(`Payment Method: ${order.paymentMethod}`, 50, 190)
+       .text(`Order Status: ${order.status}`, 50, 210);
+
+    // Customer Details Section
+    doc.rect(50, 240, 500, 100)
+       .fill(colors.background);
+
+    doc.fontSize(fonts.subheader)
+       .fillColor(colors.primary)
+       .text('Customer Details', 70, 255)
+       .fontSize(fonts.normal)
+       .fillColor(colors.text);
+
+    if (order.userId) {
+        doc.text(`Name: ${order.userId.name}`, 70, 280)
+           .text(`Email: ${order.userId.email}`, 70, 300)
+           .text(`Address: ${getFullAddress(order.userId.address)}`, 70, 320);
+    }
+
+    // Products Table
+    const tableTop = 380;
+    generateProductTable(doc, order.orderItems, tableTop);
+
+    // Summary Section
+    const summaryY = doc.y + 30;
+    generateSummarySection(doc, order, shipping, discount, summaryY);
+
+    // Footer
+    generateFooter(doc);
 }
 
-// Function to generate product table
-function generateProductTable(doc, orderItems, shipping) {
-    const tableTop = doc.y;
-    const itemSpacing = 25;
+// Helper function for product table
+function generateProductTable(doc, orderItems, startY) {
+    const { colors, fonts } = STYLES;
 
     // Table Header
-    doc
-        .fontSize(12)
-        .fillColor("#000000")
-        .text("Product Name", 50, tableTop, { bold: true })
-        .text("Quantity", 250, tableTop, { bold: true })
-        .text("Price", 350, tableTop, { bold: true })
-        .text("Total", 450, tableTop, { bold: true });
+    doc.rect(50, startY, 500, 30)
+       .fill(colors.primary);
 
-    // Draw a line below the header
-    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
+    doc.fillColor('white')
+       .fontSize(fonts.normal)
+       .text('Product Name', 70, startY + 10)
+       .text('Quantity', 280, startY + 10)
+       .text('Price', 380, startY + 10)
+       .text('Total', 480, startY + 10);
+
+    let currentY = startY + 30;
 
     // Table Rows
-    let yPos = tableTop + itemSpacing;
+    orderItems.forEach((item, index) => {
+        const rowHeight = 30;
+        doc.rect(50, currentY, 500, rowHeight)
+           .fill(index % 2 === 0 ? colors.background : 'white');
 
-    orderItems.forEach((item) => {
-        const productName = item.productId.name || "Unknown Product";
-        const quantity = item.quantity;
-        const price = `₹${item.price.toFixed(2)}`;
-        const total = `₹${(item.quantity * item.price).toFixed(2)}`;
-        // Print row
-        doc
-            .fontSize(10)
-            .fillColor("#000000")
-            .text(productName, 50, yPos)
-            .text(quantity, 250, yPos)
-            .text(price, 350, yPos)
-            .text(total, 450, yPos);
+        doc.fillColor(colors.text)
+           .fontSize(fonts.small)
+           .text(item.productId.name || 'Unknown Product', 70, currentY + 10, { width: 200 })
+           .text(item.quantity.toString(), 280, currentY + 10)
+           .text(`₹${item.price.toFixed(2)}`, 380, currentY + 10)
+           .text(`₹${(item.quantity * item.price).toFixed(2)}`, 480, currentY + 10);
 
-        // Add spacing between rows
-        yPos += itemSpacing;
-
-        // Draw a horizontal line after each row
-        doc.moveTo(50, yPos - 10).lineTo(550, yPos - 10).stroke();
+        currentY += rowHeight;
     });
+
+    doc.y = currentY + 10;
 }
 
-// Helper to format address
+// Helper function for summary section
+function generateSummarySection(doc, order, shipping, discount, summaryY) {
+    const { colors, fonts } = STYLES;
+
+    doc.rect(300, summaryY, 250, 100)
+       .fill(colors.background);
+
+    doc.fontSize(fonts.normal)
+       .fillColor(colors.primary)
+       .text('Order Summary', 320, summaryY + 10)
+       .fillColor(colors.text);
+
+    const subtotal = calculateSubtotal(order.orderItems);
+
+    doc.text(`Subtotal: ₹${subtotal.toFixed(2)}`, 320, summaryY + 35)
+       .text(`Shipping: ₹${shipping.toFixed(2)}`, 320, summaryY + 55)
+       .text(`Discount: -₹${discount.toFixed(2)}`, 320, summaryY + 75);
+
+    doc.rect(300, summaryY + 110, 250, 40)
+       .fill(colors.primary);
+
+    doc.fillColor('white')
+       .fontSize(fonts.subheader)
+       .text(`Total Amount: ₹${order.totalAmount.toFixed(2)}`, 320, summaryY + 120);
+}
+
+// Helper function for footer
+function generateFooter(doc) {
+    const { colors, fonts } = STYLES;
+    const footerY = doc.page.height - 100;
+
+    doc.fontSize(fonts.small)
+       .fillColor(colors.secondary)
+       .text('Thank you for your business!', 50, footerY, { align: 'center' })
+       .text('For any queries, please contact our support team.', 50, footerY + 20, { align: 'center' })
+       .text(`Generated on: ${new Date().toLocaleString()}`, 50, footerY + 40, { align: 'center' });
+}
+
+// Helper function for address formatting
 function getFullAddress(addresses) {
     if (!addresses || addresses.length === 0) return "No Address Provided";
     const address = addresses[0];
     return `${address.houseName}, ${address.street}, ${address.city}, ${address.state}, ${address.pincode}`;
 }
 
+// Helper function to calculate subtotal
+function calculateSubtotal(orderItems) {
+    return orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+}
 
-const frontDownload = async (req, res) => {
-    const { orderId } = req.params;
-
-    // Fetch the order details using orderId
-    const order = await Order.findById(orderId).populate('orderItems.productId'); // Replace with your DB call
-
-    if (!order) {
-        return res.status(404).send('Order not found');
-    }
-
-    // Create a PDF document
-    const doc = new PDFDocument({ margin: 40 });
-    const filename = `Invoice-${orderId}.pdf`;
-
-    // Set the response headers for downloading the PDF
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-    res.setHeader('Content-Type', 'application/pdf');
-
-    doc.pipe(res);
-
-    // Header Section
-    doc
-        .fontSize(20)
-        .fillColor('#003366') // Dark Blue
-        .text('Invoice', { align: 'center' })
-        .moveDown()
-        .fontSize(12)
-        .fillColor('black')
-        .text(`Order ID: ${order._id}`, { align: 'left' })
-        .text(`Status: ${order.status}`, { align: 'left' })
-        .text(`Total Amount: Rs. ${order.totalAmount}`, { align: 'right' })
-        .moveDown();
-
-    // Add a horizontal line
-    doc
-        .moveTo(40, doc.y)
-        .lineTo(570, doc.y)
-        .stroke('#cccccc')
-        .moveDown();
-
-    // Add Table Header
-    const headerY = doc.y; // Track header position
-    doc
-        .fontSize(14)
-        .fillColor('white')
-        .rect(40, headerY, 500, 25) // Table Header Background
-        .fill('#003366') // Dark Blue Background
-        .stroke()
-        .fillColor('white')
-        .text('Product Name', 50, headerY + 5, { width: 150 })
-        .text('Quantity', 250, headerY + 5, { width: 100, align: 'center' })
-        .text('Price (Rs.)', 400, headerY + 5, { width: 100, align: 'center' });
-
-    doc.fillColor('black'); // Reset text color
-    doc.moveDown(1.5);
-
-    // Add Table Rows
-    const rowHeight = 25;
-    order.orderItems.forEach((item, index) => {
-        const isEvenRow = index % 2 === 0;
-        const rowY = doc.y;
-
-        // Set alternating row background colors
-        doc
-            .rect(40, rowY, 500, rowHeight)
-            .fill(isEvenRow ? '#f9f9f9' : '#ffffff')
-            .stroke();
-
-        // Add row content
-        doc
-            .fillColor('black')
-            .text(item.productId.name, 50, rowY + 5, { width: 150, ellipsis: true })
-            .text(item.quantity.toString(), 250, rowY + 5, { width: 100, align: 'center' })
-            .text(item.price.toString(), 400, rowY + 5, { width: 100, align: 'center' });
-
-        doc.y += rowHeight; // Move to the next row
-    });
-
-    // Footer Section
-    doc.moveDown(2);
-    doc
-        .fontSize(12)
-        .fillColor('#333333')
-        .text('Thank you for your purchase!', { align: 'center' })
-        .moveDown(0.5)
-        .fontSize(10)
-        .text('For any inquiries, please contact our support.', { align: 'center' });
-
-    // Finalize the PDF and end the stream
-    doc.end();
-};
-
+// Helper function to calculate discount
+function calculateDiscount(order) {
+    const subtotal = calculateSubtotal(order.orderItems);
+    return subtotal * 0.1; // 10% discount - adjust as needed
+}
 
 module.exports = {
     download,

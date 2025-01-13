@@ -43,6 +43,11 @@ const loadWishlist = async (req, res) => {
 };
 
 const addWishlist = async (req, res) => {
+
+    if (!req.session.user) {
+        return res.json({ success: false, notLoggedIn: true });
+    }
+
     const { productId } = req.body;
     const userId = req.session.user.id; // Assuming you have authentication middleware
 
@@ -106,7 +111,7 @@ const wishCart = async (req, res) => {
         // Add product to cart
         cart.items.push({ productId, quantity: 1 }); // Default quantity is 1
         await cart.save();
-        
+
         await Wishlist.updateOne(
             { userId },
             { $pull: { products: { productId } } } // Remove the product from the wishlist

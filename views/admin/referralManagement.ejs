@@ -76,19 +76,22 @@
 	<div class="main-content">
 		<!-- Sidebar -->
 
-		<div class="container-fluid page-body-wrapper " style="height: 100vh;">
+		<div class="container-fluid page-body-wrapper" style="height: 100vh;">
 			<div class="container mt-5">
-				<h2>Referral Management</h2>
+				<div class="d-flex justify-content-between align-items-center mb-4">
+					<h4 class="mb-0">Referral Management</h4>
+				</div>
+				
 				<div class="table-responsive">
-					<table>
+					<table class=" ">
 						<thead>
 							<tr>
-								<th>User</th>
-								<th>Email</th>
-								<th>Referral Code</th>
-								<th>Referrals Count</th>
-								<th>Wallet Balance</th>
-								<th>Referred By</th>
+								<th scope="col">User</th>
+								<th scope="col">Email</th>
+								<th scope="col">Referral Code</th>
+								<th scope="col">Referrals Count</th>
+								<th scope="col">Wallet Balance</th>
+								<th scope="col">Referred By</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -97,26 +100,68 @@
 							<tr>
 								<td><%= user.name %></td>
 								<td><%= user.email %></td>
-								<td><%= user.referralCode ? user.referralCode : 'N/A' %></td>
+								<td><span class="badge bg-transparent border border-success text-success"><%= user.referralCode ? user.referralCode : 'N/A' %></span></td>
 								<td><%= user.referralCount %></td>
-								<td>₹<%= user.walletBalance %></td>
+								<td>₹ <%= user.walletBalance %></td>
 								<td>
 									<% if (user.referredBy) { %>
-									<%= user.referredBy.name %> (<%= user.referredBy.email %>)
+									<small class="text-muted">
+										<%= user.referredBy.name %>
+										<br>
+										(<%= user.referredBy.email %>)
+									</small>
 									<% } else { %>
-									N/A
+									<span class="badge bg-transparent border border-warning text-warning">N/A</span>
 									<% } %>
 								</td>
 							</tr>
 							<% }); %>
 							<% } else { %>
 							<tr>
-								<td colspan="6" class="text-center">No users available</td>
+								<td colspan="6" class="text-center py-4">
+									<div class="text-muted">
+										<i class="fas fa-info-circle me-2"></i>
+										No users available
+									</div>
+								</td>
 							</tr>
 							<% } %>
 						</tbody>
 					</table>
 				</div>
+		
+				<% if (totalPages > 1) { %>
+				<nav aria-label="Page navigation" class="d-flex justify-content-between align-items-center mt-4">
+					<div class="small text-white">
+						Showing page <%= currentPage %> of <%= totalPages %>
+					</div>
+					<ul class="pagination pagination-sm mb-0">
+						<li class="page-item <%= !hasPrevPage ? 'disabled' : '' %>">
+							<a class="page-link" href="?page=<%= currentPage - 1 %>" <%= !hasPrevPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+								<i class="fas fa-chevron-left small"></i>
+							</a>
+						</li>
+		
+						<% for(let i = 1; i <= totalPages; i++) { %>
+						<% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+						<li class="page-item <%= currentPage === i ? 'active' : '' %>">
+							<a class="page-link" href="?page=<%= i %>"><%= i %></a>
+						</li>
+						<% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+						<li class="page-item disabled">
+							<span class="page-link">...</span>
+						</li>
+						<% } %>
+						<% } %>
+		
+						<li class="page-item <%= !hasNextPage ? 'disabled' : '' %>">
+							<a class="page-link" href="?page=<%= currentPage + 1 %>" <%= !hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+								<i class="fas fa-chevron-right small"></i>
+							</a>
+						</li>
+					</ul>
+				</nav>
+				<% } %>
 			</div>
 		</div>
 	</div>

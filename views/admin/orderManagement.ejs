@@ -124,6 +124,7 @@
 			</div>
 
 			<!-- Pagination -->
+			<% if (totalPages > 1) { %>
 			<div class="pagination-container my-4">
 				<ul class="pagination pagination-dark justify-content-center">
 					<% if (currentPage > 1) { %>
@@ -149,6 +150,7 @@
 					<% } %>
 				</ul>
 			</div>
+			<% } %>
 		</div>
 	</div>
 
