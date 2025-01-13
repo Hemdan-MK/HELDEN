@@ -16,12 +16,12 @@ const cartBadge = async (req, res) => {
 
 const loadCart = async (req, res) => {
     try {
-        const userId = req.session.user.id; // Assuming user ID is in the session
-        const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
-        const limit = 3; // Items per page
+        const userId = req.session.user.id; 
+        const page = parseInt(req.query.page) || 1;
+        const limit = 3;
         const offset = (page - 1) * limit;
 
-        const cart = await Cart.findOne({ userId }).populate('items.productId'); // Populate product details
+        const cart = await Cart.findOne({ userId }).populate('items.productId'); 
 
         if (!cart || !Array.isArray(cart.items)) {
             return res.render('user/cart', {

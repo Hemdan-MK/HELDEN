@@ -232,6 +232,7 @@
 										</div>
 										<% } %>
 									</div>
+									<p  id="imageError"></p>
 								</div>
 
 								<div class="form-group">
@@ -635,7 +636,7 @@
 
 			let imageUploaded = false;
 			productImages.forEach((input, index) => {
-				if(input.files.length > 0) {
+				if(input.files.length > 2) {
 					imageUploaded = true;
 					const file = input.files[0];
 					if(!file.type.startsWith("image/")) {
@@ -645,7 +646,7 @@
 			});
 
 			if(!imageUploaded) {
-				showError("image0", "Please upload at least one product image.");
+				showError("imageError", "Please upload at 3 one product image.");
 			}
 
 			if(hasError) {

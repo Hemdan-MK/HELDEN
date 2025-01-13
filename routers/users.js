@@ -31,16 +31,53 @@ router.post('/login', userController.login);
 
 
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/register' }), (req, res) => {
-    req.session.user = {
-        email: req.user.email,
-        name: req.user.name,
-        id: req.user._id,
-    };
-    return res.redirect('/home');
-}
-)
 
+router.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/register' }), 
+    (req, res) => {
+        // Set no-cache headers
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
+        });
+
+        req.session.user = {
+            email: req.user.email,
+            name: req.user.name,
+            id: req.user._id,
+        };
+
+        // Send HTML response with script to handle history
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+                <meta http-equiv="Pragma" content="no-cache">
+                <meta http-equiv="Expires" content="0">
+                <title>Redirecting...</title>
+            </head>
+            <body>
+                <script>
+                    // Replace the current history entry
+                    window.history.replaceState(null, '', '/home');
+                    
+                    // Prevent using back button
+                    window.history.pushState(null, '', '/home');
+                    window.onpopstate = function(event) {
+                        window.history.pushState(null, '', '/home');
+                    };
+                    
+                    // Redirect to home page
+                    window.location.replace('/home');
+                </script>
+            </body>
+            </html>
+        `);
+    }
+);
 
 
 
@@ -83,7 +120,7 @@ router.get('/checkout', checkUserStatus, checkoutController.checkout);
 router.post('/checkout/done', checkUserStatus,checkProductStatus, checkoutController.done);
 router.post('/razorpay/initiate', checkUserStatus, checkoutController.razorpay);
 router.post('/coupon/validate', checkUserStatus, checkoutController.coupen);
-router.get('/successPage',checkoutController.success);
+router.get('/successPage',checkUserStatus,checkoutController.success);
 router.post('/failed-order',checkUserStatus,checkoutController.failed);
 router.get('/retry-payment/:orderId',checkUserStatus,checkoutController.retryPayment);
 router.post('/confirm-retry',checkUserStatus,checkoutController.confirmRetry);
@@ -106,7 +143,7 @@ router.post('/register/check-user', userController.checkuser);
 
 
 router.get('/shop/product-detail/:id', productDetailController.getProductDetail);
-router.post('/shop/product-detail/add-to-cart', checkUserStatus, productDetailController.addToCart);
+router.post('/shop/product-detail/add-to-cart', productDetailController.addToCart);
 router.post('/shop/product/stock', productDetailController.stock);
 
 

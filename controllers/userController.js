@@ -10,6 +10,14 @@ const Wallet = require('../models/walletModel');
 
 const loadMain = async (req, res) => {
     try {
+
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
+        });
+
         const products = await productModel.find({
             isDeleted: false,
             "stockManagement.quantity": { $gt: 0 },
@@ -248,10 +256,14 @@ const logout = async (req, res) => {
 const loadRegister = async (req, res) => {
     try {
         const referralCode = req.query.ref || '';
-        return res.status(200).render('user/register', {
-            user: req.session.user,
-            referralCode
-        });
+        if (req.session.user) {
+            res.redirect('/home');
+        } else {
+            return res.status(200).render('user/register', {
+                user: req.session.user,
+                referralCode
+            });
+        }
     } catch (error) {
         console.error('Error loading register:', error);
         return res.status(500).send('Server Error');
@@ -260,7 +272,11 @@ const loadRegister = async (req, res) => {
 
 const loadLogin = async (req, res) => {
     try {
-        return res.status(200).render('user/login', { user: req.session.user });
+        if (req.session.user) {
+            res.redirect('/home');
+        } else {
+            return res.status(200).render('user/login', { user: req.session.user });
+        }
     } catch (error) {
         console.error('Error loading login:', error);
         return res.status(500).send('Server Error');
@@ -495,6 +511,13 @@ const verifyOTP = async (req, res) => {
             id: savedUser._id,
             referralCode: getReferralCode.referralCode
         };
+
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
+        });
 
         return res.status(200).json({
             success: true,

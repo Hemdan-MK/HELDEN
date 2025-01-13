@@ -91,11 +91,11 @@
 				<thead>
 					<tr>
 						<th>Index</th>
+						<th>Image</th>
 						<th>Name</th>
 						<th>Category</th>
 						<th>Price</th>
 						<th>Stock</th>
-						<th>Created Date</th>
 						<th>Updated Date</th>
 						<th>Actions</th>
 					</tr>
@@ -105,6 +105,7 @@
 					<% products.forEach((product, index) => { %>
 					<tr id="product-<%= product._id %>">
 						<td><%= index + 1 %></td>
+						<td><img src="<%= product.images[0] %>" class="img-thumbnail" style="width: 60px; height: 60px;"></td>
 						<td><%= product.name %></td>
 						<td>
 							<% if (product.category !== null) { %>
@@ -113,7 +114,7 @@
 							<span class="text-muted">NO</span>
 							<% } %>
 						</td>
-						<td>$<%= product.price %></td>
+						<td>₹ <%= product.price %></td>
 						<td>
 							<% if (Array.isArray(product.stockManagement) && product.stockManagement.length > 0) { %>
 							<%= product.stockManagement.reduce((total, stock) => total + stock.quantity, 0) %>
@@ -121,7 +122,6 @@
 							<span class="text-muted">No Stock</span>
 							<% } %>
 						</td>
-						<td><%= new Date(product.createdAt).toLocaleDateString() %></td>
 						<td><%= new Date(product.updatedAt).toLocaleDateString() %></td>
 						<td>
 							<a href="/admin/productManagement/update/<%= product._id %>" class="btn btn-outline-primary btn-sm">Update</a>

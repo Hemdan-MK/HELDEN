@@ -14,8 +14,9 @@
 
 <style>
 	body {
-    background: linear-gradient(180deg, #121212 10%, #242537 100%);
-    background-size: cover; /* Darker gradient background */
+		background: linear-gradient(180deg, #121212 10%, #242537 100%);
+		background-size: cover;
+		/* Darker gradient background */
 		min-height: 100vh;
 		display: flex;
 		align-items: center;
@@ -160,7 +161,7 @@
 			const password = document.getElementById("password").value;
 
 			// Basic validation
-			if (!email || !password) {
+			if(!email || !password) {
 				Swal.fire({
 					icon: 'error',
 					title: 'Oops...',
@@ -177,40 +178,43 @@
 
 			// Send form data using fetch
 			fetch('/admin/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(data)
-			})
-			.then(response => response.json())
-			.then(data => {
-				if (data.success) {
-					// Success message
-					Swal.fire({
-						icon: 'success',
-						title: 'Login successful',
-						text: 'Redirecting...',
-					}).then(() => {
-						window.location.href = '/admin/dashboard';
-					});
-				} else {
-					// Error message
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				})
+				.then(response => response.json())
+				.then(data => {
+					if(data.success) {
+						// Success message with timer
+						Swal.fire({
+							icon: 'success',
+							title: 'Login successful',
+							text: 'Redirecting...',
+							timer: 2000, // Timer in milliseconds (2 seconds in this case)
+							timerProgressBar: true, // Shows a progress bar
+							showConfirmButton: false // Hides the OK button
+						}).then(() => {
+							window.location.href = '/admin/dashboard';
+						});
+					} else {
+						// Error message
+						Swal.fire({
+							icon: 'error',
+							title: 'Login failed',
+							text: data.message || 'Invalid credentials!',
+						});
+					}
+				})
+				.catch(error => {
+					// Handle any errors during fetch
 					Swal.fire({
 						icon: 'error',
-						title: 'Login failed',
-						text: data.message || 'Invalid credentials!',
+						title: 'Error',
+						text: 'Something went wrong. Please try again.',
 					});
-				}
-			})
-			.catch(error => {
-				// Handle any errors during fetch
-				Swal.fire({
-					icon: 'error',
-					title: 'Error',
-					text: 'Something went wrong. Please try again.',
 				});
-			});
 		});
 	</script>
 </body>

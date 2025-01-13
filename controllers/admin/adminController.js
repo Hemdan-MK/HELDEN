@@ -198,6 +198,7 @@ const getLoginPage = (req, res) => {
 };
 
 const postLogin = async (req, res) => {
+    
     try {
         const { email, password } = req.body;
 

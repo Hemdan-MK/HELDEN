@@ -29,6 +29,15 @@ const getProductDetail = async (req, res) => {
 
 // Add product to cart
 const addToCart = async (req, res) => {
+
+    if (!req.session.user) {
+        return res.status(401).json({ 
+            success: false, 
+            notLoggedIn: true,
+            message: "Please log in to add items to cart" 
+        });
+    }
+    
     const { productId, size, quantity } = req.body;
     const userId = req.session.user.id;
 

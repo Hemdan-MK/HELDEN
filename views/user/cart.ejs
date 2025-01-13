@@ -117,8 +117,6 @@
 		margin-bottom: 2%;
 	}
 
-	
-
 	.checkout-btn {
 		background-color: #3aa39f;
 		color: white;
@@ -188,7 +186,7 @@
 		color: #17183b;
 	}
 
-	
+
 
 	.prevnext {
 		padding: 10px 30px;
@@ -207,7 +205,9 @@
 				<div class="d-block w-100">
 					<!-- Product List -->
 					<div class="product-list">
-						<% if (cart && cart.items.length> 0) { %> <% cart.items.forEach((item)=> { %> <div class="product-item">
+						<% if (cart && cart.items.length> 0) { %>
+						<% cart.items.forEach((item)=> { %>
+						<div class="product-item">
 							<img src="<%= item.productId.images[0] %>" alt="Product Image" class="product-img" />
 							<div class="product-details">
 								<h3 class="product-name">
@@ -265,7 +265,7 @@
 								<% } else {%> <span>Rs. <%= shipping %></span>
 								<% } %>
 							</div>
-							
+
 						</div>
 						<hr />
 						<div class="total-section">
@@ -281,7 +281,7 @@
 						<button class="checkout-btn mb-3 mt-3">Proceed to Checkout</button>
 					</div>
 
-					
+
 					<!-- Offer Section -->
 					<div class="offer">
 						<div class="offer-icon"></div>
@@ -340,7 +340,7 @@
 	<!--===============================================================================================-->
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {
-			
+
 			const quantityElements = document.querySelectorAll('.quantity-control');
 			quantityElements.forEach((quantityElement) => {
 				const decreaseButton = quantityElement.querySelector('.btn-decrease');
