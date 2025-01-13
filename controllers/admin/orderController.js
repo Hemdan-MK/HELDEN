@@ -58,8 +58,8 @@ const getOrder = async (req, res) => {
 const statusupdate = async (req, res) => {
     try {
         const { shippingStatus, paymentStatus } = req.body;
-        const order = await Order.findById(req.params.id);
-        
+        const order = await Order.findOne({ orderId: req.params.id });
+
         if (order) {
             order.status = shippingStatus;
             order.paymentStatus = paymentStatus;
