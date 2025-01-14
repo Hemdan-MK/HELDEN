@@ -1183,8 +1183,16 @@
 				});
 
 				const result = await response.json();
-
-				if(result.success) {
+				if(result.success === false && insuffStock === true) {
+					Swal.fire({
+						icon: 'warning', // Use an appropriate icon for low stock
+						title: 'We are extremely sorry!',
+						text: 'The product stock is too low. We hope you order next time.',
+						confirmButtonText: 'Understood'
+					}).then(() => {
+						window.location.href = '/cart'; // Redirect to a relevant page, if needed
+					});
+				} else if(result.success) {
 					Swal.fire("Success", "Order placed successfully!", "success").then(() => {
 						window.location.href = '/successPage'; // Redirect to success page
 					});

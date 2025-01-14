@@ -485,7 +485,15 @@
 
 					const data = await response.json();
 
-					if(data.success) {
+					if(data.success === false && data.insuffStock === true) {
+						Swal.fire({
+							title: 'Insufficient Stock',
+							text: 'Not all items in your cart have enough stock. Please adjust your quantities or remove some items.',
+							icon: 'warning',
+							confirmButtonText: 'Continue Shopping'
+						});
+						return;
+					} else if(data.success) {
 						Swal.fire({
 							title: 'Items Moved to Checkout',
 							text: 'Your items have been moved to the checkout session. Please proceed with the next steps.',

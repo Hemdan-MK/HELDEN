@@ -16,12 +16,12 @@ const cartBadge = async (req, res) => {
 
 const loadCart = async (req, res) => {
     try {
-        const userId = req.session.user.id; 
+        const userId = req.session.user.id;
         const page = parseInt(req.query.page) || 1;
         const limit = 3;
         const offset = (page - 1) * limit;
 
-        const cart = await Cart.findOne({ userId }).populate('items.productId'); 
+        const cart = await Cart.findOne({ userId }).populate('items.productId');
 
         if (!cart || !Array.isArray(cart.items)) {
             return res.render('user/cart', {
@@ -314,10 +314,36 @@ const orderPlace = async (req, res) => {
 
 
         for (let item of cart.items) {
-            const product = item.productId._id;
-            const productStock = await Product.find({_id: product, isDeleted: false});
-            if (!productStock) {
-                res.status(404).json({ success: false, message: 'the product on cart is not found on product schema ' })
+            const product = await Product.findOne({
+                _id: item.productId._id,
+                isDeleted: false
+            });
+
+            if (!product) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Product ${item.productId.name} is no longer available`
+                });
+            }
+
+            // Find the stock for the specific size
+            const sizeStock = product.stockManagement.find(
+                stock => stock.size === item.size
+            );
+
+            if (!sizeStock) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Size ${item.size} is not available for product ${item.productId.name}`
+                });
+            }
+
+            if (sizeStock.quantity < item.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    insuffStock : true,
+                    message: `Insufficient stock for ${item.productId.name} in size ${item.size}. Available: ${sizeStock.quantity}, Requested: ${item.quantity}`
+                });
             }
         }
 

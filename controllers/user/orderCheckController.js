@@ -94,7 +94,6 @@ const checkout = async (req, res) => {
 
 
 const done = async (req, res) => {
-
     const { userId, addressId, paymentMethod, razorpayPaymentId, totalAmount, appliedCoupon } = req.body;
 
     // Validate required fields
@@ -120,7 +119,7 @@ const done = async (req, res) => {
             return res.status(404).json({ success: false, message: "Address not found." });
         }
 
-        // Find the existing order for the user
+        // Find the existing order
         let order = await Order.findOne({ _id: orderId })
             .populate('coupon')
             .populate('orderItems.productId');
@@ -132,19 +131,51 @@ const done = async (req, res) => {
             });
         }
 
-        const coupon = await Coupon.findOne({
+        // Check stock availability for all items before processing
+        const stockCheck = await Promise.all(order.orderItems.map(async (item) => {
+            const product = await Products.findById(item.productId);
+            if (!product) {
+                return {
+                    success: false,
+                    insuffStock : true,
+                    message: `Product with ID ${item.productId} not found`
+                };
+            }
+
+            const sizeStock = product.stockManagement.find(stock => stock.size === item.size);
+            if (!sizeStock || sizeStock.quantity < item.quantity) {
+                return {
+                    success: false,
+                    message: `Insufficient stock for product ${product.name} (Size: ${item.size})`
+                };
+            }
+
+            return { success: true };
+        }));
+
+        // Check if any stock validation failed
+        const stockError = stockCheck.find(check => !check.success);
+        if (stockError) {
+            return res.status(400).json({
+                success: false,
+                message: "Stock validation failed",
+                error: stockError.message
+            });
+        }
+
+        // Process coupon if applied
+        const coupon = appliedCoupon ? await Coupon.findOne({
             couponCode: appliedCoupon,
             status: true,
             validFrom: { $lte: new Date() },
             validUpto: { $gte: new Date() },
-        });
+        }) : null;
 
         // Update order details
         order.addressId = address._id;
         order.paymentMethod = paymentMethod;
-        order.status = paymentMethod === "Cash on Delivery" ? "Pending" : "Shipping"; // Update based on method
+        order.status = paymentMethod === "Cash on Delivery" ? "Pending" : "Shipping";
 
-        // For Razorpay, check if Razorpay Payment ID is provided
         if (paymentMethod === "Net Banking") {
             if (!razorpayPaymentId) {
                 return res.status(400).json({
@@ -162,58 +193,41 @@ const done = async (req, res) => {
 
         if (coupon) {
             order.coupon = coupon._id;
-            // Update coupon count
             coupon.couponCount = coupon.couponCount - 1;
-            await coupon.save()
+            await coupon.save();
         }
 
-        // Remove any expiry
+        // Remove expiry
         order.expiresAt = undefined;
-        delete req.session.checkProductStatus
+        delete req.session.checkProductStatus;
 
-        // Save the updated order
-        const updatedOrder = await order.save();
-
-        // Clear the user's cart
-        await Cart.deleteOne({ userId });
-
-        // update product collection
-        for (const item of order.orderItems) {
-            const { productId, quantity } = item;
-
-            // Find the product
-            const product = await Products.findById(productId);
-
-            if (!product) {
-                return res.status(404).json({ message: `Product with ID ${productId} not found` });
-            }
-
-            // Update stock for the product
-            const updatedStockManagement = product.stockManagement.map(stockItem => {
-
-                if (stockItem.size == item.size) { // Assuming order item specifies size
-                    if (stockItem.quantity < quantity) {
-                        throw new Error(`Insufficient stock for product ${product.name} (Size: ${stockItem.size})`);
-                    }
-                    return { ...stockItem, quantity: stockItem.quantity - quantity };
+        // Update product stock
+        await Promise.all(order.orderItems.map(async (item) => {
+            const product = await Products.findById(item.productId);
+            product.stockManagement = product.stockManagement.map(stockItem => {
+                if (stockItem.size === item.size) {
+                    return { ...stockItem, quantity: stockItem.quantity - item.quantity };
                 }
                 return stockItem;
             });
-
-            product.stockManagement = updatedStockManagement;
-
-            // Save the product
             await product.save();
-        }
+        }));
+
+        // Save the order
+        const updatedOrder = await order.save();
+
+        // Clear the cart
+        await Cart.deleteOne({ userId });
 
         return res.status(200).json({
             success: true,
-            message: "Order updated successfully.",
+            message: "Order placed successfully.",
             paymentMethod: paymentMethod,
             order: updatedOrder
         });
+
     } catch (error) {
-        console.error("Error while updating order:", error);
+        console.error("Error while processing order:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error."
